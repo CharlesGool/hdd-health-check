@@ -37,7 +37,7 @@
 set -o pipefail
 shopt -s extglob
 
-SCRIPT_VERSION="2.2.0"
+SCRIPT_VERSION="2.3.0"
 SCRIPT_NAME="$(basename "$0")"
 SELF="$(readlink -f "$0")"
 ORIG_ARGS=("$@")
@@ -67,6 +67,7 @@ RUNINFO=""; CUR_TASK=""; BG_HANDED=0; LOCKED=0; DETACH_REQ=0; PLAN_FILE=""
 RUN_DIR=""; CLEANED=0
 KEY=""; DEC=""
 CUR_DED=0; declare -a CUR_ISS=()
+RESULT_BATCH=""; FULL_BATCH=""; QUICK_ATA=""; QUICK_CRC=""
 PLAN_RECHECK=""
 
 MODS=(quick selftest_short selftest_long speed surface badblocks iface)
@@ -280,10 +281,10 @@ read_record() {
     [[ -f $file && ! -L $file ]] || return 1
     while IFS='=' read -r key raw; do
         case "$kind:$key" in
-            result:R_TS|result:R_DEDUCT|repair:P_TS|repair:P_CRC|repair:P_CMDTO|run:I_PID|run:I_START|surface:S_NEXT|surface:S_TOTAL|surface:S_CHUNK|surface:S_OK|surface:S_SLOW|surface:S_VSLOW|surface:S_ERR|surface:S_TRANS|surface:S_EMA|surface:S_KBS|surface:S_ELAPSED|surface:S_SIZE|surface:S_DONE|surface:S_TS_START|surface:S_TS_UPD)
+            result:R_TS|result:R_DEDUCT|result:R_ATA|result:R_ATA_PENDING|result:R_CRC|repair:P_TS|repair:P_CRC|repair:P_CMDTO|run:I_PID|run:I_START|surface:S_NEXT|surface:S_TOTAL|surface:S_CHUNK|surface:S_OK|surface:S_SLOW|surface:S_VSLOW|surface:S_ERR|surface:S_TRANS|surface:S_EMA|surface:S_KBS|surface:S_ELAPSED|surface:S_SIZE|surface:S_DONE|surface:S_TS_START|surface:S_TS_UPD)
                 [[ $raw =~ ^(0|[1-9][0-9]{0,14})$ ]] || return 1
                 printf -v "$key" '%s' "$raw" ;;
-            result:R_STATUS|result:R_ISSUES|result:R_SUMMARY|result:R_CURVE|result:R_LINE|repair:P_NOTE|run:I_DETACHED|run:I_LOG|run:I_RUNDIR|run:I_TASK|run:I_TARGETS|run:I_MODE)
+            result:R_STATUS|result:R_ISSUES|result:R_SUMMARY|result:R_CURVE|result:R_LINE|result:R_BATCH|repair:P_NOTE|run:I_DETACHED|run:I_LOG|run:I_RUNDIR|run:I_TASK|run:I_TARGETS|run:I_MODE)
                 decode_record_value "$raw" || return 1
                 printf -v "$key" '%s' "$RECORD_VALUE" ;;
             iface:W_MB|iface:W_ERR|iface:W_KBS)
@@ -395,14 +396,14 @@ save_result() {
     local f="$STATE_DIR/$id/$mod.env" kv iss
     iss=$(join_by ';' "${CUR_ISS[@]}")
     {
-        printf 'R_TS=%q\nR_STATUS=%q\nR_DEDUCT=%q\nR_ISSUES=%q\nR_SUMMARY=%q\n' \
-            "${RES_TS:-$(now)}" "$status" "$CUR_DED" "$iss" "$summary"
+        printf 'R_TS=%q\nR_STATUS=%q\nR_DEDUCT=%q\nR_ISSUES=%q\nR_SUMMARY=%q\nR_BATCH=%q\n' \
+            "${RES_TS:-$(now)}" "$status" "$CUR_DED" "$iss" "$summary" "$RESULT_BATCH"
         for kv in "$@"; do printf '%s=%q\n' "${kv%%=*}" "${kv#*=}"; done
     } > "$f.tmp" && mv -f "$f.tmp" "$f"
     RES_TS=""
 }
 load_result() {
-    R_TS=0; R_STATUS=""; R_DEDUCT=0; R_ISSUES=""; R_SUMMARY=""; R_CURVE=""
+    R_TS=0; R_STATUS=""; R_DEDUCT=0; R_ISSUES=""; R_SUMMARY=""; R_CURVE=""; R_BATCH=""; R_ATA=""; R_ATA_PENDING=""; R_CRC=""
     local f="$STATE_DIR/$1/$2.env"
     [[ -r $f ]] || return 1
     read_record "$f" result
@@ -606,14 +607,14 @@ quick_save() {  # id [status] summary
     else
         if [[ $st == na ]]; then info "$sum"; else ok "未发现异常"; fi
     fi
-    save_result "$id" quick "$st" "$sum"
+    save_result "$id" quick "$st" "$sum" "R_ATA=$QUICK_ATA" "R_ATA_PENDING=${QUICK_ATA_PENDING:-0}" "R_CRC=${QUICK_CRC:-0}"
 }
 
 quick_one() {
     local name=$1 dev="/dev/$1" id=${DID[$1]}
     local i; i=$(di "$name")
     local size=${D_SIZE[$i]:-?} model=${D_MODEL[$i]:-?} rota=${D_ROTA[$i]:-?} tran=${D_TRAN[$i]:-?}
-    CUR_DED=0; CUR_ISS=()
+    CUR_DED=0; CUR_ISS=(); QUICK_ATA=""; QUICK_CRC=""
 
     head1 "快速体检 · $dev  ($model)"
 
@@ -709,7 +710,16 @@ quick_one() {
     (( cmdto > 65535 )) && cmdto=$(( cmdto & 0xFFFF ))
 
     # 上次体检记录（history.csv: ts,poh,reall,pend,offl,runc,crc,temp,cmdto）与维修基线
-    local hist="$STATE_DIR/$id/history.csv" has_prev=0
+    local hist="$STATE_DIR/$id/history.csv" has_prev=0 prior_ata="" prior_crc="" ata_pending=0
+    QUICK_ATA_PENDING=0
+    if load_result "$id" quick; then
+        prior_ata=$R_ATA; prior_crc=$R_CRC
+        # Missing legacy provenance cannot establish that a historical ATA error
+        # was ever attributed and resolved. A stable counter is not clearance.
+        if [[ $R_ATA_PENDING == 1 || ( -z $R_ATA_PENDING && $R_ATA =~ ^[0-9]+$ && $R_ATA -gt 0 ) ]]; then
+            ata_pending=1; QUICK_ATA_PENDING=1
+        fi
+    fi
     local h_ts="" h_poh="" h_reall="" h_pend="" h_offl="" h_runc="" h_crc="" h_cmdto=""
     if [[ -s $hist ]]; then
         IFS=, read -r h_ts h_poh h_reall h_pend h_offl h_runc h_crc _ h_cmdto < <(tail -n1 "$hist")
@@ -721,6 +731,11 @@ quick_one() {
     fi
     local P_TS=0 P_NOTE="" P_CRC="" P_CMDTO=""
     [[ -r $STATE_DIR/$id/repair.env ]] && read_record "$STATE_DIR/$id/repair.env" repair
+    # An automatic batch snapshot is not evidence that a repair took place.
+    [[ $P_NOTE == '批处理复查（未注明）' ]] && P_CRC=""
+    # A quick check before the scan is the reference for the final check; do not
+    # replace that reference with a freshly written history row during the scan.
+    [[ -n $prior_crc ]] && h_crc=$prior_crc
 
     if (( is_nvme )); then
         local mde pused cw
@@ -826,19 +841,40 @@ quick_one() {
 
     #---- 7. 错误日志 ----
     head2 "7. SMART 错误日志"
-    local elog ecount
-    elog=$(sm "$name" -l error 2>/dev/null)
-    if grep -qi 'No Errors Logged' <<< "$elog"; then
-        ok "错误日志为空"
-    else
-        ecount=$(num "$(grep -m1 -iE 'ATA Error Count' <<< "$elog" | sed 's/[^0-9]*\([0-9]*\).*/\1/')")
+    local elog ecount="" elog_ok=0
+    if elog=$(sm "$name" -l error 2>/dev/null); then elog_ok=1; fi
+    if (( elog_ok )) && [[ $elog =~ ATA[[:space:]]Error[[:space:]]Count:[[:space:]]*([0-9]+) ]]; then
+        ecount=${BASH_REMATCH[1]}
+    elif (( elog_ok )) && grep -qi 'No Errors Logged' <<< "$elog"; then
+        ecount=0
+    fi
+    QUICK_ATA=$prior_ata
+    if [[ -n $ecount ]]; then
+        if [[ -z $prior_ata ]] || (( ecount > prior_ata )); then QUICK_ATA=$ecount; fi
         if (( ecount > 0 )); then
-            bad "SMART 错误日志中有 $ecount 条记录（最近几条见下）"
+            warn "SMART ATA 错误日志累计 $ecount 条（历史计数，需结合新增记录与错误类型）"
             dump "$(grep -A3 -E '^Error [0-9]+ ' <<< "$elog" | head -n 16)"
-            pen $(( ecount>20 ? 20 : 10 )) "错误日志 $ecount 条"
-        else
-            info "未解析到明确的错误计数（SAS/NVMe 请参考上方计数）"
+            if [[ -n $prior_ata ]] && (( ecount > prior_ata )); then
+                bad "本次新增 ATA 错误 $((ecount-prior_ata)) 条"
+                pen 20 "ATA 错误新增 +$((ecount-prior_ata))"
+            elif [[ -z $prior_ata ]]; then
+                ata_pending=1
+            else
+                info "较上次体检未新增 ATA 错误；历史记录保留"
+            fi
+        elif [[ -z $prior_ata || $prior_ata == 0 ]]; then
+            ok "错误日志计数为 0"
         fi
+        if [[ -n $prior_ata ]] && (( ecount < prior_ata )); then
+            warn "ATA 日志计数下降（$prior_ata → $ecount），不能据此认定历史风险已修复"
+        fi
+    else
+        warn "ATA 错误日志读取失败或计数无法解析，不能确认当前错误计数"
+        [[ -z $prior_ata ]] && pen 5 "ATA 错误日志未验证"
+    fi
+    if (( ata_pending )); then
+        QUICK_ATA_PENDING=1
+        pen 5 "ATA 错误累计 ${QUICK_ATA:-未知}（原因未明，待复查）"
     fi
 
     #---- 8. 自检历史（只读，不启动新自检）----
@@ -851,8 +887,10 @@ quick_one() {
         last=$(grep -m1 -E '^#[[:space:]]*1[[:space:]]' <<< "$slog")
         info "最近一次 : ${last:-无记录}"
         grep -qiE 'failure|servo|handling damage' <<< "$slog" && warn "自检历史中存在失败记录（在自检项中计分）"
-        record_selftest "$name" "$id" short "$poh" newer
-        record_selftest "$name" "$id" long  "$poh" newer
+        if [[ -z $RESULT_BATCH ]]; then
+            record_selftest "$name" "$id" short "$poh" newer
+            record_selftest "$name" "$id" long  "$poh" newer
+        fi
     fi
 
     #---- 9. 配置项 ----
@@ -890,6 +928,7 @@ quick_one() {
     if (( P_TS > 0 )); then
         info "维修记录 : $(age_str "$P_TS")，${P_NOTE}；维修后 CRC $(( crc - ${P_CRC:-$crc} >= 0 ? crc - ${P_CRC:-$crc} : 0 )) 次新增"
     fi
+    QUICK_CRC=$crc
     printf '%s,%s,%s,%s,%s,%s,%s,%s,%s\n' "$(now)" "$poh" "$reall" "$pend" "$offl" "$runc" "$crc" "$temp" "$cmdto" >> "$hist"
 
     local sum="无异常"
@@ -966,6 +1005,13 @@ record_selftest() {
     return 0
 }
 
+selftest_new_record() {
+    [[ $1 =~ ^#[[:space:]]*[0-9]+[[:space:]] && $1 != "$2" ]] || return 1
+    ST_LINE=$1
+    selftest_classify
+    [[ $ST_STATUS != running && $ST_STATUS != incomplete ]]
+}
+
 selftest_running() {
     sm "$1" -c 2>/dev/null | grep -qi 'in progress' && return 0
     sm "$1" -l selftest 2>/dev/null | grep -m1 -E '^#' | grep -qi 'in progress'
@@ -1039,6 +1085,7 @@ mod_selftest() {
     local mod="selftest_$type" label name id poh mins
     label=${MOD_LABEL[$mod]}
     local -a run=()
+    local -A started=() previous_line=()
     head1 "$label"
     [[ $type == long ]] && info "长自检由硬盘固件逐扇区读取整个盘面，期间硬盘可正常使用，但会变慢"
     for name in "$@"; do
@@ -1046,7 +1093,7 @@ mod_selftest() {
         id=${DID[$name]}
         if [[ ${DOPT_CACHE[$name]} == "__FAIL__" ]]; then warn "/dev/$name SMART 不可用，跳过"; continue; fi
         poh=$(get_poh "$name")
-        record_selftest "$name" "$id" "$type" "$poh" newer
+        [[ -z $RESULT_BATCH ]] && record_selftest "$name" "$id" "$type" "$poh" newer
 
         if selftest_running "$name"; then
             info "/dev/$name 当前已有自检在进行（剩余 $(selftest_remaining "$name")%）"
@@ -1062,7 +1109,10 @@ mod_selftest() {
             dec_note "$name" "$mod" || continue
         fi
         mins=$(selftest_minutes "$name" "$type")
+        selftest_latest "$name" "$type" || :
+        previous_line[$name]=$ST_LINE
         if sm "$name" -t "$type" >/dev/null 2>&1; then
+            started[$name]=1
             ok "/dev/$name 已启动，硬盘预计需要 ${mins:-?} 分钟"
             run+=("$name")
         else
@@ -1086,6 +1136,17 @@ mod_selftest() {
             save_result "$id" "$mod" running "运行中（开始于 $(printf '%(%m-%d %H:%M)T' -1)）"
             info "/dev/$name  仍在运行"
             continue
+        fi
+        # A finished old firmware log entry is not proof that this batch's
+        # newly launched test completed (firmware timestamps may be coarse).
+        if [[ -n $RESULT_BATCH ]]; then
+            selftest_latest "$name" "$type" || :
+            if [[ -z ${started[$name]:-} ]] || ! selftest_new_record "$ST_LINE" "${previous_line[$name]:-}"; then
+                CUR_DED=0; CUR_ISS=()
+                save_result "$id" "$mod" incomplete "本轮自检无新增完成记录"
+                warn "/dev/$name 本轮自检无新增完成记录"
+                continue
+            fi
         fi
         record_selftest "$name" "$id" "$type" "$(get_poh "$name")" force
         load_result "$id" "$mod"
@@ -1422,10 +1483,10 @@ surface_finalize() {
     fi
 
     (( S_ERR > 0 ))   && { bad "发现 $S_ERR 个不可读块 —— 存在实际坏道"; pen 40 "表面读错误 $S_ERR 块"; }
-    if   (( S_VSLOW > 5 )); then bad "极慢块 $S_VSLOW 个，存在较多弱扇区"; pen 25 "极慢块 $S_VSLOW"
-    elif (( S_VSLOW > 0 )); then warn "极慢块 $S_VSLOW 个（弱扇区征兆）"; pen 15 "极慢块 $S_VSLOW"; fi
-    if   (( S_SLOW > S_TOTAL/200 && S_SLOW > 0 )); then warn "慢块 $S_SLOW 个，占比偏高"; pen 10 "慢块 $S_SLOW"
-    elif (( S_SLOW > 0 )); then info "慢块 $S_SLOW 个，占比很小，可结合其它项判断"; pen 3; fi
+    if   (( S_VSLOW > 5 )); then warn "极慢块 $S_VSLOW 个，持续性能异常，需复测排查"; pen 20 "极慢读 $S_VSLOW 块（性能异常）"
+    elif (( S_VSLOW > 0 )); then warn "极慢块 $S_VSLOW 个，单次慢读不等于介质损坏，建议空闲时复测"; pen 2 "极慢读 $S_VSLOW 块（性能提示，建议复测）"; fi
+    if   (( S_SLOW > S_TOTAL/200 && S_SLOW > 0 )); then warn "慢块 $S_SLOW 个，占比偏高，建议空闲时复测"; pen 8 "广泛慢读 $S_SLOW 块"
+    elif (( S_SLOW > 0 )); then info "慢块 $S_SLOW 个，占比很小，建议结合空闲复测"; fi
     (( S_TRANS >= 5 && S_TRANS*100 > S_TOTAL )) && info "复测后恢复正常的块较多（${S_TRANS}），扫描期间可能有其它 I/O 干扰"
     (( S_ERR + S_VSLOW + S_SLOW == 0 )) && ok "全盘读取无慢块、无错误"
 
@@ -1606,7 +1667,7 @@ has_results() { compgen -G "$STATE_DIR/$1/*.env" | grep -qvE '/(meta|repair)\.en
 # 清除检测结果与报告；保留 SMART 计数历史(history.csv)与维修记录
 clear_results() {
     local id=$1
-    rm -f "$STATE_DIR/$id"/{quick,selftest_short,selftest_long,speed,surface,badblocks,iface}.env \
+    rm -f "$STATE_DIR/$id"/{quick,selftest_short,selftest_long,speed,surface,badblocks,iface,full}.env \
           "$STATE_DIR/$id"/surface.state "$STATE_DIR/$id"/surface.map \
           "$STATE_DIR/$id"/*.txt "$STATE_DIR/$id/reports.log"
 }
@@ -1785,22 +1846,33 @@ mod_iface() {
 #  综合报告
 #==============================================================================
 compute_overall() {
-    local name=$1 id=${DID[$1]} m age have_q=0 have_l=0 have_s=0 have_o=0 stale=0 any=0 it
+    local name=$1 id=${DID[$1]} m age have_q=0 have_short=0 have_l=0 have_speed=0 have_s=0 have_o=0 stale=0 any=0 it marker=""
+    local full_ts=0
+    if load_result "$id" full && [[ $R_STATUS == good && -n $R_BATCH ]] \
+       && (( $(now) - R_TS <= VALID_DAYS*86400 && R_TS <= $(now) )); then
+        marker=$R_BATCH; full_ts=$R_TS
+    fi
+    # A later repair/verification invalidates the prior full snapshot until a
+    # new quick check and full set are recorded; report viewing never rewrites it.
+    if [[ -n $marker ]] && load_result "$id" iface \
+       && [[ $R_BATCH != "$marker" ]] && (( R_TS >= full_ts )); then marker=""; fi
     OV_SCORE=100; OV_ISS=(); OV_ROWS=()
     for m in "${MODS[@]}"; do
         load_result "$id" "$m" || continue
-        if [[ $m == selftest_* && $R_STATUS == running && ${DOPT_CACHE[$name]} != "__FAIL__" ]]; then
-            if ! selftest_running "$name"; then
-                record_selftest "$name" "$id" "${m#selftest_}" "$(get_poh "$name")" force
-                load_result "$id" "$m"
-            fi
-        fi
         any=1
         age=$(( $(now) - R_TS ))
-        (( age > VALID_DAYS*86400 )) && stale=1
+        (( age > VALID_DAYS*86400 || age < 0 )) && stale=1
+        if [[ -z $marker || $R_BATCH != "$marker" ]] || (( age > VALID_DAYS*86400 || age < 0 )); then
+            OV_ROWS+=("$m|$R_TS|历史/待复查|$R_DEDUCT|$R_SUMMARY")
+            [[ -n $R_ISSUES ]] && OV_ISS+=("历史待复查（${MOD_LABEL[$m]}）：$R_ISSUES")
+            continue
+        fi
         OV_ROWS+=("$m|$R_TS|$R_STATUS|$R_DEDUCT|$R_SUMMARY")
         case $R_STATUS in
             good|warn|bad)
+                # An anomalous failed result with no recorded penalty cannot
+                # masquerade as a healthy completed assessment.
+                [[ $R_STATUS == bad && $R_DEDUCT == 0 ]] && { stale=1; continue; }
                 OV_SCORE=$(( OV_SCORE - R_DEDUCT ))
                 if [[ -n $R_ISSUES ]]; then
                     local -a arr; IFS=';' read -ra arr <<< "$R_ISSUES"
@@ -1808,25 +1880,30 @@ compute_overall() {
                 fi
                 case $m in
                     quick) have_q=1 ;;
+                    selftest_short) have_short=1 ;;
                     selftest_long) have_l=1 ;;
-                    surface|badblocks) have_s=1 ;;
+                    speed) have_speed=1 ;;
+                    surface) have_s=1 ;;
                     *) have_o=1 ;;
                 esac ;;
         esac
     done
     (( OV_SCORE < 0 )) && OV_SCORE=0
+    if (( have_s )) && { ! surface_load "$STATE_DIR/$id/surface.state" || (( ! S_DONE || S_NEXT != S_TOTAL || S_TOTAL == 0 )); }; then
+        have_s=0
+    fi
     OV_STALE=$stale
     if   (( ! any )); then OV_COVER="未评估"
-    elif (( have_q && have_l && have_s )); then OV_COVER="完整"
+    elif (( have_q && have_short && have_l && have_speed && have_s && ! stale )); then OV_COVER="完整"
     elif (( have_q && (have_l || have_s || have_o) )); then OV_COVER="标准"
     elif (( have_q )); then OV_COVER="基础"
     else OV_COVER="部分"; fi
-    if   (( ! any ));          then OV_GRADE="未评估";        OV_COLOR=""; OV_LEVEL=0
+    if [[ $OV_COVER != 完整 ]]; then
+        OV_SCORE="-"; OV_GRADE="部分/未知（需完成本轮全检）"; OV_COLOR=""; OV_LEVEL=1
     elif (( OV_SCORE >= 90 )); then OV_GRADE="良好";          OV_COLOR=$C_GRN; OV_LEVEL=0
     elif (( OV_SCORE >= 75 )); then OV_GRADE="注意(建议观察)"; OV_COLOR=$C_YEL; OV_LEVEL=1
     elif (( OV_SCORE >= 50 )); then OV_GRADE="警告(尽快备份)"; OV_COLOR=$C_YEL; OV_LEVEL=1
     else                            OV_GRADE="危险(建议更换)"; OV_COLOR=$C_RED; OV_LEVEL=2; fi
-    (( ! any )) && OV_SCORE="-"
 }
 
 report_table() {
@@ -1858,7 +1935,7 @@ mod_report() {
         head2 "结论"
         out "    健康评分 : ${OV_COLOR}${OV_SCORE}/100${OV_COLOR:+$C_OFF}"
         out "    健康等级 : ${OV_COLOR}${OV_GRADE}${OV_COLOR:+$C_OFF}"
-        out "    评估完整度: ${OV_COVER}  ${C_DIM}(完整 = 快速体检 + 长自检 + 全盘扫描)${C_OFF}"
+        out "    评估完整度: ${OV_COVER}  ${C_DIM}(完整 = 快速体检 + 短/长自检 + 读性能曲线 + 全盘扫描)${C_OFF}"
         (( OV_STALE )) && warn "部分结果已超过 ${VALID_DAYS} 天有效期，建议重新检测"
         if (( ${#OV_ISS[@]} )); then
             out "    发现问题 :"; for it in "${OV_ISS[@]}"; do out "      - $it"; done
@@ -1877,7 +1954,7 @@ mod_report() {
             info "• 接口复查（$(age_str "$R_TS")）：$R_SUMMARY"
         fi
         [[ $joined == *温度* ]] && info "• 温度问题：改善风道或加装风扇，机械盘理想工作温度 25-45°C"
-        [[ $joined == *极慢块* || $joined == *慢块* || $joined == *凹陷* ]] && info "• 存在弱扇区：目前能读出但需重试，属早期劣化信号，重要数据需多份备份"
+        [[ $joined == *极慢读* || $joined == *慢读* || $joined == *凹陷* ]] && info "• 慢读是性能提示，不等于坏道；记录次数和阈值（附近速度的 50%/20%），空闲时复测"
         case $OV_COVER in
             基础|部分) info "• 目前只做了基础检查，看不到盘面状态；建议运行 [F] 一键完整评估" ;;
             标准) info "• 尚未完成长自检或全盘扫描，结论置信度中等；可运行 [F] 补齐" ;;
@@ -2071,6 +2148,34 @@ menu_select() {
 #==============================================================================
 #  一键完整评估
 #==============================================================================
+# Only a completed, same-run set of measurements may receive a current score.
+begin_full_batch() {
+    RESULT_BATCH="$(now).$BASHPID"
+    FULL_BATCH=$RESULT_BATCH
+}
+finish_full_batch() {
+    local name id m complete
+    (( INTERRUPTED )) && return 0
+    for name in "$@"; do
+        id=${DID[$name]}; complete=1
+        # Repeat SMART after the long read: keep the initial quick result as the
+        # comparison reference until the final measurement has been saved.
+        quick_one "$name"
+        for m in quick selftest_short selftest_long speed surface; do
+            if ! load_result "$id" "$m" || [[ $R_BATCH != "$FULL_BATCH" || ! $R_STATUS =~ ^(good|warn|bad)$ ]]; then
+                complete=0; break
+            fi
+        done
+        if (( complete )) && surface_load "$STATE_DIR/$id/surface.state" && (( S_DONE && S_NEXT == S_TOTAL )); then
+            CUR_DED=0; CUR_ISS=()
+            save_result "$id" full good "本轮完整评估完成"
+        else
+            rm -f -- "$STATE_DIR/$id/full.env"
+            warn "/dev/$name 本轮缺少有效检测项（沿用/中断/不可用），仅显示历史与部分结果"
+        fi
+    done
+    RESULT_BATCH=""; FULL_BATCH=""
+}
 plan_full() {
     PLAN=(); PLAN_RECHECK=""
     local name id poh
@@ -2121,11 +2226,13 @@ mod_full() {
         bg_launch "$(join_by , "${names[@]}")" -r full && { PLAN=(); PLAN_RECHECK=""; return; }
     fi
 
+    begin_full_batch
     mod_quick "${names[@]}";                       [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
     mod_selftest short 0 "${names[@]}";            [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
     mod_selftest long 0 "${names[@]}";             [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
     mod_speed "${names[@]}";                       [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
     mod_surface "${names[@]}";                     [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
+    finish_full_batch "${names[@]}"
     PLAN=(); PLAN_RECHECK=""
     mod_report "${names[@]}"
 }
@@ -2530,9 +2637,13 @@ if (( BATCH )); then
             speed)     mod_speed "${SELECTED[@]}" ;;
             surface)   mod_surface "${SELECTED[@]}" ;;
             badblocks) mod_badblocks "${SELECTED[@]}" ;;
-            full)      mod_quick "${SELECTED[@]}"; mod_selftest short 0 "${SELECTED[@]}"
-                       mod_selftest long 0 "${SELECTED[@]}"; mod_speed "${SELECTED[@]}"
-                       mod_surface "${SELECTED[@]}" ;;
+            full)      begin_full_batch
+                       mod_quick "${SELECTED[@]}"; (( INTERRUPTED )) && continue
+                       mod_selftest short 0 "${SELECTED[@]}"; (( INTERRUPTED )) && continue
+                       mod_selftest long 0 "${SELECTED[@]}"; (( INTERRUPTED )) && continue
+                       mod_speed "${SELECTED[@]}"; (( INTERRUPTED )) && continue
+                       mod_surface "${SELECTED[@]}"; (( INTERRUPTED )) && continue
+                       finish_full_batch "${SELECTED[@]}" ;;
             iface)     mod_iface "${SELECTED[@]}" ;;
             report)    : ;;
             *)         out "未知检测项: $r（可用 quick,short,long,speed,surface,badblocks,full）" ;;

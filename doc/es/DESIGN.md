@@ -1,6 +1,6 @@
 # hdd-health-check — Diseño
 
-Este documento describe el comportamiento, las restricciones y el estado en el equipo anfitrión de la integración v2.2.0. El código fuente de v2.2.0 está disponible en este repositorio público de GitHub. El usuario informa de pruebas en una máquina real, sin indicar dispositivos, entorno ni alcance; no hay etiqueta v2.2.0 ni GitHub Release.
+Este documento describe el comportamiento, las restricciones y el estado en el equipo anfitrión de la integración `v2.3.0`. Esta documentación describe `v2.3.0`. Consulta GitHub Releases para ver las versiones etiquetadas y las descargas. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
 
 ## Multi-language
 
@@ -23,6 +23,8 @@ Este documento describe el comportamiento, las restricciones y el estado en el e
 ## Architecture
 
 Un único script Bash 4.3+ enumera discos con `lsblk`, selecciona destinos mediante menú o CLI, comprueba el acceso SMART con `smartctl`, ejecuta los módulos solicitados y genera un informe compuesto. Los atributos SMART de ATA y los contadores de defectos/errores de SAS/SCSI siguen rutas de puntuación distintas. La comprobación rápida incluye información sobre montajes y registros del kernel; las comprobaciones de velocidad, superficie e interfaz utilizan lecturas directas del dispositivo. Los resultados y la identidad de cada dispositivo se conservan para que las comprobaciones posteriores puedan reutilizarlos. Las decisiones interactivas pueden transferirse a un proceso por lotes mediante un plan restringido; un bloqueo privado impide que varias instancias utilicen simultáneamente el mismo directorio de estado. Una unidad transitoria de `systemd-run` gestiona las tareas desacopladas cuando está disponible; `--status` y `--stop` consultan la instancia registrada.
+
+Un lote completo marca la prueba SMART rápida, corta y larga, el muestreo de velocidad y la exploración de superficie terminada bajo un mismo identificador; repite SMART/ATA/CRC al final. Solo los resultados completos, válidos y del mismo lote permiten una puntuación global numérica. Reutilización, interrupción, caducidad, estado antiguo sin marcador y verificación posterior de interfaz dejan los registros anteriores como históricos/pendientes de revisión y el grado general parcial/desconocido; consultar un informe no actualiza la base de comparación rápida. La verificación de interfaz registra aparte si se resolvió el problema; no atribuye de nuevo errores antiguos ni convierte el lote anterior en actual. Un total ATA sin contador previo conserva un descuento de 5 puntos por riesgo no resuelto en revisiones y evaluaciones completas posteriores, también si el registro antiguo carece del campo de riesgo. Una subida resta 20 puntos; la estabilidad no es un nuevo error ni prueba una reparación, y la verificación de interfaz sola no atribuye los errores ATA antiguos a ella. Las lecturas lentas aisladas exigen revisar el rendimiento, no diagnostican sectores defectuosos; los fallos repetidos de lectura de superficie siguen restando 40 puntos. Son pesos heurísticos, no probabilidades de fallo.
 
 ## Design Constraints
 

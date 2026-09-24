@@ -1,6 +1,6 @@
 # hdd-health-check
 
-Cet outil Bash exécuté avec les droits root évalue l'état des disques durs sous Debian/Ubuntu à partir des données SMART et de contrôles du disque en lecture seule. Le code source de v2.2.0 est disponible dans ce dépôt GitHub public. L’utilisateur indique l’avoir testé sur une machine réelle, sans préciser les appareils, l’environnement ni les tests effectués ; il n’existe ni tag v2.2.0 ni GitHub Release.
+Cet outil Bash exécuté avec les droits root évalue l'état des disques durs sous Debian/Ubuntu à partir des données SMART et de contrôles du disque en lecture seule. Cette documentation décrit `v2.3.0`. Consultez GitHub Releases pour les versions étiquetées et les téléchargements. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
 
 ## Multi-language
 
@@ -19,6 +19,8 @@ Le menu interactif ou l'interface en ligne de commande par lots sélectionne les
 
 **La lecture seule concerne les données du disque cible, pas l'hôte.** Le programme écrit sur l'hôte des journaux, paramètres, données de progression et historiques ; il peut activer SMART, lancer des autotests internes au disque, lire des périphériques entiers sous charge soutenue, installer des paquets après confirmation et démarrer des unités systemd transitoires. Il ne remplace pas les sauvegardes. Aucune analyse de surface avec écriture destructive, aucun effacement ni aucune écriture dans le système de fichiers n'est implémenté.
 
+L'évaluation complète répète SMART/ATA/CRC après les lectures prolongées. Le score global de 0 à 100 n'apparaît que si les contrôles rapide, court, long, de vitesse et de surface terminée appartiennent au même lot, sont complets et non expirés. Les résultats réutilisés, interrompus, expirés ou anciens restent visibles comme historiques, avec une catégorie partielle/inconnue ; consulter un rapport n'actualise pas la référence. Après réparation, vérifiez l'interface séparément puis reprenez l'évaluation complète pour obtenir un nouveau score ; la résolution n'efface pas les anciennes erreurs. Un premier total d'erreurs ATA de cause inconnue conserve une pénalité de 5 points pour risque non résolu lors des contrôles suivants, même après une évaluation complète. Une hausse retire 20 points ; un compteur stable n'est ni une nouvelle erreur ni une preuve de résolution. La vérification de l'interface seule n'attribue pas les anciennes erreurs ATA à une réparation. Les lectures lentes isolées appellent un nouveau test de performances, sans prouver la présence de secteurs défectueux ; les erreurs de lecture confirmées de surface retirent toujours 40 points. Sauvegardez les données avant de tester un disque suspect.
+
 ## Requirements
 
 - Minimum : droits root, Bash 4.3+, utilitaires Linux de périphériques blocs (`lsblk`, `blockdev`), `smartctl` (`smartmontools`), `dd` (`coreutils`) et `flock` ; Debian/Ubuntu est la plateforme visée. Les autres distributions déclenchent un avertissement ; l'installation automatique des dépendances utilise `apt-get`.
@@ -33,8 +35,10 @@ Depuis une copie de travail fiable, lancez `sudo bash ./hdd-health-check.sh --he
 
 ### Normal Install
 
+Ce clonage sélectionne le tag de la version v2.3.0, et non la branche de développement mobile `main`.
+
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help

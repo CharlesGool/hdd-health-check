@@ -7,11 +7,11 @@ trap 'rm -rf -- "$tmp"' EXIT
 export HDD_STATE_DIR="$tmp/state" HDD_LOG_DIR="$tmp/log"
 mkdir -m 700 "$HDD_STATE_DIR" "$HDD_LOG_DIR"
 bash ./hdd-health-check.sh --help > "$tmp/help"
-grep -q 'v2.2.0' "$tmp/help"
+grep -q 'v2.3.0' "$tmp/help"
 bash ./hdd-health-check.sh -w --help > "$tmp/wait-help"
-grep -q 'v2.2.0' "$tmp/wait-help"
+grep -q 'v2.3.0' "$tmp/wait-help"
 bash ./hdd-health-check.sh -t short --help > "$tmp/test-help"
-grep -q 'v2.2.0' "$tmp/test-help"
+grep -q 'v2.3.0' "$tmp/test-help"
 # Unknown CLI flags fail before dependency and disk probes.
 if bash ./hdd-health-check.sh --not-an-option > "$tmp/unknown" 2>&1; then exit 1; fi
 grep -q '未知参数' "$tmp/unknown"

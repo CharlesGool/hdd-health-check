@@ -1,6 +1,6 @@
 # hdd-health-check
 
-This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. The v2.2.0 source is available in this public GitHub repository. The user reports testing it on a real machine, but did not provide device, environment or test-coverage details. No v2.2.0 tag or GitHub Release exists.
+This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. This documentation describes `v2.3.0`. See GitHub Releases for tagged versions and downloads. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
 
 ## Multi-language
 
@@ -16,6 +16,8 @@ This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data
 ## Introduction
 
 The interactive menu or batch CLI selects drives, performs a quick SMART, mount and kernel-log assessment, and reports a heuristic 0–100 score and risk grade. Other modules offer SMART short/long self-tests, sampled read-speed profiling, resumable full-disk read-latency scanning with optional targeted `badblocks` recheck, full-disk read-only `badblocks`, and post-repair interface read testing. The full assessment runs quick, short, long, speed and surface checks; it does not include the separate full-disk `badblocks` or interface module. Results can be reused, compared against SMART counter history, and assembled into a report. See [known issues](doc/LOG.md#bugs) and [goals](doc/DESIGN.md#design-goals).
+
+A complete assessment repeats the quick SMART/ATA/CRC check after the long reads. A 0–100 composite score is shown only when the required quick, short, long, speed and completed surface checks belong to the same unexpired assessment batch. Reused, interrupted, expired and older-format results remain visible as historical evidence, but yield a partial/unknown grade instead of a current score; reviewing a report does not refresh the baseline. After interface repair, use the separate interface verification and repeat the full assessment to establish a new score. A resolved interface check does not erase historical errors. An ATA error count with no prior comparison is an unresolved unknown cause (5-point deduction), retained across repeated checks and full assessments; a stable counter alone does not prove resolution. Newly increased ATA errors deduct 20 points; unchanged historical counts do not count as new errors. Existing interface verification does not attribute ATA errors to an interface repair. Sparse slow surface reads are performance prompts to retest, not proof of bad sectors; confirmed read errors remain medium-risk evidence (40-point surface deduction). Back up important data before testing a suspect drive.
 
 **Read-only refers to target disk data, not the host.** The program writes logs, settings, progress and history on the host; it can enable SMART, launch drive-internal self-tests, read whole devices under sustained load, install packages after confirmation, and start transient systemd units. Do not use it as a substitute for backups. No destructive write-mode surface scan, erase or filesystem write is implemented.
 
@@ -33,8 +35,10 @@ From a trusted checkout, run `sudo bash ./hdd-health-check.sh --help` to inspect
 
 ### Normal Install
 
+The following checkout selects the v2.3.0 release tag, not the moving development `main` branch.
+
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help

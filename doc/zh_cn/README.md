@@ -1,6 +1,6 @@
 # hdd-health-check
 
-这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况。v2.2.0 源码已在公开的 GitHub 仓库中提供。用户报告已在实机测试，但未提供设备、环境和测试范围；尚无 v2.2.0 标签或 GitHub Release。
+这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况。 本文档介绍 `v2.3.0`。标签版本及下载请参见 GitHub Releases。用户报告旧版 `v2.2.0` 曾在实机运行，但未提供设备、环境及覆盖范围；新版 评分仅经过隔离模拟验证，未经真实 HDD 验证。
 
 ## 多语言
 
@@ -19,6 +19,8 @@
 
 **只读指的是目标磁盘数据，不是主机。**程序会在主机上写入日志、设置、进度和历史记录；还可能启用 SMART、启动磁盘内部自检、在持续负载下读取整个设备、经确认后安装软件包，以及启动临时 systemd 单元。不可用它替代备份。本工具未实现破坏性的写入模式盘面扫描、擦除或文件系统写入。
 
+完整评估在长时间读取后复查 SMART/ATA/CRC。只有同批次、未过期、已完成的快速、短程、长程、速度和盘面检查才显示 0–100 综合分数。复用、中断、过期或旧格式结果仍作为历史显示，但总体为部分／未知；查看报告不刷新基线。维修后应先做独立接口复查，再重新完成全检取得新分数；已解决不等于抹去旧错误。首次 ATA 累计错误原因未知，未解决的 5 分风险扣分在后续复查及全检后仍保留。新增错误扣 20 分；历史计数稳定既不是新错，也不能证明风险已解除。仅有接口复查不能证明旧 ATA 错误源于已修复的接口。零星慢读提示性能复测，并非坏扇区；确认的盘面读错仍扣 40 分。检查可疑磁盘前先备份。
+
 ## 运行要求
 
 - 最低要求：root、Bash 4.3+、Linux 块设备工具（`lsblk`、`blockdev`）、`smartctl`（`smartmontools`）、`dd`（`coreutils`）及 `flock`；目标平台为 Debian/Ubuntu。其他发行版会收到警告；自动安装依赖使用 `apt-get`。
@@ -33,8 +35,10 @@
 
 ### 常规安装
 
+以下检出固定于 v2.3.0 发布标签，而非持续变化的开发分支 `main`。
+
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help

@@ -1,6 +1,6 @@
 # hdd-health-check — Design
 
-This document describes the v2.2.0 integration's behavior, constraints and host-side state. The v2.2.0 source is available in this public GitHub repository. The user reports testing it on a real machine, but did not provide device, environment or test-coverage details. No v2.2.0 tag or GitHub Release exists.
+This document describes the `v2.3.0` behavior, constraints and host-side state. This documentation describes `v2.3.0`. See GitHub Releases for tagged versions and downloads. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
 
 ## Multi-language
 
@@ -23,6 +23,8 @@ This document describes the v2.2.0 integration's behavior, constraints and host-
 ## Architecture
 
 One Bash 4.3+ script enumerates disks with `lsblk`, chooses targets by menu or CLI, probes SMART access with `smartctl`, performs requested modules and generates a composite report. ATA SMART attributes and SAS/SCSI defect/error counters take separate scoring paths. The quick check includes mount and kernel-log evidence; speed, surface and interface checks use raw device reads. Results and per-device identity are persisted so later checks can reuse them. Interactive decisions can be transferred to a batch process via a constrained plan; a private lock prevents concurrent instances using the same state directory. A transient `systemd-run` unit handles detached jobs where available; `--status` and `--stop` consult the recorded instance.
+
+A full batch records quick, short and long SMART tests, speed sampling and a completed surface scan under one batch marker; it repeats the quick SMART/ATA/CRC probe at the end to capture post-scan changes. Only completed, valid results from that batch qualify for a numeric composite score. Reuse, interruption, expiry, legacy state without a batch marker and later interface verification leave older records visible as historical/pending review and the overall grade partial/unknown. Merely generating a report does not update the quick-check comparison baseline. Interface verification records its own resolved/unresolved conclusion; it does not reattribute old errors or make an old batch current. An ATA total with no previous quick-check counter is unresolved (5-point deduction); this risk persists through subsequent checks and complete assessments, including older records lacking a risk field. An increased total deducts 20 points; stability alone neither proves resolution nor makes an old error new. Interface verification cannot independently attribute ATA errors to an interface repair. Isolated slow reads prompt performance retesting rather than a bad-sector diagnosis; repeated surface read failures still deduct 40 points. These are heuristic weights, not failure probabilities.
 
 ## Design Constraints
 

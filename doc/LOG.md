@@ -1,6 +1,6 @@
 # hdd-health-check — Log
 
-This record preserves accepted historical decisions, known limitations and release history; the source is publicly available on GitHub, but v2.2.0 has no tag or GitHub Release.
+This record preserves accepted historical decisions, known limitations and release history. This documentation describes `v2.3.0`. See GitHub Releases for tagged versions and downloads. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
 
 ## Multi-language
 
@@ -16,6 +16,7 @@ This record preserves accepted historical decisions, known limitations and relea
 ## Bugs
 
 - [ ] The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Testing of root execution, package installation and systemd behavior is unconfirmed; previous v1.0.0 release checks also lacked a real HDD and SMART data (syntax and help only). The script was reportedly used before the original normalization, which is not a replacement for a controlled hardware test.
+- [ ] The revised batch scoring and final SMART/ATA/CRC recheck have only synthetic test coverage, not real-HDD validation of this code. Firmware self-test log time resolution and cross-run resumed scans can produce partial/unknown coverage; historical errors cannot be automatically reattributed after repair. This hardware-validation limitation remains disclosed; authorized HDD retesting remains recommended.
 - [ ] Heuristic health weights are not calibrated failure probabilities; SAS/SCSI scoring is less exercised than ATA and USB/RAID SMART passthrough may fail. Vendor-dependent temperature reporting is incomplete.
 - [ ] No structured JSON/CSV output. Nonconforming pre-existing v2.2 state is rejected. The current integration includes isolated mocks for custom `TMPDIR` instance detection/safe stop and invalid surface progress.
 - [x] v1.0.0 normalization corrected clone instructions pointing to the nonexistent `hdd-health-check-repo/main` path and mixed Traditional Chinese characters in the Simplified Chinese README.
@@ -32,7 +33,18 @@ This record preserves accepted historical decisions, known limitations and relea
 
 ## Changelog
 
-### Unreleased — v2.2.0 integration (no release date)
+### v2.3.0 — 2026-09-24
+
+#### Changed
+
+This release includes the previously untagged v2.2 integration: persistent per-drive results, SMART counter history, interactive and batch modules, resumable read-only surface scans, interface verification, optional transient systemd tasks, and safer data-only state parsing. It does not preserve v1 CLI or state compatibility: `-w/--wait` is ignored rather than waiting; back up host state before upgrading and restore matching state with an older script. The revised scoring below has synthetic, not real-HDD, coverage.
+
+#### Fixed
+
+- Recognize a newly completed first SMART self-test record; older, incomplete or wrong-type entries do not count as a completed new test.
+- Recheck SMART/ATA/CRC after a complete assessment; show a numeric composite score only for completed, unexpired checks in one batch. Keep legacy, reused, interrupted, expired or post-interface-verification old results as historical/pending review with partial/unknown overall grade, without wiping earlier risks or refreshing the baseline when viewing reports. Separate resolved interface verification from old penalties: unknown first ATA totals retain a 5-point unresolved-risk deduction across checks (also for legacy records without the risk field); newly increased totals deduct 20, and unchanged historical counts are not new errors or proof of resolution. Interface verification alone cannot attribute old ATA errors to a repaired interface. Sparse slow surface reads prompt performance retesting rather than a bad-sector finding; surface read errors still deduct 40. Synthetic scoring-state tests pass; this revised code has not been tested on a real HDD.
+
+### v2.2.0 — untagged integration history (not released)
 
 #### Added
 
@@ -41,7 +53,14 @@ This record preserves accepted historical decisions, known limitations and relea
 #### Changed
 
 - Default batch quick checks, reusable timed results and `--rescan`; `-r/--run` selects modules and `--status`/`--stop` manage a running instance. `-t short|long`, `-s` and `-b` map to modules; `-w/--wait` is ignored rather than waiting. New behavior is not v1 CLI compatibility.
-- Host state and logs are written separately; supplied v2.2.0 integration constrains state/plan parsing and path/device handling. The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Testing of root execution, package installation and systemd behavior is unconfirmed.
+- Host state and logs are written separately; v2.2.0 does not preserve v1 CLI or state compatibility. Back up host state before upgrading; restoring a previous script requires its matching state backup. State records use an allowlisted data-only format; incompatible records may be rejected.
+
+#### Fixed
+
+- Reject executable or malformed state records and symlinked state inputs, restrict background plans to validated fields and the private state directory, and validate device names and log/state paths to reduce unsafe file handling.
+- Treat invalid or incomplete surface checkpoints as new scans instead of calculating progress from a zero denominator; support custom `TMPDIR` in running-instance detection and safe stop.
+
+The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Root execution, package installation and systemd behavior have not been independently confirmed.
 
 ### v1.0.0 — 2026-08-08
 

@@ -1,6 +1,6 @@
 # hdd-health-check
 
-這款以 root 身分執行的 Bash 工具透過 SMART 資料與唯讀磁碟檢查，在 Debian/Ubuntu 上評估 HDD 健康狀態。v2.2.0 原始碼已在公開的 GitHub 儲存庫提供。使用者表示已在實機測試，但未提供裝置、環境及測試範圍；目前沒有 v2.2.0 標籤或 GitHub Release。
+這款以 root 身分執行的 Bash 工具透過 SMART 資料與唯讀磁碟檢查，在 Debian/Ubuntu 上評估 HDD 健康狀態。 本文件介紹 `v2.3.0`。標籤版本及下載請參閱 GitHub Releases。使用者表示舊版 `v2.2.0` 曾在實機執行，但未提供裝置、環境與測試範圍；新版 評分僅通過隔離模擬驗證，未經實體 HDD 驗證。
 
 ## 多語言
 
@@ -19,6 +19,8 @@
 
 **唯讀僅指目標磁碟上的資料，不代表不會更動主機。**程式會在主機上寫入日誌、設定、進度與歷史紀錄；它可能啟用 SMART、啟動磁碟內部的自我測試、持續負載讀取整個裝置、在確認後安裝套件，以及啟動暫時性 systemd 單元。請勿用它取代備份。本工具未實作具破壞性的寫入模式磁碟表面掃描、清除資料或寫入檔案系統。
 
+完整評估在長時間讀取後複查 SMART/ATA/CRC。只有同批次、未過期、已完成的快速、短測、長測、速度和表面檢查才顯示 0–100 綜合分數。重複使用、中斷、過期或舊格式結果仍作歷史顯示，但整體為部分／未知；檢視報告不更新基準。維修後應先做獨立介面複查，再重新完成全套評估取得新分數；已解決不等於抹去舊錯誤。首次 ATA 累計錯誤原因未明，未解決風險的 5 分扣分在後續複查及全套評估後仍會保留。新增錯誤扣 20 分；歷史計數穩定既不是新錯，也不能證明風險已解除。僅有介面複查不能證明舊 ATA 錯誤源於已修復的介面。零星慢讀提示效能重測，並非壞磁區；確認的表面讀取錯誤仍扣 40 分。檢查可疑磁碟前先備份。
+
 ## 系統需求
 
 - 最低需求：root、Bash 4.3+、Linux 區塊裝置工具（`lsblk`、`blockdev`）、`smartctl`（`smartmontools`）、`dd`（`coreutils`）及 `flock`；預期使用平台為 Debian/Ubuntu。其他發行版會收到警告；自動安裝相依套件時使用 `apt-get`。
@@ -33,8 +35,10 @@
 
 ### 一般安裝
 
+以下檢出固定於 v2.3.0 發布標籤，而非持續變動的開發分支 `main`。
+
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
