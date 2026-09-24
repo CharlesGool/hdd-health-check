@@ -1,6 +1,6 @@
 # hdd-health-check — Diseño
 
-Este documento describe el comportamiento, las restricciones y el estado en el equipo anfitrión de la integración v2.2.0; esta versión no se ha publicado ni probado con HDD reales en esta integración.
+Este documento describe el comportamiento, las restricciones y el estado en el equipo anfitrión de la integración v2.2.0. El código fuente de v2.2.0 está disponible en este repositorio público de GitHub. El usuario informa de pruebas en una máquina real, sin indicar dispositivos, entorno ni alcance; no hay etiqueta v2.2.0 ni GitHub Release.
 
 ## Multi-language
 

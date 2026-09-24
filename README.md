@@ -1,6 +1,6 @@
 # hdd-health-check
 
-This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. The v2.2.0 script is integrated here but **not released or validated on real hardware**.
+This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. The v2.2.0 source is available in this public GitHub repository. The user reports testing it on a real machine, but did not provide device, environment or test-coverage details. No v2.2.0 tag or GitHub Release exists.
 
 ## Multi-language
 

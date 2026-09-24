@@ -1,6 +1,6 @@
 # hdd-health-check — Design
 
-This document describes the v2.2.0 integration's behavior, constraints and host-side state; this version has not been released or exercised on real HDDs in this integration.
+This document describes the v2.2.0 integration's behavior, constraints and host-side state. The v2.2.0 source is available in this public GitHub repository. The user reports testing it on a real machine, but did not provide device, environment or test-coverage details. No v2.2.0 tag or GitHub Release exists.
 
 ## Multi-language
 

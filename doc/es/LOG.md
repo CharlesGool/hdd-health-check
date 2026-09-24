@@ -1,6 +1,6 @@
 # hdd-health-check — Registro
 
-Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones; v2.2.0 está integrado localmente, pero no se ha publicado.
+Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones; el código fuente está disponible públicamente en GitHub, pero v2.2.0 no tiene etiqueta ni GitHub Release.
 
 ## Multi-language
 
@@ -15,9 +15,9 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 ## Bugs
 
-- [ ] La integración con HDD reales, la ejecución como root e instalación de paquetes, y el comportamiento de systemd siguen sin verificarse en esta integración; las comprobaciones de la versión anterior v1.0.0 tampoco contaron con un HDD real ni datos SMART (solo sintaxis y ayuda). Según los informes, el script se había utilizado antes de la normalización original, pero eso no sustituye una prueba controlada con hardware.
+- [ ] El usuario informa de pruebas de v2.2.0 en una máquina real, sin especificar dispositivos, entorno ni alcance; no se han confirmado pruebas de ejecución como root, instalación de paquetes ni comportamiento de systemd; las comprobaciones de la versión anterior v1.0.0 tampoco contaron con un HDD real ni datos SMART (solo sintaxis y ayuda). Según los informes, el script se había utilizado antes de la normalización original, pero eso no sustituye una prueba controlada con hardware.
 - [ ] Los pesos heurísticos de salud no son probabilidades de fallo calibradas; la puntuación SAS/SCSI se ha probado menos que la ATA y el acceso directo a SMART mediante USB/RAID puede fallar. La información de temperatura dependiente del fabricante es incompleta.
-- [ ] No hay salida estructurada JSON/CSV. Se rechaza el estado v2.2 preexistente que no se ajuste al formato; las pruebas simuladas y aisladas cubren la detección y parada segura de tareas con `TMPDIR` personalizado y el progreso de superficie anómalo; el comportamiento real de systemd y HDD sigue sin verificarse.
+- [ ] No hay salida estructurada JSON/CSV. Se rechaza el estado v2.2 preexistente que no se ajuste al formato; las pruebas simuladas y aisladas cubren la detección y parada segura de tareas con `TMPDIR` personalizado y el progreso de superficie anómalo.
 - [x] La normalización de v1.0.0 corrigió instrucciones de clonación que apuntaban a la ruta inexistente `hdd-health-check-repo/main` y caracteres mezclados de chino tradicional en el README en chino simplificado.
 
 ## Decisions
@@ -41,7 +41,7 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 #### Changed
 
 - Comprobaciones rápidas predeterminadas en modo por lotes, resultados reutilizables con validez temporal y `--rescan`; `-r/--run` selecciona módulos y `--status`/`--stop` gestionan una instancia en ejecución. `-t short|long`, `-s` y `-b` se asignan a módulos; `-w/--wait` se ignora en vez de esperar. El nuevo comportamiento no es compatible con la CLI de v1.
-- El estado y los registros del equipo anfitrión se escriben por separado; la integración v2.2.0 suministrada restringe el análisis del estado y los planes, así como el tratamiento de rutas y dispositivos. Aquí no se han realizado pruebas de integración con HDD reales, root ni systemd.
+- El estado y los registros del equipo anfitrión se escriben por separado; la integración v2.2.0 suministrada restringe el análisis del estado y los planes, así como el tratamiento de rutas y dispositivos. El usuario informa de pruebas de v2.2.0 en una máquina real, sin especificar dispositivos, entorno ni alcance; no se han confirmado pruebas de ejecución como root, instalación de paquetes ni comportamiento de systemd.
 
 ### v1.0.0 — 2026-08-08
 

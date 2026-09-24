@@ -1,6 +1,6 @@
 # hdd-health-check
 
-這款以 root 執行的 Bash 工具透過 SMART 數據及唯讀磁碟檢查，評估 Debian/Ubuntu 上的 HDD 健康狀況。v2.2.0 腳本已整合至此，但**尚未發佈，亦未在實際硬件上驗證**。
+這款以 root 執行的 Bash 工具透過 SMART 數據及唯讀磁碟檢查，評估 Debian/Ubuntu 上的 HDD 健康狀況。v2.2.0 原始碼已於公開的 GitHub 儲存庫提供。用戶表示已在實機測試，但未提供裝置、環境及測試範圍；目前沒有 v2.2.0 tag 或 GitHub Release。
 
 ## 多語言
 

@@ -1,6 +1,6 @@
 # hdd-health-check
 
-Cet outil Bash exécuté avec les droits root évalue l'état des disques durs sous Debian/Ubuntu à partir des données SMART et de contrôles du disque en lecture seule. Le script v2.2.0 est intégré ici, mais **n'a pas été publié ni validé sur du matériel réel**.
+Cet outil Bash exécuté avec les droits root évalue l'état des disques durs sous Debian/Ubuntu à partir des données SMART et de contrôles du disque en lecture seule. Le code source de v2.2.0 est disponible dans ce dépôt GitHub public. L’utilisateur indique l’avoir testé sur une machine réelle, sans préciser les appareils, l’environnement ni les tests effectués ; il n’existe ni tag v2.2.0 ni GitHub Release.
 
 ## Multi-language
 

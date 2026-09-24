@@ -1,6 +1,6 @@
 # hdd-health-check
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de disco de solo lectura. El script v2.2.0 está integrado aquí, pero **no se ha publicado ni validado con hardware real**.
+Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de disco de solo lectura. El código fuente de v2.2.0 está disponible en este repositorio público de GitHub. El usuario informa de pruebas en una máquina real, sin indicar dispositivos, entorno ni alcance; no hay etiqueta v2.2.0 ni GitHub Release.
 
 ## Multi-language
 

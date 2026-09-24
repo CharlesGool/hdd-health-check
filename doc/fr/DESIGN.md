@@ -1,6 +1,6 @@
 # hdd-health-check — Conception
 
-Ce document décrit le comportement, les contraintes et les données d'état stockées sur l'hôte dans le cadre de l'intégration v2.2.0 ; cette version n'a pas été publiée ni testée sur de vrais disques durs dans cette intégration.
+Ce document décrit le comportement, les contraintes et les données d'état stockées sur l'hôte dans le cadre de l'intégration v2.2.0. Le code source de v2.2.0 est disponible dans ce dépôt GitHub public. L’utilisateur indique l’avoir testé sur une machine réelle, sans préciser les appareils, l’environnement ni les tests effectués ; il n’existe ni tag v2.2.0 ni GitHub Release.
 
 ## Multi-language
 

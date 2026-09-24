@@ -1,6 +1,6 @@
 # hdd-health-check — Journal
 
-Ce document conserve les décisions historiques acceptées, les limites connues et l'historique des versions ; la v2.2.0 est intégrée localement mais n'a pas été publiée.
+Ce document conserve les décisions historiques acceptées, les limites connues et l'historique des versions ; le code source est disponible publiquement sur GitHub, mais v2.2.0 n’a ni tag ni GitHub Release.
 
 ## Multi-language
 
@@ -15,9 +15,9 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 ## Bugs
 
-- [ ] Les tests d'intégration sur de vrais disques durs, avec droits root, installation de paquets et systemd restent à effectuer pour cette intégration ; les vérifications de la version v1.0.0 précédente ne disposaient pas non plus d'un vrai disque dur ni de données SMART (syntaxe et aide seulement). Le script aurait été utilisé avant la normalisation initiale, ce qui ne remplace pas un test matériel contrôlé.
+- [ ] L’utilisateur indique avoir testé v2.2.0 sur une machine réelle, sans préciser les appareils, l’environnement ni les tests effectués ; les tests d’exécution avec les droits root, d’installation de paquets et du comportement de systemd ne sont pas confirmés ; les vérifications de la version v1.0.0 précédente ne disposaient pas non plus d'un vrai disque dur ni de données SMART (syntaxe et aide seulement). Le script aurait été utilisé avant la normalisation initiale, ce qui ne remplace pas un test matériel contrôlé.
 - [ ] Les pondérations heuristiques de l'état des disques ne correspondent pas à des probabilités de panne calibrées ; la notation SAS/SCSI est moins éprouvée que la notation ATA et l'accès SMART direct via USB/RAID peut échouer. La gestion des températures propres aux fabricants est incomplète.
-- [ ] Aucune sortie structurée JSON/CSV. Les données d'état v2.2 préexistantes non conformes sont rejetées ; des tests simulés isolés couvrent la détection et l'arrêt sécurisé des tâches avec un `TMPDIR` personnalisé ainsi que la progression de surface anormale ; le comportement réel de systemd et des disques durs reste non vérifié.
+- [ ] Aucune sortie structurée JSON/CSV. Les données d'état v2.2 préexistantes non conformes sont rejetées ; des tests simulés isolés couvrent la détection et l'arrêt sécurisé des tâches avec un `TMPDIR` personnalisé ainsi que la progression de surface anormale.
 - [x] La normalisation v1.0.0 a corrigé les instructions de clonage qui indiquaient le chemin inexistant `hdd-health-check-repo/main` ainsi que le mélange de caractères chinois traditionnels dans le README en chinois simplifié.
 
 ## Decisions
@@ -41,7 +41,7 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 #### Changed
 
 - Contrôles rapides exécutés par défaut en mode par lots, réutilisation des résultats selon leur durée de validité et `--rescan` ; `-r/--run` choisit les modules et `--status`/`--stop` gèrent une instance active. `-t short|long`, `-s` et `-b` correspondent à des modules ; `-w/--wait` est ignoré au lieu d'attendre. Ce nouveau comportement ne garantit pas la compatibilité de l'interface en ligne de commande v1.
-- L'état et les journaux de l'hôte sont écrits séparément ; l'intégration v2.2.0 fournie restreint l'analyse des données d'état et des plans ainsi que la gestion des chemins et des périphériques. Aucun test d'intégration sur un vrai disque dur, avec droits root ou avec systemd n'a été effectué ici.
+- L'état et les journaux de l'hôte sont écrits séparément ; l'intégration v2.2.0 fournie restreint l'analyse des données d'état et des plans ainsi que la gestion des chemins et des périphériques. L’utilisateur indique avoir testé v2.2.0 sur une machine réelle, sans préciser les appareils, l’environnement ni les tests effectués ; les tests d’exécution avec les droits root, d’installation de paquets et du comportement de systemd ne sont pas confirmés.
 
 ### v1.0.0 — 2026-08-08
 
