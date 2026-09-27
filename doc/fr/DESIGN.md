@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Conception
 
-Ce document décrit le comportement, les contraintes et les données d'état stockées sur l'hôte dans le cadre de l'intégration `v2.3.0`. Cette documentation décrit `v2.3.0`. Consultez GitHub Releases pour les versions étiquetées et les téléchargements. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
+Ce document décrit le comportement, les contraintes et les données d'état stockées sur l'hôte dans le cadre de l'intégration `v2.3.0`. Cette documentation décrit `v2.3.0`. Seul le tag `v1.0.0` existe sur GitHub ; le code source actuel de `main` n’a pas de nouveau GitHub Release. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
 
 La durée de fonctionnement est une donnée d’usage et ne réduit pas seule le score de santé. Une propriété ATA proche du seuil ne déclenche une alerte que si le compteur brut d’erreurs est non nul. Les anciens résultats sans cette preuve restent en attente de vérification sans déduction. Les cartes de surveillance affichent la cause enregistrée.
 

@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — 紀錄
 
-本文記錄已採納的歷史決策,已知限制及發佈歷史. 本文件介紹 `v2.3.0`.標籤版本及下載請參閱 GitHub Releases.用戶表示舊版 `v2.2.0` 曾在實機執行,但未提供裝置,環境及測試範圍;新版 評分只經隔離模擬驗證,未經真實 HDD 驗證.
+本文記錄已採納的歷史決策,已知限制及發佈歷史. 本文件介紹 `v2.3.0`.GitHub 上目前只有 `v1.0.0` 標籤;目前 `main` 原始碼沒有新建 GitHub Release.用戶表示舊版 `v2.2.0` 曾在實機執行,但未提供裝置,環境及測試範圍;新版 評分只經隔離模擬驗證,未經真實 HDD 驗證.
 
 ## 多語言
 
@@ -52,7 +52,8 @@ metadata:
 
 主分支完整記錄: `git log main --stat`.`HEAD` 指本次原始碼發布提交.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
@@ -84,7 +85,7 @@ SSD/NVMe 的速度抽樣波動及平均速度變化改為效能資訊,實際讀�
 
 - UI 建置與類型檢查,shell 狀態及評分測試,本機 HTTP 認證測試通過.經認證的局域網服務已在列出 13 隻磁碟的 Debian NAS 上檢查;真實 HDD 完整評估及重新啟動後復原仍未驗證.
 
-### v2.3.0 — 2026-09-24
+### v2.3.0 — 2026-09-24 (untagged source baseline)
 
 #### 變更
 

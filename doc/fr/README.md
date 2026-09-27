@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-Cet outil Bash exécuté avec les droits root évalue l'état des disques durs sous Debian/Ubuntu à partir des données SMART et de contrôles du disque en lecture seule. La version principale est `v2.3.0` ; l’interface Web locale facultative décrite plus bas est un ajout de développement non publié. Consultez GitHub Releases pour les versions étiquetées et les téléchargements. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
+Cet outil Bash exécuté avec les droits root évalue la santé des HDD sous Debian/Ubuntu avec les données SMART et des contrôles en lecture seule. La branche `main` actuelle contient le code principal v2.3.0 et l’interface Web locale facultative. Seul le tag `v1.0.0` existe sur GitHub ; cette mise à jour du code source ne comporte pas de GitHub Release. Une évaluation complète sur de vrais HDD reste à vérifier.
 
 La durée de fonctionnement est une donnée d’usage et ne réduit pas seule le score de santé. Une propriété ATA proche du seuil ne déclenche une alerte que si le compteur brut d’erreurs est non nul. Les anciens résultats sans cette preuve restent en attente de vérification sans déduction. Les cartes de surveillance affichent la cause enregistrée.
 
@@ -46,10 +46,10 @@ Depuis une copie de travail fiable, lancez `sudo bash ./hdd-health-check.sh --he
 
 ### Normal Install
 
-Ce clonage sélectionne le tag de la version v2.3.0, et non la branche de développement mobile `main`.
+Le clonage suivant utilise la branche source `main` publiée. Il n’existe pas de tag `v2.3.0` sur GitHub.
 
 ```bash
-git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help

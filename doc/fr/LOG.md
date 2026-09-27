@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Journal
 
-Ce document conserve les décisions historiques acceptées, les limites connues et l'historique des versions. Cette documentation décrit `v2.3.0`. Consultez GitHub Releases pour les versions étiquetées et les téléchargements. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
+Ce document conserve les décisions historiques acceptées, les limites connues et l'historique des versions. Cette documentation décrit `v2.3.0`. Seul le tag `v1.0.0` existe sur GitHub ; le code source actuel de `main` n’a pas de nouveau GitHub Release. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
 
 ## Multi-language
 
@@ -52,7 +52,8 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de publication du code source.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
@@ -84,7 +85,7 @@ Les baisses ponctuelles et les variations de vitesse moyenne des SSD/NVMe devien
 
 - La compilation et la vérification des types de l’interface, les tests shell d’état et de score, ainsi que les tests HTTP locaux d’authentification ont réussi. Le service LAN authentifié a été vérifié sur un NAS Debian avec 13 disques recensés; une évaluation complète sur de vrais HDD et la reprise après redémarrage restent à vérifier.
 
-### v2.3.0 — 2026-09-24
+### v2.3.0 — 2026-09-24 (untagged source baseline)
 
 #### Changed
 

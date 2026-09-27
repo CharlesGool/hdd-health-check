@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Design
 
-This document describes the `v2.3.0` behavior, constraints and host-side state. This documentation describes `v2.3.0`. See GitHub Releases for tagged versions and downloads. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
+This document describes the `v2.3.0` behavior, constraints and host-side state. This documentation describes `v2.3.0`. Only `v1.0.0` is tagged on GitHub; the current `main` source has no new GitHub Release. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
 
 ## Multi-language
 

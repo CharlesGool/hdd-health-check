@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Registro
 
-Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones. Esta documentación describe `v2.3.0`. Consulta GitHub Releases para ver las versiones etiquetadas y las descargas. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
+Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones. Esta documentación describe `v2.3.0`. En GitHub solo existe la etiqueta `v1.0.0`; el código fuente actual de `main` no tiene un nuevo GitHub Release. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
 
 ## Multi-language
 
@@ -52,7 +52,8 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de publicación del código fuente.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
@@ -84,7 +85,7 @@ Las caídas de velocidad y los cambios de velocidad media de SSD/NVMe pasan a se
 
 - Pasaron la compilación y comprobación de tipos de la UI, las pruebas shell de estado y puntuación y las pruebas HTTP locales de autenticación. El servicio LAN autenticado se comprobó en un NAS Debian con 13 discos enumerados; siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reiniciar.
 
-### v2.3.0 — 2026-09-24
+### v2.3.0 — 2026-09-24 (untagged source baseline)
 
 #### Changed
 

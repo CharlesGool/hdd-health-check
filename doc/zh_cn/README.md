@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况.核心已发布版本为 `v2.3.0`;下文提到的可选本地 Web UI 是尚未发布的开发内容.标签版本及下载请参见 GitHub Releases.用户报告旧版 `v2.2.0` 曾在实机运行,但未提供设备,环境及覆盖范围;新版评分仅经过隔离模拟验证,未经真实 HDD 验证.
+这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况.当前 `main` 包含 v2.3.0 核心代码和可选本地 Web UI.GitHub 上目前只有 `v1.0.0` 标签;本次源码更新没有 GitHub Release.用户报告旧版 `v2.2.0` 曾在实机运行,但未提供设备,环境及覆盖范围;新版评分仅经过隔离模拟验证,未经真实 HDD 验证.
 
 通电时长仅作为使用信息,不单独扣除健康分.ATA 预失效属性接近阈值时,只有原始错误计数非零才提示关注;旧记录若没有保存原始依据,则标为待复查且不扣分.关注卡片显示已记录的具体原因.
 
@@ -46,10 +46,10 @@ metadata:
 
 ### 常规安装
 
-以下检出固定于 v2.3.0 发布标签,而非持续变化的开发分支 `main`.
+以下检出已发布的 `main` 源码分支.GitHub 上没有 `v2.3.0` 标签.
 
 ```bash
-git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help

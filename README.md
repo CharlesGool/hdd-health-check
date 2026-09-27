@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. The latest tagged core release is `v2.3.0`; the optional local Web UI is available from the `main` source branch and has no separate GitHub Release. See GitHub Releases for tagged core versions and downloads. The Web service has been checked on a Debian NAS with real disk inventory, but a complete assessment on real HDDs remains unverified.
+This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. Current `main` contains the v2.3.0 core code and the optional local Web UI. Only `v1.0.0` is tagged on GitHub; this source update has no GitHub Release. The Web service has been checked on a Debian NAS with real disk inventory, but a complete assessment on real HDDs remains unverified.
 
 ## Multi-language
 
@@ -44,10 +44,10 @@ From a trusted checkout, run `sudo bash ./hdd-health-check.sh --help` to inspect
 
 ### Normal Install
 
-The following checkout selects the v2.3.0 release tag, not the moving development `main` branch.
+The following checkout uses the published `main` source branch. There is no `v2.3.0` GitHub tag.
 
 ```bash
-git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help

@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de disco de solo lectura. La versión principal es `v2.3.0`; la interfaz Web local opcional descrita más abajo es una incorporación de desarrollo aún no publicada. Consulta GitHub Releases para ver las versiones etiquetadas y las descargas. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
+Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La rama `main` actual contiene el código principal v2.3.0 y la interfaz Web local opcional. En GitHub solo existe la etiqueta `v1.0.0`; esta actualización de código fuente no tiene GitHub Release. La evaluación completa en HDD reales sigue sin verificarse.
 
 Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
 
@@ -46,10 +46,10 @@ Desde una copia de trabajo de confianza, ejecute `sudo bash ./hdd-health-check.s
 
 ### Normal Install
 
-Esta copia selecciona la etiqueta de la versión v2.3.0, no la rama de desarrollo cambiante `main`.
+La siguiente copia usa la rama de código fuente `main` publicada. No existe una etiqueta `v2.3.0` en GitHub.
 
 ```bash
-git clone --branch v2.3.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help

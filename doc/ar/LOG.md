@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — السجل
 
-يحفظ هذا السجل القرارات التاريخية المعتمدة والقيود المعروفة وسجل الإصدارات. تصف هذه الوثائق `v2.3.0`. راجع GitHub Releases للإصدارات الموسومة والتنزيلات. أفاد المستخدم بتشغيل الشيفرة السابقة `v2.2.0` على جهاز فعلي دون تفاصيل عن الجهاز أو البيئة أو نطاق التغطية. لم يخضع التقييم المعدل إلا لاختبارات محاكاة معزولة، لا لاختبار على HDD فعلي.
+يحفظ هذا السجل القرارات التاريخية المعتمدة والقيود المعروفة وسجل الإصدارات. تصف هذه الوثائق `v2.3.0`. يوجد على GitHub وسم `v1.0.0` فقط؛ لا يوجد GitHub Release جديد للمصدر الحالي في `main`. أفاد المستخدم بتشغيل الشيفرة السابقة `v2.2.0` على جهاز فعلي دون تفاصيل عن الجهاز أو البيئة أو نطاق التغطية. لم يخضع التقييم المعدل إلا لاختبارات محاكاة معزولة، لا لاختبار على HDD فعلي.
 
 ## Multi-language
 
@@ -52,7 +52,8 @@ metadata:
 
 السجل الكامل للفرع الرئيسي: `git log main --stat`. يشير `HEAD` إلى التزام نشر الشيفرة هذا.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
@@ -84,7 +85,7 @@ metadata:
 
 - نجح بناء الواجهة وفحص الأنواع واختبارات حالة shell والتقييم والمصادقة المحلية عبر HTTP. جرى التحقق من خدمة LAN الموثقة على NAS يعمل بنظام Debian ويعرض 13 قرصًا؛ لم يتحقق بعد التقييم الكامل على HDD حقيقي أو التعافي بعد إعادة التشغيل.
 
-### v2.3.0 — 2026-09-24
+### v2.3.0 — 2026-09-24 (untagged source baseline)
 
 #### Changed
 

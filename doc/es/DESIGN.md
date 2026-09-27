@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Diseño
 
-Este documento describe el comportamiento, las restricciones y el estado en el equipo anfitrión de la integración `v2.3.0`. Esta documentación describe `v2.3.0`. Consulta GitHub Releases para ver las versiones etiquetadas y las descargas. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
+Este documento describe el comportamiento, las restricciones y el estado en el equipo anfitrión de la integración `v2.3.0`. Esta documentación describe `v2.3.0`. En GitHub solo existe la etiqueta `v1.0.0`; el código fuente actual de `main` no tiene un nuevo GitHub Release. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
 
 Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
 
