@@ -43,16 +43,18 @@ metadata:
 
 ## 交接 - 2026-09-27
 
-- 分支 `main`: 本提交是 Web 界面, Debian 安装器,评分修正,测试和文档的 `v3.0.0` 源码标签目标.不创建 GitHub Release 或预构建界面附件.
+- 分支 `main`: 带注释的 `v3.0.0` 标签已发布,指向提交 `434ac7d`;之后的提交仅记录交接状态.未创建 GitHub Release 或预构建界面附件.
 - 已完成: 在 Debian NAS 的局域网认证安装中识别到 13 块盘;服务启动,浏览器显示磁盘数据,任务页面,站内确认弹窗和自适应布局.安装器保留原密码与主机状态.最终界面检查没有启动新扫描或重启.
 - 检查: Vue 类型检查和构建, shell 语法,模拟评分及状态测试, Web 认证和任务测试,认证接口读取以及局域网浏览器交互通过.真实硬盘完整评估与重启后恢复仍未验证.旧版缺少原始依据的阈值提示待以后复查.
-- 下一步: 分别核对已推送的分支和 `v3.0.0` 标签,再观察正常 NAS 使用及后续完成的网页任务.之后修正文档语言目录和导航结构.未发现临时项目规则.
+- 版本检查: 干净的标签检出和源码归档都构建成功,界面显示 `v3.0.0`;远端分支与标签已分别核对.本地 `snapshots/v3.0.0` 包含 87 个源码文件,不含预构建的 `web/dist`.
+- 下一步: 观察正常 NAS 使用及后续完成的网页任务.之后修正项目布局与多语言导航问题.未发现临时项目规则.
 
 ## 提交历史
 
-主分支完整历史: `git log main --stat`.`HEAD` 指本次源码发布提交.
+主分支完整历史: `git log main --stat`.`HEAD` 指本次交接提交.
 
-- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`

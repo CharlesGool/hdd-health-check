@@ -41,18 +41,20 @@ This record preserves accepted historical decisions, known limitations and relea
 
 ## Handoff — 2026-09-27
 
-- Branch `main`: this commit is the `v3.0.0` source-tag target for the Web UI, Debian installer, scoring fixes, tests, and documentation. No GitHub Release or prebuilt UI asset is planned.
+- Branch `main`: the annotated `v3.0.0` tag is published on commit `434ac7d`; this later commit records the handoff only. No GitHub Release or prebuilt UI asset was created.
 - Completed: authenticated LAN installation was checked on a Debian NAS with 13 enumerated drives. The service started and the browser showed disk data, task pages, themed confirmations, and responsive layouts. The installer preserved the existing password and host state. No new disk scan or reboot was run during the final UI checks.
 - Checks: Vue type check/build, shell syntax, synthetic scoring/state tests, Web authentication/job/assessment/SMART tests, authenticated API reads, LAN browser interactions, and documentation format checks passed. Hardware-wide full assessment and post-reboot service recovery remain unverified. Old threshold-only findings without raw evidence remain pending review until a future check.
+- Release checks: the clean tag checkout and source archive both built and displayed `v3.0.0`; remote branch and annotated tag refs were verified separately. The local `snapshots/v3.0.0` source export contains 87 files and no prebuilt `web/dist`.
 - Versioned installation examples now clone `v3.0.0` and build `web/dist` before using the Debian installer. The source tag does not include a prebuilt UI.
 - Remaining documentation work: the project-structure checker reports 62 existing layout errors and the multilingual checker reports 60 existing directory-name and navigation-template mismatches. The content formatter reports zero errors and six warnings. These structural issues do not affect the documented source installation path.
-- Next action: verify the published branch and `v3.0.0` tag separately, then observe normal NAS use and a future completed Web task. Later fix the existing multilingual directory and navigation mismatches. No temporary project rules were found.
+- Next action: observe normal NAS use and a future completed Web task. Later fix the existing project-layout and multilingual navigation mismatches. No temporary project rules were found.
 
 ## Commit History
 
-Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this source publication commit.
+Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`

@@ -43,16 +43,18 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 ## Entrega - 2026-09-27
 
-- Rama `main`: este commit es el destino de la etiqueta de código fuente `v3.0.0` para la interfaz Web, el instalador Debian, las correcciones de puntuación, las pruebas y la documentación. No se crea un GitHub Release ni una interfaz precompilada.
+- Rama `main`: la etiqueta anotada `v3.0.0` se publicó sobre el commit `434ac7d`; el commit posterior solo registra la entrega. No se creó un GitHub Release ni una interfaz precompilada.
 - Completado: la instalación LAN autenticada en un NAS Debian enumeró 13 discos; arrancó el servicio y el navegador mostró datos de discos, tareas, diálogos y diseño adaptable. El instalador conservó la contraseña y el estado del host. La comprobación final de la interfaz no inició un escaneo ni reinició el equipo.
 - Pruebas: pasaron tipos y compilación Vue, sintaxis shell, pruebas sintéticas de puntuación y estado, autenticación y tareas Web, lecturas de API y navegador LAN. La evaluación completa en HDD real y la recuperación tras reinicio siguen sin comprobarse. Los avisos antiguos sin prueba bruta esperan una nueva revisión.
-- Siguiente acción: verificar por separado la rama publicada y la etiqueta `v3.0.0`; después observar el uso normal del NAS y una futura tarea Web completada. Corregir más adelante la estructura de idiomas y navegación. No se encontraron reglas temporales del proyecto.
+- Verificación de versión: la copia limpia de la etiqueta y el archivo fuente compilaron y mostraron `v3.0.0`; la rama remota y la etiqueta se verificaron por separado. La copia local `snapshots/v3.0.0` contiene 87 archivos fuente, sin `web/dist` precompilado.
+- Siguiente acción: observar el uso normal del NAS y una futura tarea Web completada. Corregir más adelante los problemas de estructura del proyecto y navegación multilingüe. No se encontraron reglas temporales del proyecto.
 
 ## Historial de commits
 
-Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de publicación del código fuente.
+Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de entrega.
 
-- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`

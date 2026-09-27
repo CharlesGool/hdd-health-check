@@ -43,16 +43,18 @@ metadata:
 
 ## 交接 - 2026-09-27
 
-- 分支 `main`: 本提交是 Web 介面, Debian 安裝程式,評分修正,測試及文件的 `v3.0.0` 原始碼標籤目標.不建立 GitHub Release 或預先建置的介面附件.
+- 分支 `main`: 帶註解的 `v3.0.0` 標籤已發布,指向提交 `434ac7d`;之後的提交僅記錄交接狀態.未建立 GitHub Release 或預先建置的介面附件.
 - 已完成: 在 Debian NAS 的區域網路驗證安裝中辨識 13 顆磁碟;服務啟動,瀏覽器顯示磁碟資料,任務頁面,頁面內確認對話框和響應式版面.安裝程式保留密碼與主機狀態.最後的介面檢查未開始掃描或重新開機.
 - 檢查: Vue 型別與建置, shell 語法,模擬評分及狀態, Web 驗證與任務,認證 API 和區域網路瀏覽器互動通過.完整實體硬碟評估及重新開機後恢復仍未驗證.舊版缺少原始依據的閾值提示待日後複查.
-- 下一步: 分別核對已推送的分支與 `v3.0.0` 標籤,再觀察 NAS 一般使用及下一個完成的網頁任務.之後修正文件語言目錄和導覽結構.未發現臨時專案規則.
+- 版本檢查: 乾淨的標籤檢出與原始碼封存均建置成功,介面顯示 `v3.0.0`;遠端分支與標籤已分別核對.本機 `snapshots/v3.0.0` 含 87 個原始碼檔案,不含預先建置的 `web/dist`.
+- 下一步: 觀察 NAS 一般使用及下一個完成的網頁任務.之後修正專案版面與多語言導覽問題.未發現臨時專案規則.
 
 ## 提交歷史
 
-主分支完整歷史: `git log main --stat`.`HEAD` 指本次原始碼發布提交.
+主分支完整歷史: `git log main --stat`.`HEAD` 指本次交接提交.
 
-- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`

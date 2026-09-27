@@ -43,16 +43,18 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 ## Transmission - 2026-09-27
 
-- Branche `main` : ce commit est la cible du tag source `v3.0.0` pour l’interface Web, l’installateur Debian, les corrections du score, les tests et la documentation. Aucun GitHub Release ni interface précompilée n’est créé.
+- Branche `main` : le tag annoté `v3.0.0` est publié sur le commit `434ac7d` ; le commit suivant consigne seulement la passation. Aucun GitHub Release ni interface précompilée n’a été créé.
 - Terminé : une installation LAN authentifiée sur un NAS Debian a énuméré 13 disques ; le service a démarré et le navigateur a affiché disques, tâches, dialogues et mise en page adaptée. L’installateur a conservé le mot de passe et l’état de l’hôte. Le dernier contrôle de l’interface n’a lancé aucun scan ni redémarrage.
 - Vérifications : types et compilation Vue, syntaxe shell, tests synthétiques du score et de l’état, authentification et tâches Web, lectures d’API et navigateur LAN ont réussi. L’évaluation complète sur un vrai HDD et la reprise après redémarrage restent non vérifiées. Les anciens avis sans preuve brute attendent une nouvelle vérification.
-- Suite : vérifier séparément la branche publiée et le tag `v3.0.0`, puis observer l’usage courant du NAS et une prochaine tâche Web terminée. Corriger ensuite la structure des langues et de navigation. Aucune règle temporaire du projet trouvée.
+- Vérifications de version : la copie propre du tag et l’archive source ont été compilées et ont affiché `v3.0.0` ; la branche distante et le tag ont été vérifiés séparément. La copie locale `snapshots/v3.0.0` contient 87 fichiers source, sans `web/dist` précompilé.
+- Suite : observer l’usage courant du NAS et une prochaine tâche Web terminée. Corriger plus tard les problèmes de structure du projet et de navigation multilingue. Aucune règle temporaire du projet trouvée.
 
 ## Historique des commits
 
-Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de publication du code source.
+Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de passation.
 
-- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
