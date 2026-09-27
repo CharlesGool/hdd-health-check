@@ -18,12 +18,12 @@ Web UI स्थानीय डिस्क के परिणाम, हा�
 - मौजूदा जाँचकर्ता की निर्भरताएँ: `smartmontools`, `util-linux`, `coreutils` और badblocks के लिए वैकल्पिक `e2fsprogs`।
 - वेब पेज पर पासवर्ड से साइन इन करें; API सत्र का उपयोग करती है। TCP 8765 केवल विश्वसनीय LAN पर खोलें; HTTP पासवर्ड एन्क्रिप्ट नहीं करता।
 
-## main शाखा से Web UI स्थापित करें
+## v3.0.0 टैग से Web UI स्थापित करें
 
-`main` शाखा में निर्मित `web/dist` नहीं है। Debian systemd होस्ट पर पहले Node.js 20.19+ या 22.12+ और npm स्थापित करें, फिर UI बनाकर इंस्टॉलर चलाएं। Node.js केवल निर्माण के लिए आवश्यक है।
+`v3.0.0` टैग में Web UI स्रोत है, लेकिन निर्मित `web/dist` नहीं है। Debian systemd होस्ट पर Node.js 20.19+ या 22.12+ और npm स्थापित करें, फिर UI बनाकर इंस्टॉलर चलाएं:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

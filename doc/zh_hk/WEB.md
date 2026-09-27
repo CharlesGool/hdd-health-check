@@ -18,12 +18,12 @@ Web UI 顯示本機磁碟結果, 最近的 SMART 計數器歷史紀錄, 執行�
 - 現有檢查器所需的 `smartmontools`, `util-linux`, `coreutils`, 以及可選的 `e2fsprogs` (供 badblocks 使用).
 - Web 頁面以密碼登入,API 使用會話;只在可信局域網使用 TCP 8765,HTTP 不會加密密碼.
 
-## 從 main 分支原始碼安裝 Web UI
+## 從 v3.0.0 標籤原始碼安裝 Web UI
 
-`main` 分支不包含建置產物 `web/dist`.在 Debian systemd 主機先安裝 Node.js 20.19+ 或 22.12+ 和 npm,再建置網頁並執行安裝程式.Node.js 僅用於建置;服務執行時不需要.
+`v3.0.0` 標籤包含 Web UI 原始碼,但不包含建置產物 `web/dist`.在 Debian systemd 主機先安裝 Node.js 20.19+ 或 22.12+ 和 npm,再建置介面並執行安裝程式:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

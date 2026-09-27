@@ -2,15 +2,18 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
-let buildVersion = 'dev-unknown'
+const packageVersion = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version as string
+let buildVersion = `v${packageVersion}`
 try {
-  const sha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: '..', encoding: 'utf8' }).trim()
-  const dirty = execFileSync('git', ['status', '--porcelain'], { cwd: '..', encoding: 'utf8' }).trim().length > 0
+  const gitOptions = { cwd: '..', encoding: 'utf8' as const, stdio: ['ignore', 'pipe', 'ignore'] as ['ignore', 'pipe', 'ignore'] }
+  const sha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], gitOptions).trim()
+  const dirty = execFileSync('git', ['status', '--porcelain'], gitOptions).trim().length > 0
   let tag = ''
-  try { tag = execFileSync('git', ['describe', '--tags', '--exact-match'], { cwd: '..', encoding: 'utf8' }).trim() } catch { /* untagged commit */ }
+  try { tag = execFileSync('git', ['describe', '--tags', '--exact-match'], gitOptions).trim() } catch { /* untagged commit */ }
   buildVersion = tag && !dirty ? tag : `dev-${sha}${dirty ? '-dirty' : ''}`
-} catch { /* source archive without Git metadata */ }
+} catch { /* source archive without Git metadata uses its package version */ }
 
 export default defineConfig({
   plugins: [vue(), tailwindcss()],

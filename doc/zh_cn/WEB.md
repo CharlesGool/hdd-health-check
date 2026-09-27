@@ -42,12 +42,12 @@ Codex 的 `site-preview` 地址只提供静态文件.它可以展示界面和打
 
 卸载 Web 服务时,先运行 `sudo systemctl disable --now hdd-health-web.service`,删除已安装的服务单元,再运行 `sudo systemctl daemon-reload`.删除检出目录前先检查是否仍有临时检查任务;状态和日志可按 CLI 卸载说明单独保留或删除.
 
-## 从 main 分支源码安装 Web UI
+## 从 v3.0.0 标签源码安装 Web UI
 
-`main` 分支不包含构建产物 `web/dist`.在 Debian systemd 主机上先安装 Node.js 20.19+ 或 22.12+ 和 npm,再构建网页并运行安装器.Node.js 仅用于构建;服务运行时不需要.
+`v3.0.0` 标签包含 Web UI 源码,但不包含构建产物 `web/dist`.在 Debian systemd 主机先安装 Node.js 20.19+ 或 22.12+ 和 npm,再构建界面并运行安装器:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

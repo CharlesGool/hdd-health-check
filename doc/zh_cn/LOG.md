@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — 日志
 
-本文档记录已采纳的历史决策,已知局限及发布历史. 本文档介绍 `v2.3.0`.GitHub 上目前只有 `v1.0.0` 标签;当前 `main` 源码没有新建 GitHub Release.用户报告旧版 `v2.2.0` 曾在实机运行,但未提供设备,环境及覆盖范围;新版 评分仅经过隔离模拟验证,未经真实 HDD 验证.
+本文档记录已采纳的历史决策,已知局限及发布历史. 本文档介绍 `v3.0.0`.`v3.0.0` 源码标签标记本次大版本更新;不创建 GitHub Release.用户报告旧版 `v2.2.0` 曾在实机运行,但未提供设备,环境及覆盖范围;新版 评分仅经过隔离模拟验证,未经真实 HDD 验证.
 
 ## 多语言
 
@@ -43,16 +43,17 @@ metadata:
 
 ## 交接 - 2026-09-27
 
-- 分支 `main`: Web 界面, Debian 安装器,评分修正,测试和文档已作为源码推送至 GitHub.本次没有创建新标签, GitHub Release 或快照.
+- 分支 `main`: 本提交是 Web 界面, Debian 安装器,评分修正,测试和文档的 `v3.0.0` 源码标签目标.不创建 GitHub Release 或预构建界面附件.
 - 已完成: 在 Debian NAS 的局域网认证安装中识别到 13 块盘;服务启动,浏览器显示磁盘数据,任务页面,站内确认弹窗和自适应布局.安装器保留原密码与主机状态.最终界面检查没有启动新扫描或重启.
 - 检查: Vue 类型检查和构建, shell 语法,模拟评分及状态测试, Web 认证和任务测试,认证接口读取以及局域网浏览器交互通过.真实硬盘完整评估与重启后恢复仍未验证.旧版缺少原始依据的阈值提示待以后复查.
-- 下一步: 观察正常 NAS 使用及后续完成的网页任务,之后修正文档语言目录和导航结构.未发现临时项目规则.
+- 下一步: 分别核对已推送的分支和 `v3.0.0` 标签,再观察正常 NAS 使用及后续完成的网页任务.之后修正文档语言目录和导航结构.未发现临时项目规则.
 
 ## 提交历史
 
 主分支完整历史: `git log main --stat`.`HEAD` 指本次源码发布提交.
 
-- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
@@ -63,7 +64,9 @@ metadata:
 
 ## 变更日志
 
-### 未发布 — 本地 Web UI
+### v3.0.0 — 2026-09-27
+
+本次大版本在原有磁盘检查器上加入带认证的常驻 Web UI 和 Debian 安装器.Web 服务已在识别 13 块磁盘的 Debian NAS 上检查;真实 HDD 完整评估和重启后恢复仍未验证.标签提供源码,不提供 GitHub Release 或预构建界面附件.
 
 本次 NAS 修复:批量 SMART 自检期间的网页状态查询不再逐盘读取硬件,磁盘列表与任务状态分别刷新.NVMe 温度按设备阈值着色,温度本身不扣分.修正空问题字段被误读和仅因评估不完整就返回警告的问题.
 

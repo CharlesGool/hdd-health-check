@@ -18,12 +18,12 @@ Les cartes des disques à surveiller affichent la cause enregistrée. La durée 
 - Les dépendances du vérificateur : `smartmontools`, `util-linux`, `coreutils` et, facultativement, `e2fsprogs` pour badblocks.
 - La page Web utilise une connexion par mot de passe et l’API utilise une session. Ouvrez TCP 8765 uniquement sur un réseau local fiable ; HTTP ne chiffre pas le mot de passe.
 
-## Installer l’interface Web depuis main
+## Installer l’interface Web depuis le tag v3.0.0
 
-La branche `main` ne contient pas le dossier compilé `web/dist`. Sur un hôte Debian avec systemd, installez d’abord Node.js 20.19+ ou 22.12+ et npm, puis compilez l’interface et lancez l’installateur. Node.js est nécessaire uniquement pour la compilation.
+Le tag `v3.0.0` contient le code source de l’interface Web, mais pas le dossier compilé `web/dist`. Sur un hôte Debian avec systemd, installez Node.js 20.19+ ou 22.12+ et npm, compilez l’interface et lancez l’installateur :
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

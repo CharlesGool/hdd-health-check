@@ -18,10 +18,10 @@ The Web UI shows local disk results, recent SMART counter history, active jobs a
 
 ## Build and run
 
-The `main` branch contains source code but does not track `web/dist`. To install directly from GitHub source on a Debian systemd host, first install Node.js 20.19+ or 22.12+ and npm, then build the UI before running the installer:
+The `v3.0.0` tag contains Web UI source code but does not track `web/dist`. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm, build the UI, then run the installer:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

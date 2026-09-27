@@ -18,12 +18,12 @@ metadata:
 - اعتماديات الفاحص الحالية: `smartmontools`, و`util-linux`, و`coreutils`, و`e2fsprogs` اختياريًا لفحوص badblocks.
 - تستخدم صفحة الويب تسجيل الدخول بكلمة مرور، وتستخدم API جلسة. افتح المنفذ TCP 8765 في شبكة محلية موثوقة فقط؛ HTTP لا يشفر كلمة المرور.
 
-## تثبيت واجهة الويب من الفرع main
+## تثبيت واجهة الويب من الوسم v3.0.0
 
-لا يتضمن الفرع `main` ملفات `web/dist` المبنية. على نظام Debian مع systemd، ثبّت Node.js 20.19+ أو 22.12+ و npm أولاً، ثم ابنِ الواجهة وشغّل أداة التثبيت. يلزم Node.js للبناء فقط.
+يحتوي وسم `v3.0.0` على مصدر واجهة الويب، لكنه لا يتضمن `web/dist` المبني. على نظام Debian مع systemd، ثبّت Node.js 20.19+ أو 22.12+ و npm، ثم ابنِ الواجهة وشغّل أداة التثبيت:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

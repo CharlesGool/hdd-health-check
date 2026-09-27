@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Log
 
-This record preserves accepted historical decisions, known limitations and release history. This documentation describes `v2.3.0`. Only `v1.0.0` is tagged on GitHub; the current `main` source has no new GitHub Release. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
+This record preserves accepted historical decisions, known limitations and release history. This documentation describes `v3.0.0`. The `v3.0.0` source tag is the major-version boundary; no GitHub Release is created. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
 
 ## Multi-language
 
@@ -41,18 +41,19 @@ This record preserves accepted historical decisions, known limitations and relea
 
 ## Handoff — 2026-09-27
 
-- Branch `main`: the Web UI, Debian installer, scoring fixes, tests, and documentation are published as source on GitHub. This update has no new tag, GitHub Release, or snapshot.
+- Branch `main`: this commit is the `v3.0.0` source-tag target for the Web UI, Debian installer, scoring fixes, tests, and documentation. No GitHub Release or prebuilt UI asset is planned.
 - Completed: authenticated LAN installation was checked on a Debian NAS with 13 enumerated drives. The service started and the browser showed disk data, task pages, themed confirmations, and responsive layouts. The installer preserved the existing password and host state. No new disk scan or reboot was run during the final UI checks.
 - Checks: Vue type check/build, shell syntax, synthetic scoring/state tests, Web authentication/job/assessment/SMART tests, authenticated API reads, LAN browser interactions, and documentation format checks passed. Hardware-wide full assessment and post-reboot service recovery remain unverified. Old threshold-only findings without raw evidence remain pending review until a future check.
-- Published-source correction: GitHub has only the `v1.0.0` tag and no GitHub Release for this update. Installation examples now clone `main` so they work without creating a new tag.
-- Remaining documentation work: the multilingual structure checker reports 60 existing directory-name and navigation-template mismatches. The content formatter reports zero errors and six warnings. These structural issues do not affect the documented source installation path.
-- Next action: observe normal NAS use and a future completed Web task; later fix the existing multilingual directory and navigation mismatches. No temporary project rules were found.
+- Versioned installation examples now clone `v3.0.0` and build `web/dist` before using the Debian installer. The source tag does not include a prebuilt UI.
+- Remaining documentation work: the project-structure checker reports 62 existing layout errors and the multilingual checker reports 60 existing directory-name and navigation-template mismatches. The content formatter reports zero errors and six warnings. These structural issues do not affect the documented source installation path.
+- Next action: verify the published branch and `v3.0.0` tag separately, then observe normal NAS use and a future completed Web task. Later fix the existing multilingual directory and navigation mismatches. No temporary project rules were found.
 
 ## Commit History
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this source publication commit.
 
-- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
@@ -63,7 +64,9 @@ Complete primary-branch history: `git log main --stat`. The `HEAD` entry identif
 
 ## Changelog
 
-### Unreleased — local Web UI
+### v3.0.0 — 2026-09-27
+
+This major version adds the authenticated persistent Web UI and Debian installer to the existing disk checker. The Web service was checked on a Debian NAS with 13 enumerated disks; a complete assessment on real HDDs and post-reboot recovery remain unverified. The tag contains source code; no GitHub Release or prebuilt UI asset is published.
 
 #### Fixed in NAS follow-up
 

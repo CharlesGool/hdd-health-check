@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Journal
 
-Ce document conserve les décisions historiques acceptées, les limites connues et l'historique des versions. Cette documentation décrit `v2.3.0`. Seul le tag `v1.0.0` existe sur GitHub ; le code source actuel de `main` n’a pas de nouveau GitHub Release. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
+Ce document conserve les décisions historiques acceptées, les limites connues et l'historique des versions. Cette documentation décrit `v3.0.0`. Le tag source `v3.0.0` marque cette version majeure ; aucun GitHub Release n’est créé. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
 
 ## Multi-language
 
@@ -43,16 +43,17 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 ## Transmission - 2026-09-27
 
-- Branche `main` : le code source de l’interface Web, de l’installateur Debian, des corrections du score, des tests et de la documentation a été publié sur GitHub. Cette mise à jour ne crée ni tag, ni GitHub Release, ni instantané.
+- Branche `main` : ce commit est la cible du tag source `v3.0.0` pour l’interface Web, l’installateur Debian, les corrections du score, les tests et la documentation. Aucun GitHub Release ni interface précompilée n’est créé.
 - Terminé : une installation LAN authentifiée sur un NAS Debian a énuméré 13 disques ; le service a démarré et le navigateur a affiché disques, tâches, dialogues et mise en page adaptée. L’installateur a conservé le mot de passe et l’état de l’hôte. Le dernier contrôle de l’interface n’a lancé aucun scan ni redémarrage.
 - Vérifications : types et compilation Vue, syntaxe shell, tests synthétiques du score et de l’état, authentification et tâches Web, lectures d’API et navigateur LAN ont réussi. L’évaluation complète sur un vrai HDD et la reprise après redémarrage restent non vérifiées. Les anciens avis sans preuve brute attendent une nouvelle vérification.
-- Suite : observer l’usage courant du NAS et une prochaine tâche Web terminée ; corriger ensuite la structure des répertoires de langues et de navigation. Aucune règle temporaire du projet trouvée.
+- Suite : vérifier séparément la branche publiée et le tag `v3.0.0`, puis observer l’usage courant du NAS et une prochaine tâche Web terminée. Corriger ensuite la structure des langues et de navigation. Aucune règle temporaire du projet trouvée.
 
 ## Historique des commits
 
 Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de publication du code source.
 
-- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
@@ -63,7 +64,9 @@ Historique complet de la branche principale : `git log main --stat`. `HEAD` dés
 
 ## Changelog
 
-### Non publié — interface Web locale
+### v3.0.0 — 2026-09-27
+
+Cette version majeure ajoute au vérificateur de disques une interface Web persistante avec authentification et un installateur Debian. Le service Web a été vérifié sur un NAS Debian avec 13 disques ; une évaluation complète sur de vrais HDD et la reprise après redémarrage restent à vérifier. Le tag contient le code source ; aucun GitHub Release ni interface précompilée n’est publié.
 
 Correctif NAS : pendant les autotests SMART, l’état Web n’interroge plus chaque disque en série ; la liste et l’état de la tâche se mettent à jour séparément. La température NVMe est colorée selon les seuils du périphérique et ne retire aucun point à elle seule. Les champs de problème vides et l’avertissement dû uniquement à une évaluation incomplète sont également corrigés.
 

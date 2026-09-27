@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Registro
 
-Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones. Esta documentación describe `v2.3.0`. En GitHub solo existe la etiqueta `v1.0.0`; el código fuente actual de `main` no tiene un nuevo GitHub Release. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
+Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones. Esta documentación describe `v3.0.0`. La etiqueta de código fuente `v3.0.0` marca esta versión mayor; no se crea un GitHub Release. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
 
 ## Multi-language
 
@@ -43,16 +43,17 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 ## Entrega - 2026-09-27
 
-- Rama `main`: la interfaz Web, el instalador Debian, las correcciones de puntuación, las pruebas y la documentación ya se publicaron como código fuente en GitHub. Esta actualización no crea etiqueta, GitHub Release ni instantánea.
+- Rama `main`: este commit es el destino de la etiqueta de código fuente `v3.0.0` para la interfaz Web, el instalador Debian, las correcciones de puntuación, las pruebas y la documentación. No se crea un GitHub Release ni una interfaz precompilada.
 - Completado: la instalación LAN autenticada en un NAS Debian enumeró 13 discos; arrancó el servicio y el navegador mostró datos de discos, tareas, diálogos y diseño adaptable. El instalador conservó la contraseña y el estado del host. La comprobación final de la interfaz no inició un escaneo ni reinició el equipo.
 - Pruebas: pasaron tipos y compilación Vue, sintaxis shell, pruebas sintéticas de puntuación y estado, autenticación y tareas Web, lecturas de API y navegador LAN. La evaluación completa en HDD real y la recuperación tras reinicio siguen sin comprobarse. Los avisos antiguos sin prueba bruta esperan una nueva revisión.
-- Siguiente acción: observar el uso normal del NAS y una futura tarea Web completada; después corregir la estructura de directorios de idiomas y navegación. No se encontraron reglas temporales del proyecto.
+- Siguiente acción: verificar por separado la rama publicada y la etiqueta `v3.0.0`; después observar el uso normal del NAS y una futura tarea Web completada. Corregir más adelante la estructura de idiomas y navegación. No se encontraron reglas temporales del proyecto.
 
 ## Historial de commits
 
 Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de publicación del código fuente.
 
-- 2026-09-27 | `HEAD` | `docs(install): point source install to main` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `chore(release): prepare v3.0.0 source tag` | `git show HEAD`
+- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
 - 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
@@ -63,7 +64,9 @@ Historial completo de la rama principal: `git log main --stat`. `HEAD` identific
 
 ## Changelog
 
-### Sin publicar — interfaz Web local
+### v3.0.0 — 2026-09-27
+
+Esta versión mayor añade una interfaz Web persistente con autenticación y un instalador Debian al comprobador de discos. El servicio Web se comprobó en un NAS Debian con 13 discos; siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reinicio. La etiqueta contiene el código fuente; no se publica un GitHub Release ni una interfaz compilada.
 
 Corrección para NAS: durante las autopruebas SMART, el estado Web ya no consulta cada disco de forma secuencial; la lista y el estado se actualizan por separado. La temperatura NVMe se colorea según los umbrales del dispositivo y no resta puntos por sí sola. También se corrigen los campos de problemas vacíos y la advertencia causada solo por una evaluación incompleta.
 

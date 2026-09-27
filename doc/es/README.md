@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La rama `main` actual contiene el código principal v2.3.0 y la interfaz Web local opcional. En GitHub solo existe la etiqueta `v1.0.0`; esta actualización de código fuente no tiene GitHub Release. La evaluación completa en HDD reales sigue sin verificarse.
+Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La rama `main` actual contiene el código principal v3.0.0 y la interfaz Web local opcional. La etiqueta de código fuente `v3.0.0` está disponible en GitHub; no se crea un GitHub Release. La evaluación completa en HDD reales sigue sin verificarse.
 
 Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
 
@@ -46,10 +46,10 @@ Desde una copia de trabajo de confianza, ejecute `sudo bash ./hdd-health-check.s
 
 ### Normal Install
 
-La siguiente copia usa la rama de código fuente `main` publicada. No existe una etiqueta `v2.3.0` en GitHub.
+La siguiente copia usa la etiqueta de código fuente `v3.0.0`.
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -57,12 +57,12 @@ sudo bash ./hdd-health-check.sh --help
 
 Revise e instale usted mismo los paquetes necesarios del sistema operativo antes de explorar para evitar la solicitud de instalación del script. Para actualizar una copia de trabajo existente, haga primero una copia de seguridad de los registros del equipo anfitrión que quiera conservar y de `${HDD_STATE_DIR:-/var/lib/hdd-health}`; sustituya el script por el de una copia de trabajo revisada, conserve ese directorio de estado para el historial y la reanudación, y después consulte `--help` y ejecute las comprobaciones elegidas. El análisis del estado de v2.2 solo acepta campos de datos conocidos; un estado anterior de v2.2 que no se ajuste a ellos puede rechazarse. Para volver a una versión anterior hay que restaurar el script anterior **y la copia de seguridad correspondiente de su estado**; no dé por hecho que el estado más reciente sea compatible hacia atrás. No se garantiza la migración del estado ni el comportamiento de la CLI de v1.
 
-## Instalar Web UI desde main
+## Instalar Web UI desde la etiqueta v3.0.0
 
-La rama `main` no incluye el directorio compilado `web/dist`. En un sistema Debian con systemd, instale primero Node.js 20.19+ o 22.12+ y npm; compile la interfaz y ejecute el instalador. Node.js solo se necesita para compilar. [WEB](WEB.md).
+La etiqueta `v3.0.0` contiene el código fuente de Web UI, pero no incluye `web/dist`. En un sistema Debian con systemd, instale Node.js 20.19+ o 22.12+ y npm, compile la interfaz y ejecute el instalador:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

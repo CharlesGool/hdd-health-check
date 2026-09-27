@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-Cet outil Bash exécuté avec les droits root évalue la santé des HDD sous Debian/Ubuntu avec les données SMART et des contrôles en lecture seule. La branche `main` actuelle contient le code principal v2.3.0 et l’interface Web locale facultative. Seul le tag `v1.0.0` existe sur GitHub ; cette mise à jour du code source ne comporte pas de GitHub Release. Une évaluation complète sur de vrais HDD reste à vérifier.
+Cet outil Bash exécuté avec les droits root évalue la santé des HDD sous Debian/Ubuntu avec les données SMART et des contrôles en lecture seule. La branche `main` actuelle contient le code principal v3.0.0 et l’interface Web locale facultative. Le tag source `v3.0.0` est disponible sur GitHub ; aucun GitHub Release n’est créé. Une évaluation complète sur de vrais HDD reste à vérifier.
 
 La durée de fonctionnement est une donnée d’usage et ne réduit pas seule le score de santé. Une propriété ATA proche du seuil ne déclenche une alerte que si le compteur brut d’erreurs est non nul. Les anciens résultats sans cette preuve restent en attente de vérification sans déduction. Les cartes de surveillance affichent la cause enregistrée.
 
@@ -46,10 +46,10 @@ Depuis une copie de travail fiable, lancez `sudo bash ./hdd-health-check.sh --he
 
 ### Normal Install
 
-Le clonage suivant utilise la branche source `main` publiée. Il n’existe pas de tag `v2.3.0` sur GitHub.
+Le clonage suivant utilise le tag source `v3.0.0`.
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -57,12 +57,12 @@ sudo bash ./hdd-health-check.sh --help
 
 Vérifiez et installez vous-même les paquets système requis avant toute analyse afin d'éviter la demande d'installation du script. Pour mettre à niveau une copie existante, sauvegardez d'abord les journaux de l'hôte souhaités ainsi que `${HDD_STATE_DIR:-/var/lib/hdd-health}` ; remplacez le script à partir d'une copie vérifiée, conservez ce répertoire d'état pour l'historique et la reprise, puis consultez `--help` et exécutez les contrôles choisis. L'analyse des données d'état v2.2 n'accepte que les champs connus ; des données d'état v2.2 antérieures non conformes peuvent être rejetées. Pour revenir en arrière, il faut restaurer le script précédent **et sa sauvegarde d'état correspondante** ; ne présumez pas qu'un état plus récent est rétrocompatible. Aucune compatibilité avec l'interface en ligne de commande v1 ni migration d'état v1 n'est garantie.
 
-## Installer l’interface Web depuis main
+## Installer l’interface Web depuis le tag v3.0.0
 
-La branche `main` ne contient pas le dossier compilé `web/dist`. Sur un hôte Debian avec systemd, installez d’abord Node.js 20.19+ ou 22.12+ et npm, puis compilez l’interface et lancez l’installateur. Node.js est nécessaire uniquement pour la compilation. [WEB](WEB.md).
+Le tag `v3.0.0` contient le code source de l’interface Web, mais pas le dossier compilé `web/dist`. Sur un hôte Debian avec systemd, installez Node.js 20.19+ ou 22.12+ et npm, compilez l’interface et lancez l’installateur :
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

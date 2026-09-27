@@ -18,12 +18,12 @@ Las tarjetas de atención muestran la causa registrada. Las horas de encendido p
 - Las dependencias del comprobador: `smartmontools`, `util-linux`, `coreutils` y, opcionalmente, `e2fsprogs` para badblocks.
 - La página Web usa una contraseña de inicio de sesión y la API usa sesiones. Abra TCP 8765 solo en una LAN de confianza; HTTP no cifra la contraseña.
 
-## Instalar Web UI desde main
+## Instalar Web UI desde la etiqueta v3.0.0
 
-La rama `main` no incluye el directorio compilado `web/dist`. En un sistema Debian con systemd, instale primero Node.js 20.19+ o 22.12+ y npm; compile la interfaz y ejecute el instalador. Node.js solo se necesita para compilar.
+La etiqueta `v3.0.0` contiene el código fuente de Web UI, pero no incluye `web/dist`. En un sistema Debian con systemd, instale Node.js 20.19+ o 22.12+ y npm, compile la interfaz y ejecute el instalador:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build

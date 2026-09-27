@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况.当前 `main` 包含 v2.3.0 核心代码和可选本地 Web UI.GitHub 上目前只有 `v1.0.0` 标签;本次源码更新没有 GitHub Release.用户报告旧版 `v2.2.0` 曾在实机运行,但未提供设备,环境及覆盖范围;新版评分仅经过隔离模拟验证,未经真实 HDD 验证.
+这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况.当前 `main` 包含 v3.0.0 核心代码和可选本地 Web UI.GitHub 提供 `v3.0.0` 源码标签;本次不创建 GitHub Release.用户报告旧版 `v2.2.0` 曾在实机运行,但未提供设备,环境及覆盖范围;新版评分仅经过隔离模拟验证,未经真实 HDD 验证.
 
 通电时长仅作为使用信息,不单独扣除健康分.ATA 预失效属性接近阈值时,只有原始错误计数非零才提示关注;旧记录若没有保存原始依据,则标为待复查且不扣分.关注卡片显示已记录的具体原因.
 
@@ -46,10 +46,10 @@ metadata:
 
 ### 常规安装
 
-以下检出已发布的 `main` 源码分支.GitHub 上没有 `v2.3.0` 标签.
+以下检出 `v3.0.0` 源码标签.
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -57,12 +57,12 @@ sudo bash ./hdd-health-check.sh --help
 
 扫描前请自行核查并安装所需系统软件包,以免触发脚本的安装提示.升级现有检出目录时,先备份需要保留的主机日志和 `${HDD_STATE_DIR:-/var/lib/hdd-health}`;从经审查的检出目录替换脚本,保留该状态目录以便使用历史记录/续扫,随后查看 `--help` 并执行所选检查.v2.2 仅解析已知的状态数据字段;不符合格式的旧 v2.2 状态可能被拒绝.回滚时**必须**同时恢复旧脚本**及与之匹配的状态备份**;不要假定新版状态向后兼容.不承诺兼容 v1 CLI 行为或迁移 v1 状态.
 
-## 从 main 分支源码安装 Web UI
+## 从 v3.0.0 标签源码安装 Web UI
 
-`main` 分支不包含构建产物 `web/dist`.在 Debian systemd 主机上先安装 Node.js 20.19+ 或 22.12+ 和 npm,再构建网页并运行安装器.Node.js 仅用于构建;服务运行时不需要. [WEB](WEB.md).
+`v3.0.0` 标签包含 Web UI 源码,但不包含构建产物 `web/dist`.在 Debian systemd 主机先安装 Node.js 20.19+ 或 22.12+ 和 npm,再构建界面并运行安装器:
 
 ```bash
-git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/web
 npm ci
 npm run build
