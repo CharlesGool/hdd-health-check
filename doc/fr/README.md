@@ -1,15 +1,26 @@
+---
+name: project-overview-fr
+description: Project overview and usage
+metadata:
+  version: "0.1.0"
+  lang: fr
+---
+
 # hdd-health-check
 
-Cet outil Bash exécuté avec les droits root évalue l'état des disques durs sous Debian/Ubuntu à partir des données SMART et de contrôles du disque en lecture seule. Cette documentation décrit `v2.3.0`. Consultez GitHub Releases pour les versions étiquetées et les téléchargements. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
+Cet outil Bash exécuté avec les droits root évalue l'état des disques durs sous Debian/Ubuntu à partir des données SMART et de contrôles du disque en lecture seule. La version principale est `v2.3.0` ; l’interface Web locale facultative décrite plus bas est un ajout de développement non publié. Consultez GitHub Releases pour les versions étiquetées et les téléchargements. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
+
+La durée de fonctionnement est une donnée d’usage et ne réduit pas seule le score de santé. Une propriété ATA proche du seuil ne déclenche une alerte que si le compteur brut d’erreurs est non nul. Les anciens résultats sans cette preuve restent en attente de vérification sans déduction. Les cartes de surveillance affichent la cause enregistrée.
 
 ## Multi-language
 
-[English](../../README.md) | [简体中文](../zh_cn/README.md) | [繁體中文](../zh_tw/README.md) | [繁體中文（香港）](../zh_hk/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | **Français**
+[English](../../README.md) | [简体中文](../zh_cn/README.md) | [繁體中文](../zh_tw/README.md) | [繁體中文(香港)](../zh_hk/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | **Français**
 
 ## Documentation
 
 - Présentation du projet : [README](README.md)
 - Conception et effets sur l'hôte : [DESIGN](DESIGN.md)
+- Installation de l’interface Web locale et API : [WEB](WEB.md)
 - Décisions, problèmes connus et historique des versions : [LOG](LOG.md)
 - Inventaire des composants tiers : [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
@@ -46,6 +57,19 @@ sudo bash ./hdd-health-check.sh --help
 
 Vérifiez et installez vous-même les paquets système requis avant toute analyse afin d'éviter la demande d'installation du script. Pour mettre à niveau une copie existante, sauvegardez d'abord les journaux de l'hôte souhaités ainsi que `${HDD_STATE_DIR:-/var/lib/hdd-health}` ; remplacez le script à partir d'une copie vérifiée, conservez ce répertoire d'état pour l'historique et la reprise, puis consultez `--help` et exécutez les contrôles choisis. L'analyse des données d'état v2.2 n'accepte que les champs connus ; des données d'état v2.2 antérieures non conformes peuvent être rejetées. Pour revenir en arrière, il faut restaurer le script précédent **et sa sauvegarde d'état correspondante** ; ne présumez pas qu'un état plus récent est rétrocompatible. Aucune compatibilité avec l'interface en ligne de commande v1 ni migration d'état v1 n'est garantie.
 
+## Installer l’interface Web depuis main
+
+La branche `main` ne contient pas le dossier compilé `web/dist`. Sur un hôte Debian avec systemd, installez d’abord Node.js 20.19+ ou 22.12+ et npm, puis compilez l’interface et lancez l’installateur. Node.js est nécessaire uniquement pour la compilation. [WEB](WEB.md).
+
+```bash
+git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+cd hdd-health-check/web
+npm ci
+npm run build
+cd ..
+sudo bash deploy/install.sh
+```
+
 ## Conseils d'utilisation
 
 N'exécutez l'outil que sur les disques que vous êtes autorisé à examiner ; une analyse soutenue en lecture peut ajouter une charge importante. Les commandes ci-dessous sont **des exemples, pas des instructions de validation pour cet environnement** :
@@ -68,7 +92,7 @@ Codes de sortie : `0` tout va bien ; `1` remarque/avertissement ; `2` danger ; `
 
 ## Désinstallation
 
-- Supprimez la copie de travail ou le script installé pour retirer l'outil tout en conservant les journaux et l'historique. Aucun service systemd n'est installé durablement ; vérifiez si des tâches transitoires sont actives avant de supprimer le script.
+- Supprimez la copie de travail ou le script installé pour retirer la CLI tout en conservant les journaux et l’historique. La CLI n’installe aucun service systemd permanent ; si vous avez installé le service Web facultatif, arrêtez-le et désactivez-le d’abord comme indiqué dans [WEB](WEB.md). Vérifiez si des tâches transitoires sont actives avant de supprimer le script.
 - Pour une suppression complète, arrêtez d'abord toute tâche et sauvegardez les données souhaitées, puis supprimez manuellement `HDD_STATE_DIR` configuré (`/var/lib/hdd-health` par défaut) et `HDD_LOG_DIR` configuré (`/var/log/disk-health` par défaut) après avoir vérifié leurs chemins et leur contenu. Cela efface les rapports, la progression, l'historique, les notes de réparation et les journaux ; ne supprimez jamais aveuglément un répertoire partagé ou redéfini. Les paquets installés via `apt-get` ne sont pas supprimés automatiquement.
 
 ## License

@@ -1,10 +1,20 @@
+---
+name: project-log-es
+description: Project decisions, limitations, handoff, and release history
+metadata:
+  version: "0.1.0"
+  lang: es
+---
+
 # hdd-health-check — Registro
 
 Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones. Esta documentación describe `v2.3.0`. Consulta GitHub Releases para ver las versiones etiquetadas y las descargas. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
 
 ## Multi-language
 
-[English](../LOG.md) | [简体中文](../zh_cn/LOG.md) | [繁體中文](../zh_tw/LOG.md) | [繁體中文（香港）](../zh_hk/LOG.md) | [हिन्दी](../hi/LOG.md) | **Español** | [العربية](../ar/LOG.md) | [Français](../fr/LOG.md)
+[English](../LOG.md) | [简体中文](../zh_cn/LOG.md) | [繁體中文](../zh_tw/LOG.md) | [繁體中文(香港)](../zh_hk/LOG.md) | [हिन्दी](../hi/LOG.md) | **Español** | [العربية](../ar/LOG.md) | [Français](../fr/LOG.md)
+
+- En esta etapa se pueden elegir cinco grupos y ocho tipos de prueba. La lista distingue SATA/NVMe y muestra la temperatura leída en segundo plano; los detalles muestran el formato informado por el dispositivo. Pasaron la compilación y las pruebas simuladas de comandos, temperatura y protección del reposo; falta comprobarlo en el NAS.
 
 ## Documentation
 
@@ -18,7 +28,7 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 - [ ] El usuario informa de pruebas de v2.2.0 en una máquina real, sin especificar dispositivos, entorno ni alcance; no se han confirmado pruebas de ejecución como root, instalación de paquetes ni comportamiento de systemd; las comprobaciones de la versión anterior v1.0.0 tampoco contaron con un HDD real ni datos SMART (solo sintaxis y ayuda). Según los informes, el script se había utilizado antes de la normalización original, pero eso no sustituye una prueba controlada con hardware.
 - [ ] La puntuación revisada por lotes y la repetición final de SMART/ATA/CRC solo cuentan con pruebas sintéticas, no con validación de este código en un HDD real. La resolución temporal del registro de autopruebas del firmware y la reanudación entre ejecuciones pueden causar una cobertura parcial/desconocida; no se pueden atribuir de nuevo automáticamente los errores históricos tras reparar. Se mantiene declarada esta limitación de validación de hardware; se sigue recomendando repetir las pruebas en un HDD autorizado.
 - [ ] Los pesos heurísticos de salud no son probabilidades de fallo calibradas; la puntuación SAS/SCSI se ha probado menos que la ATA y el acceso directo a SMART mediante USB/RAID puede fallar. La información de temperatura dependiente del fabricante es incompleta.
-- [ ] No hay salida estructurada JSON/CSV. Se rechaza el estado v2.2 preexistente que no se ajuste al formato; las pruebas simuladas y aisladas cubren la detección y parada segura de tareas con `TMPDIR` personalizado y el progreso de superficie anómalo.
+- [ ] Se comprobó el servicio Web autenticado en LAN y el inventario real de discos en un NAS Debian. Siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reiniciar. Se rechaza el estado v2.2 anterior no conforme. No se ofrece exportación CSV.
 - [x] La normalización de v1.0.0 corrigió instrucciones de clonación que apuntaban a la ruta inexistente `hdd-health-check-repo/main` y caracteres mezclados de chino tradicional en el README en chino simplificado.
 
 ## Decisions
@@ -31,7 +41,48 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 | 2026-08-13: Sustituir el historial público de v1.0.0 por un único commit limpio con identidad noreply y una etiqueta anotada, conservando el historial original en un archivo privado renombrado; rechazar forzar el envío del repositorio público anterior o conservar su commit intermedio sustituido. | El commit público anterior contenía una dirección de correo personal en los metadatos de Git. Las copias y bifurcaciones existentes no se migran automáticamente y no puede garantizarse que la exposición anterior se haya eliminado de las cachés. Es un hecho histórico, no una autorización para volver a reescribir el historial. |
 | Integración actual: Adoptar el comportamiento v2.2.0 suministrado sin garantías de compatibilidad con v1 y conservar la licencia MIT existente. | El nuevo script añade estado persistente y tareas opcionales en segundo plano; `-w` se ignora. Esta integración no implica publicación, etiqueta ni validación con hardware. |
 
+## Entrega - 2026-09-27
+
+- Rama `main`: la interfaz Web inédita, el instalador Debian, las correcciones de puntuación, las pruebas y la documentación están listos para un commit y push revisados. Esta actualización no crea etiqueta, GitHub Release ni instantánea.
+- Completado: la instalación LAN autenticada en un NAS Debian enumeró 13 discos; arrancó el servicio y el navegador mostró datos de discos, tareas, diálogos y diseño adaptable. El instalador conservó la contraseña y el estado del host. La comprobación final de la interfaz no inició un escaneo ni reinició el equipo.
+- Pruebas: pasaron tipos y compilación Vue, sintaxis shell, pruebas sintéticas de puntuación y estado, autenticación y tareas Web, lecturas de API y navegador LAN. La evaluación completa en HDD real y la recuperación tras reinicio siguen sin comprobarse. Los avisos antiguos sin prueba bruta esperan una nueva revisión.
+- Bloqueo: la conexión con GitHub agotó el tiempo al enviar el código y verificar la rama remota; no se ha confirmado el nuevo commit en el servidor. Al volver la conexión, haga un push fast-forward normal de `main` y compruebe el commit.
+- Siguiente acción: enviar el código revisado de `main` y observar el uso normal del NAS y una futura tarea Web completada. No se encontraron reglas temporales del proyecto.
+
+## Historial de commits
+
+Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de publicación del código fuente.
+
+- 2026-09-27 | `HEAD` | `feat(web): publish LAN dashboard and docs` | `git show HEAD`
+- 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
+- 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
+- 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`
+- 2026-08-13 | `7b18ca7` | `docs(status): record v1.0.0 release completion` | `git show 7b18ca7`
+- 2026-08-13 | `4e01f52` | `chore(release): v1.0.0 (clean history)` | `git show 4e01f52`
+
 ## Changelog
+
+### Sin publicar — interfaz Web local
+
+Corrección para NAS: durante las autopruebas SMART, el estado Web ya no consulta cada disco de forma secuencial; la lista y el estado se actualizan por separado. La temperatura NVMe se colorea según los umbrales del dispositivo y no resta puntos por sí sola. También se corrigen los campos de problemas vacíos y la advertencia causada solo por una evaluación incompleta.
+
+La página principal permite una evaluación completa de todos los discos SATA, HDD, SSD, NVMe o todos los discos. El servidor selecciona los discos enumerados y lanza una tarea `full --rescan` en segundo plano. Incluye pruebas SMART cortas/largas, muestreo de velocidad y lectura completa; puede tardar horas. La puntuación SSD/NVMe usa reglas orientadas a HDD sin calibración propia. La versión y velocidad SATA proceden de smartctl; cuando existen, Linux sysfs aporta la velocidad SATA o la generación, ancho y velocidad PCIe de NVMe. Los datos ausentes figuran como desconocidos. Pulse las horas de uso para alternar con años de 365 días, días y horas.
+
+Esta actualización Web añade inicio y cierre de sesión en la página, lista de IPv4 exactas en Ajustes, datos básicos de discos, pestañas SMART y comprobaciones, e historial de cambios en Markdown. Pasaron la compilación local y las pruebas de sesiones, acceso IP y SMART simulado; falta actualizar el NAS y validar discos reales.
+
+
+Las caídas de velocidad y los cambios de velocidad media de SSD/NVMe pasan a ser información de rendimiento; se mantienen las penalizaciones por errores reales de lectura y se reinterpretan los resultados anteriores. La lista se adapta a tres, dos o una columna y la tarjeta de discos del panel permite saltar a ella.
+
+- Las tarjetas de discos se reorganizan automáticamente entre una y cuatro columnas según el ancho disponible, incluido el zoom del navegador, sin ocultar botones ni generar desbordamiento horizontal.
+
+#### Añadido
+
+- Servicio Web Python, interfaz Vue, comprobaciones programadas, control de tareas, historial SMART y unidad systemd. El instalador permite acceso LAN autenticado; el modo manual permanece en loopback.
+- Las instantáneas `--json` reutilizan la función de puntuación compuesta de Bash. `--no-install` impide instalar automáticamente dependencias para las tareas iniciadas desde la Web.
+
+#### Validación
+
+- Pasaron la compilación y comprobación de tipos de la UI, las pruebas shell de estado y puntuación y las pruebas HTTP locales de autenticación. El servicio LAN autenticado se comprobó en un NAS Debian con 13 discos enumerados; siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reiniciar.
 
 ### v2.3.0 — 2026-09-24
 

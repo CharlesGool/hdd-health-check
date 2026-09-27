@@ -1,15 +1,26 @@
+---
+name: project-overview-es
+description: Project overview and usage
+metadata:
+  version: "0.1.0"
+  lang: es
+---
+
 # hdd-health-check
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de disco de solo lectura. Esta documentación describe `v2.3.0`. Consulta GitHub Releases para ver las versiones etiquetadas y las descargas. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
+Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de disco de solo lectura. La versión principal es `v2.3.0`; la interfaz Web local opcional descrita más abajo es una incorporación de desarrollo aún no publicada. Consulta GitHub Releases para ver las versiones etiquetadas y las descargas. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
+
+Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
 
 ## Multi-language
 
-[English](../../README.md) | [简体中文](../zh_cn/README.md) | [繁體中文](../zh_tw/README.md) | [繁體中文（香港）](../zh_hk/README.md) | [हिन्दी](../hi/README.md) | **Español** | [العربية](../ar/README.md) | [Français](../fr/README.md)
+[English](../../README.md) | [简体中文](../zh_cn/README.md) | [繁體中文](../zh_tw/README.md) | [繁體中文(香港)](../zh_hk/README.md) | [हिन्दी](../hi/README.md) | **Español** | [العربية](../ar/README.md) | [Français](../fr/README.md)
 
 ## Documentation
 
 - Presentación del proyecto: [README](README.md)
 - Fundamentos de diseño y efectos en el equipo anfitrión: [DESIGN](DESIGN.md)
+- Configuración y API de la interfaz Web local: [WEB](WEB.md)
 - Decisiones, errores e historial de versiones: [LOG](LOG.md)
 - Inventario de terceros: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
@@ -46,6 +57,19 @@ sudo bash ./hdd-health-check.sh --help
 
 Revise e instale usted mismo los paquetes necesarios del sistema operativo antes de explorar para evitar la solicitud de instalación del script. Para actualizar una copia de trabajo existente, haga primero una copia de seguridad de los registros del equipo anfitrión que quiera conservar y de `${HDD_STATE_DIR:-/var/lib/hdd-health}`; sustituya el script por el de una copia de trabajo revisada, conserve ese directorio de estado para el historial y la reanudación, y después consulte `--help` y ejecute las comprobaciones elegidas. El análisis del estado de v2.2 solo acepta campos de datos conocidos; un estado anterior de v2.2 que no se ajuste a ellos puede rechazarse. Para volver a una versión anterior hay que restaurar el script anterior **y la copia de seguridad correspondiente de su estado**; no dé por hecho que el estado más reciente sea compatible hacia atrás. No se garantiza la migración del estado ni el comportamiento de la CLI de v1.
 
+## Instalar Web UI desde main
+
+La rama `main` no incluye el directorio compilado `web/dist`. En un sistema Debian con systemd, instale primero Node.js 20.19+ o 22.12+ y npm; compile la interfaz y ejecute el instalador. Node.js solo se necesita para compilar. [WEB](WEB.md).
+
+```bash
+git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+cd hdd-health-check/web
+npm ci
+npm run build
+cd ..
+sudo bash deploy/install.sh
+```
+
 ## Guía de uso
 
 Ejecute la herramienta únicamente sobre unidades que tenga autorización para examinar; una exploración de lectura sostenida puede generar una carga considerable. Los comandos siguientes son **ejemplos, no instrucciones para validar este entorno**:
@@ -68,7 +92,7 @@ Códigos de salida: `0`, todo correcto; `1`, aviso/advertencia; `2`, peligro; `3
 
 ## Desinstalación
 
-- Elimine la copia de trabajo o el script instalado para retirar la herramienta sin borrar registros ni historial. No se instala permanentemente ningún servicio de systemd; compruebe si hay tareas transitorias activas antes de retirar el script.
+- Elimine la copia de trabajo o el script instalado para retirar la CLI sin borrar registros ni historial. La CLI no instala ningún servicio permanente de systemd; si instaló el servicio Web opcional, deténgalo y desactívelo primero según [WEB](WEB.md). Compruebe si hay tareas transitorias activas antes de retirar el script.
 - Para eliminarlo todo, detenga primero cualquier tarea y haga una copia de seguridad de los registros que quiera conservar; después elimine manualmente el directorio `HDD_STATE_DIR` configurado (por defecto `/var/lib/hdd-health`) y `HDD_LOG_DIR` (por defecto `/var/log/disk-health`), una vez comprobadas sus rutas y su contenido. Esto borra informes, progreso, historial, notas de reparación y registros; nunca elimine a ciegas un directorio compartido o cuya ruta se haya sobrescrito. Los paquetes instalados mediante `apt-get` no se eliminan automáticamente.
 
 ## License

@@ -1,15 +1,24 @@
+---
+name: project-overview
+description: Project overview and usage
+metadata:
+  version: "0.1.0"
+  lang: en
+---
+
 # hdd-health-check
 
-This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. This documentation describes `v2.3.0`. See GitHub Releases for tagged versions and downloads. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
+This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. The latest tagged core release is `v2.3.0`; the optional local Web UI is available from the `main` source branch and has no separate GitHub Release. See GitHub Releases for tagged core versions and downloads. The Web service has been checked on a Debian NAS with real disk inventory, but a complete assessment on real HDDs remains unverified.
 
 ## Multi-language
 
-**English** | [简体中文](doc/zh_cn/README.md) | [繁體中文](doc/zh_tw/README.md) | [繁體中文（香港）](doc/zh_hk/README.md) | [हिन्दी](doc/hi/README.md) | [Español](doc/es/README.md) | [العربية](doc/ar/README.md) | [Français](doc/fr/README.md)
+**English** | [简体中文](doc/zh_cn/README.md) | [繁體中文](doc/zh_tw/README.md) | [繁體中文(香港)](doc/zh_hk/README.md) | [हिन्दी](doc/hi/README.md) | [Español](doc/es/README.md) | [العربية](doc/ar/README.md) | [Français](doc/fr/README.md)
 
 ## Documentation
 
 - Project overview: [README](README.md)
 - Design rationale and host-side effects: [DESIGN](doc/DESIGN.md)
+- Local Web UI setup and API: [WEB](doc/WEB.md)
 - Decisions, bugs and version history: [LOG](doc/LOG.md)
 - Third-party inventory: [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md)
 
@@ -17,7 +26,7 @@ This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data
 
 The interactive menu or batch CLI selects drives, performs a quick SMART, mount and kernel-log assessment, and reports a heuristic 0–100 score and risk grade. Other modules offer SMART short/long self-tests, sampled read-speed profiling, resumable full-disk read-latency scanning with optional targeted `badblocks` recheck, full-disk read-only `badblocks`, and post-repair interface read testing. The full assessment runs quick, short, long, speed and surface checks; it does not include the separate full-disk `badblocks` or interface module. Results can be reused, compared against SMART counter history, and assembled into a report. See [known issues](doc/LOG.md#bugs) and [goals](doc/DESIGN.md#design-goals).
 
-A complete assessment repeats the quick SMART/ATA/CRC check after the long reads. A 0–100 composite score is shown only when the required quick, short, long, speed and completed surface checks belong to the same unexpired assessment batch. Reused, interrupted, expired and older-format results remain visible as historical evidence, but yield a partial/unknown grade instead of a current score; reviewing a report does not refresh the baseline. After interface repair, use the separate interface verification and repeat the full assessment to establish a new score. A resolved interface check does not erase historical errors. An ATA error count with no prior comparison is an unresolved unknown cause (5-point deduction), retained across repeated checks and full assessments; a stable counter alone does not prove resolution. Newly increased ATA errors deduct 20 points; unchanged historical counts do not count as new errors. Existing interface verification does not attribute ATA errors to an interface repair. Sparse slow surface reads are performance prompts to retest, not proof of bad sectors; confirmed read errors remain medium-risk evidence (40-point surface deduction). Back up important data before testing a suspect drive.
+A complete assessment repeats the quick SMART/ATA/CRC check after the long reads. A 0–100 composite score is shown only when the required quick, short, long, speed and completed surface checks belong to the same unexpired assessment batch. Reused, interrupted, expired and older-format results remain visible as historical evidence, but yield a partial/unknown grade instead of a current score; reviewing a report does not refresh the baseline. After interface repair, use the separate interface verification and repeat the full assessment to establish a new score. A resolved interface check does not erase historical errors. An ATA error count with no prior comparison is an unresolved unknown cause (5-point deduction), retained across repeated checks and full assessments; a stable counter alone does not prove resolution. Newly increased ATA errors deduct 20 points; unchanged historical counts do not count as new errors. Existing interface verification does not attribute ATA errors to an interface repair. Sparse slow surface reads are performance prompts to retest, not proof of bad sectors; confirmed read errors remain medium-risk evidence (40-point surface deduction). Power-on hours alone do not deduct health points, and an ATA near-threshold warning requires a nonzero raw error count; old threshold-only notices without raw evidence are marked for review. Back up important data before testing a suspect drive.
 
 **Read-only refers to target disk data, not the host.** The program writes logs, settings, progress and history on the host; it can enable SMART, launch drive-internal self-tests, read whole devices under sustained load, install packages after confirmation, and start transient systemd units. Do not use it as a substitute for backups. No destructive write-mode surface scan, erase or filesystem write is implemented.
 
@@ -46,6 +55,21 @@ sudo bash ./hdd-health-check.sh --help
 
 Review and install the required OS packages yourself before scanning to avoid the script's package-install prompt. To upgrade an existing checkout, back up any desired host logs and `${HDD_STATE_DIR:-/var/lib/hdd-health}` first; replace the script from a reviewed checkout, keep that state directory for history/resume, then review `--help` and run the chosen checks. v2.2 state parsing accepts only known data fields; nonconforming prior v2.2 state may be rejected. A rollback requires restoring the previous script **and its matching state backup**; do not assume newer state is backwards compatible. No v1 CLI behavior or state migration is promised.
 
+### Web UI from the main branch
+
+The Web UI installer requires a built `web/dist`, which is generated from source and is not tracked in Git. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm for the build, then run:
+
+```bash
+git clone --branch main --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+cd hdd-health-check/web
+npm ci
+npm run build
+cd ..
+sudo bash deploy/install.sh
+```
+
+The installer checks and installs missing Debian runtime packages, starts the password-protected service on LAN port 8765, and does not start a disk scan. Read the generated password with `sudo cat /root/apps/hdd-health-check/web-password`. Node.js is only needed to build the UI. See [WEB](doc/WEB.md) for updates, security boundaries, and rollback.
+
 ## Guidance
 
 Run only on drives you are authorized to examine; a sustained read scan can add significant load. The commands below are **examples, not validation instructions for this environment**:
@@ -68,7 +92,7 @@ Exit codes: `0` all healthy; `1` notice/warning; `2` danger; `3` runtime error. 
 
 ## Uninstall
 
-- Remove the checkout or installed script to remove the tool while retaining logs and history. No systemd service is installed permanently; check for active transient tasks before removing the script.
+- Remove the checkout or installed script to remove the CLI while retaining logs and history. The CLI installs no permanent systemd service; if you installed the optional Web service, stop and disable it first as described in [WEB](doc/WEB.md). Check for active transient tasks before removing the script.
 - For full removal, first stop any task and back up desired records, then manually remove the configured `HDD_STATE_DIR` (default `/var/lib/hdd-health`) and `HDD_LOG_DIR` (default `/var/log/disk-health`) after verifying their paths and contents. This deletes reports, progress, history, repair notes and logs; never blindly delete a shared or overridden directory. Packages installed via `apt-get` are not removed automatically.
 
 ## License

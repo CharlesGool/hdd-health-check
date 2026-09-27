@@ -1,0 +1,22 @@
+[Unit]
+Description=HDD Health local Web UI
+After=multi-user.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root/apps/hdd-health-check
+ExecStart=/usr/bin/python3 /root/apps/hdd-health-check/web/server.py --port 8765 --bind 0.0.0.0 --password-file /root/apps/hdd-health-check/web-password
+Restart=on-failure
+RestartSec=5
+UMask=0077
+StateDirectory=hdd-health
+LogsDirectory=disk-health
+ProtectSystem=strict
+ReadWritePaths=/root/apps/hdd-health-check /var/lib/hdd-health /var/log/disk-health /run
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

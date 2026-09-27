@@ -58,13 +58,14 @@ AUTO_RECHECK="ask"      # 扫描发现异常区域后 badblocks 复查: ask | al
 
 #------------------------------ 运行时变量 ------------------------------------
 LOG_FILE=""
-BATCH=0; QUIET=0; ASSUME_YES=0; FORCE_RESCAN=0
+BATCH=0; QUIET=0; ASSUME_YES=0; FORCE_RESCAN=0; NO_INSTALL=0
 RUN_LIST=""
 declare -a REQ_DISKS=() SELECTED=()
 declare -A DOPT_CACHE=() DID=() PLAN=()
 IN_TASK=0; INTERRUPTED=0; WORST=0; DETACHED=0
 RUNINFO=""; CUR_TASK=""; BG_HANDED=0; LOCKED=0; DETACH_REQ=0; PLAN_FILE=""
 RUN_DIR=""; CLEANED=0
+WEB_JOB_ID=""; WEB_JOB_STARTED=0
 KEY=""; DEC=""
 CUR_DED=0; declare -a CUR_ISS=()
 RESULT_BATCH=""; FULL_BATCH=""; QUICK_ATA=""; QUICK_CRC=""
@@ -106,7 +107,13 @@ info() { out "    $*"; }
 ok()   { out "    ${C_GRN}[正常]${C_OFF} $*"; }
 warn() { out "    ${C_YEL}[注意]${C_OFF} $*"; }
 bad()  { out "    ${C_RED}[危险]${C_OFF} $*"; }
-die()  { printf '%s\n' "${C_RED}错误: $*${C_OFF}" >&2; exit 3; }
+die()  {
+    printf '%s\n' "${C_RED}错误: $*${C_OFF}" >&2
+    if [[ -n ${WEB_JOB_ID:-} && -n ${LOG_FILE:-} && -d $(dirname "$LOG_FILE") ]]; then
+        printf '错误: %s\n' "$*" >> "$LOG_FILE" 2>/dev/null || true
+    fi
+    exit 3
+}
 dump() { local l; while IFS= read -r l; do out "      | $l"; done <<< "$1"; }
 
 # 扣分并记录问题
@@ -246,7 +253,9 @@ write_runinfo() {
 }
 
 cleanup() {
+    local exit_code=$?
     (( CLEANED )) && return; CLEANED=1
+    job_finish "$exit_code"
     if [[ -n $RUN_DIR && -d $RUN_DIR ]]; then
         : > "$RUN_DIR/stop_all" 2>/dev/null
         wait 2>/dev/null
@@ -256,9 +265,37 @@ cleanup() {
     cursor h 2>/dev/null
 }
 
+# Record the lifecycle of a Web-launched transient unit. A successful
+# systemd-run call only means the unit was accepted, not that its checks ran.
+job_write() {
+    [[ -n $WEB_JOB_ID ]] || return 0
+    local phase=$1 code=${2:-0} finished=0 file="$STATE_DIR/web-job.json" tmp="$STATE_DIR/web-job.json.tmp"
+    [[ $phase == completed || $phase == failed || $phase == stopped ]] && finished=$(now)
+    [[ ! -L $STATE_DIR ]] || return 1
+    mkdir -p "$STATE_DIR" || return 1
+    {
+        printf '{"id":'; json_string "$WEB_JOB_ID"
+        printf ',"state":'; json_string "$phase"
+        printf ',"module":'; json_string "${RUN_LIST:-quick}"
+        printf ',"targets":'; json_string "${SELECTED[*]:-${REQ_DISKS[*]}}"
+        printf ',"log":'; json_string "$LOG_FILE"
+        printf ',"started":%s,"finished":%s,"exitCode":%s}\n' "${WEB_JOB_STARTED:-0}" "$finished" "$code"
+    } > "$tmp" && chmod 600 "$tmp" && mv -f "$tmp" "$file"
+}
+job_finish() {
+    local code=$1 phase=completed archive="$STATE_DIR/web-job-history"
+    [[ -n $WEB_JOB_ID && $DETACH_REQ -eq 0 ]] || return 0
+    (( code > 2 )) && phase=failed
+    (( INTERRUPTED )) && phase=stopped
+    if job_write "$phase" "$code"; then
+        mkdir -p -m 700 "$archive" && cp -- "$STATE_DIR/web-job.json" "$archive/$WEB_JOB_ID.json" && chmod 600 "$archive/$WEB_JOB_ID.json" || true
+    fi
+}
+
 # Persisted records are data, never shell programs. Decode printf %q values.
 decode_record_value() {
     local raw=$1 out="" ch i
+    if [[ $raw == "''" ]]; then RECORD_VALUE=""; return 0; fi
     if [[ $raw == \$\'*\' ]]; then
         raw=${raw:2:${#raw}-3}
         printf -v RECORD_VALUE '%b' "$raw"
@@ -394,6 +431,8 @@ RES_TS=""
 save_result() {
     local id=$1 mod=$2 status=$3 summary=$4; shift 4
     local f="$STATE_DIR/$id/$mod.env" kv iss
+    if (( CUR_DED > 0 && ${#CUR_ISS[@]} == 0 )); then CUR_ISS+=("扣分 ${CUR_DED}，原因未记录（请重新检测）"); fi
+    [[ $summary == 无异常 && ${#CUR_ISS[@]} -gt 0 ]] && summary=$(join_by '，' "${CUR_ISS[@]}")
     iss=$(join_by ';' "${CUR_ISS[@]}")
     {
         printf 'R_TS=%q\nR_STATUS=%q\nR_DEDUCT=%q\nR_ISSUES=%q\nR_SUMMARY=%q\nR_BATCH=%q\n' \
@@ -407,6 +446,74 @@ load_result() {
     local f="$STATE_DIR/$1/$2.env"
     [[ -r $f ]] || return 1
     read_record "$f" result
+}
+# SSD throughput variations are performance observations, not media-health
+# evidence. Reinterpret existing saved speed results without changing the
+# on-disk record; keep real read errors and unknown issue types intact.
+normalize_ssd_speed_result() {
+    local name=$1 issue count penalty removed=0
+    [[ ${D_ROTA[$(di "$name")]:-} == 0 ]] || return 0
+    local -a retained=()
+    local -a issues=()
+    IFS=';' read -ra issues <<< "$R_ISSUES"
+    for issue in "${issues[@]}"; do
+        if [[ $issue =~ ^速度凹陷[[:space:]]+([0-9]{1,4})[[:space:]]+处$ ]]; then
+            count=$((10#${BASH_REMATCH[1]}))
+            penalty=$((count * 8)); (( penalty > 20 )) && penalty=20
+            removed=$((removed + penalty))
+        elif [[ $issue == 读速度较上次下降 ]]; then
+            removed=$((removed + 5))
+        elif [[ -n $issue ]]; then
+            retained+=("$issue")
+        fi
+    done
+    (( removed > R_DEDUCT )) && removed=$R_DEDUCT
+    R_DEDUCT=$((R_DEDUCT - removed))
+    R_ISSUES=$(join_by ';' "${retained[@]}")
+    if (( removed > 0 )); then
+        if (( R_DEDUCT == 0 )) && [[ -z $R_ISSUES ]]; then R_STATUS=good
+        elif (( R_DEDUCT > 0 )); then
+            if (( R_DEDUCT < 25 )); then R_STATUS=warn; else R_STATUS=bad; fi
+        fi
+        R_SUMMARY=${R_SUMMARY/凹陷/采样波动}
+        R_SUMMARY+="（固态盘速度波动不计入健康评分）"
+    fi
+}
+# Power-on hours describe use, but do not by themselves establish failure.
+# Reinterpret saved quick results at read time so historical age-only warnings
+# disappear without editing the original records or hiding other findings.
+normalize_quick_result() {
+    local issue removed=0 age_note="" legacy_near=0
+    local -a retained=() issues=()
+    IFS=';' read -ra issues <<< "$R_ISSUES"
+    for issue in "${issues[@]}"; do
+        if [[ $issue =~ ^通电[[:space:]]+([0-9]+)h（较高）$ ]]; then
+            removed=$((removed + 8)); age_note="通电 ${BASH_REMATCH[1]}h"
+        elif [[ $issue =~ ^通电[[:space:]]+([0-9]+)h$ ]]; then
+            removed=$((removed + 15)); age_note="通电 ${BASH_REMATCH[1]}h"
+        elif [[ $issue == 属性接近阈值 ]]; then
+            # The old threshold-only rule also flagged untouched attributes
+            # with zero raw errors. Its stored result lacks the raw evidence.
+            removed=$((removed + 5)); legacy_near=1
+        elif [[ -n $issue ]]; then
+            retained+=("$issue")
+        fi
+    done
+    (( removed > 0 )) || return 0
+    (( removed > R_DEDUCT )) && removed=$R_DEDUCT
+    R_DEDUCT=$((R_DEDUCT - removed))
+    R_ISSUES=$(join_by ';' "${retained[@]}")
+    if (( R_DEDUCT == 0 )) && [[ -z $R_ISSUES ]]; then
+        if (( legacy_near )); then R_STATUS=incomplete; else R_STATUS=good; fi
+    elif (( R_DEDUCT > 0 )); then
+        if (( R_DEDUCT < 25 )); then R_STATUS=warn; else R_STATUS=bad; fi
+    fi
+    R_SUMMARY=$(join_by '，' "${retained[@]}")
+    if (( legacy_near )); then
+        R_SUMMARY+="${R_SUMMARY:+，}旧版阈值提示缺少原始错误依据，建议复查"
+    elif [[ -z $R_SUMMARY ]]; then
+        R_SUMMARY="$age_note（仅供参考，不参与健康评分）"
+    fi
 }
 status_of_ded() { if (( CUR_DED == 0 )); then echo good; elif (( CUR_DED < 25 )); then echo warn; else echo bad; fi; }
 status_txt() {
@@ -600,6 +707,8 @@ cumu_check() {
 
 quick_save() {  # id [status] summary
     local id=$1 st=$2 sum=$3
+    if (( CUR_DED > 0 && ${#CUR_ISS[@]} == 0 )); then CUR_ISS+=("扣分 ${CUR_DED}，原因未记录（请重新检测）"); fi
+    [[ $sum == 无异常 && ${#CUR_ISS[@]} -gt 0 ]] && sum=$(join_by '，' "${CUR_ISS[@]}")
     [[ -z $st ]] && st=$(status_of_ded)
     head2 "本项小结"
     if (( ${#CUR_ISS[@]} )); then
@@ -681,10 +790,18 @@ quick_one() {
 
     #---- 3. 总体健康 ----
     head2 "3. SMART 总体健康判定"
-    local health
+    local health SMART_A nvme_cw=0
+    SMART_A=$(sm "$name" -A 2>/dev/null)
+    if (( is_nvme )); then
+        local cw_text
+        cw_text=$(grep -m1 -i 'Critical Warning' <<< "$SMART_A" | awk -F: '{gsub(/[[:space:]]/,"",$2);print $2}')
+        [[ $cw_text =~ ^(0[xX][0-9a-fA-F]+|[0-9]+)$ ]] && nvme_cw=$((cw_text))
+    fi
     health=$(sm "$name" -H 2>&1)
     if grep -qE 'PASSED|: OK' <<< "$health"; then
         ok "总体健康自评: PASSED"
+    elif (( is_nvme && nvme_cw == 2 )) && grep -qiE 'FAILED|FAILURE' <<< "$health"; then
+        info "总体健康报告温度警告；温度仅供观察，不参与评分"
     elif grep -qiE 'FAILED|FAILURE' <<< "$health"; then
         bad "总体健康自评: FAILED —— 硬盘自判即将失效，请立即备份并更换！"
         pen 60 "SMART 总体健康 FAILED"
@@ -694,8 +811,6 @@ quick_one() {
 
     #---- 4. 关键属性 ----
     head2 "4. 关键 SMART 属性"
-    local SMART_A
-    SMART_A=$(sm "$name" -A 2>/dev/null)
     get_raw() { awk -v id="$1" '$1==id && NF>=10 {print $10; exit}' <<< "$SMART_A"; }
 
     local reall pend offl runc cmdto crc spinr e2e poh pcyc lcc ssc temp revt
@@ -744,7 +859,11 @@ quick_one() {
         cw=$(grep -m1 -i 'Critical Warning' <<< "$SMART_A" | awk -F: '{gsub(/ /,"",$2);print $2}')
         poh=$(num "$(grep -m1 -i 'Power On Hours' <<< "$SMART_A" | awk -F: '{gsub(/[ ,]/,"",$2);print $2}')")
         info "NVMe 严重警告: ${cw:-?}   介质错误: $mde   寿命已用: ${pused}%"
-        [[ -n $cw && $cw != 0x00 ]] && { bad "NVMe 严重警告位非零"; pen 40 "NVMe 严重警告 $cw"; }
+        if (( nvme_cw & ~2 )); then
+            bad "NVMe 非温度严重警告位非零"; pen 40 "NVMe 严重警告 $cw"
+        elif (( nvme_cw & 2 )); then
+            info "NVMe 温度警告位已置位；按控制器阈值显示，仅供观察"
+        fi
         (( mde > 0 )) && { bad "存在介质/数据完整性错误 $mde"; pen 30 "NVMe 介质错误 $mde"; }
         (( pused >= 90 )) && { warn "寿命已用 ${pused}%"; pen 10 "寿命已用 ${pused}%"; }
     elif [[ -z $SMART_A || $is_sas -eq 1 ]] && ! grep -qE '^ *[0-9]+ ' <<< "$SMART_A"; then
@@ -797,11 +916,11 @@ quick_one() {
             bad "以下属性已越过/曾越过厂商安全阈值："; dump "$failed"
             pen 20 "属性越过阈值"
         fi
-        near=$(awk 'NF>=10 && $1 ~ /^[0-9]+$/ && $7=="Pre-fail" && $6+0>0 && $9=="-" && $5+0 <= $6+10 \
-                    {print "ID "$1" "$2"  最差值 "$5" / 阈值 "$6}' <<< "$SMART_A")
+        near=$(awk 'NF>=10 && $1 ~ /^[0-9]+$/ && $7=="Pre-fail" && $6+0>0 && $9=="-" && $10+0>0 && $5+0 <= $6+10 \
+                    {print "ID "$1" "$2"  最差值 "$5" / 阈值 "$6"，原始计数 "$10}' <<< "$SMART_A")
         if [[ -n $near ]]; then
             warn "以下预失效属性的归一化值已接近阈值："; dump "$near"
-            pen 5 "属性接近阈值"
+            pen 5 "SMART 属性接近阈值：${near//$'\n'/、}"
         fi
     fi
 
@@ -809,9 +928,11 @@ quick_one() {
     head2 "5. 温度"
     if (( temp > 0 )); then
         info "当前温度 : ${temp} °C"
-        if   (( temp >= 60 )); then bad "温度过高，机械盘长期 >60°C 显著缩短寿命"; pen 25 "温度 ${temp}°C"
+        if (( is_nvme )); then
+            info "NVMe 温度不参与评分；请结合设备阈值观察"
+        elif (( temp >= 60 )); then bad "温度过高，机械盘长期 >60°C 显著缩短寿命"; pen 25 "温度 ${temp}°C"
         elif (( temp >= 55 )); then warn "温度偏高，建议改善风道"; pen 15 "温度 ${temp}°C"
-        elif (( temp >= 50 )); then warn "温度略高（理想 25-45°C）"; pen 5
+        elif (( temp >= 50 )); then warn "温度略高（理想 25-45°C）"; pen 5 "温度 ${temp}°C（略高）"
         else ok "温度处于健康区间"; fi
     else
         info "未能读取温度"
@@ -821,16 +942,14 @@ quick_one() {
     if [[ -n $lt ]]; then
         info "历史温度 : 最低/最高 $lt"
         ltmax=$(num "$(awk -F/ '{print $2}' <<< "$lt")")
-        (( ltmax >= 65 )) && { warn "历史最高温度曾达 ${ltmax}°C"; pen 3 "历史最高温 ${ltmax}°C"; }
+        (( ! is_nvme && ltmax >= 65 )) && { warn "历史最高温度曾达 ${ltmax}°C"; pen 3 "历史最高温 ${ltmax}°C"; }
     fi
 
     #---- 6. 寿命与负载 ----
     head2 "6. 使用寿命与负载"
     if (( poh > 0 )); then
         info "累计通电 : ${poh} 小时 (约 $((poh/24)) 天 / $((poh/8760)) 年)"
-        if   (( poh >= 50000 )); then warn "通电超 5 万小时，属超期服役，建议规划替换"; pen 15 "通电 ${poh}h"
-        elif (( poh >= 35000 )); then warn "通电时长较高，建议加强备份与巡检"; pen 8
-        else ok "通电时长在正常范围"; fi
+        info "通电时长仅供参考，不单独参与健康评分"
     fi
     (( pcyc > 0 )) && info "通电次数 : $pcyc"
     (( ssc  > 0 )) && info "启停次数 : $ssc"
@@ -1230,18 +1349,24 @@ speed_one() {
     local max=0 min=999999999 sum=0 w bar pos mark
     for k in "${sp[@]}"; do (( k>max )) && max=$k; (( k<min )) && min=$k; sum=$((sum+k)); done
     (( max == 0 )) && { bad "所有采样点读取失败"; pen 30 "读取失败"; save_result "$id" speed bad "读取失败"; return; }
-    head2 "速度曲线（外圈 → 内圈）"
+    local rota=${D_ROTA[$(di "$name")]} tran=${D_TRAN[$(di "$name")]}
+    if [[ $rota == 1 ]]; then head2 "速度曲线（外圈 → 内圈）"
+    else head2 "速度曲线（按采样位置）"; fi
     for ((k=0; k<pts; k++)); do
         w=$(( sp[k] * 40 / max )); printf -v bar '%*s' "$w" ''; bar=${bar// /█}
         pos=$(( k*100/(pts-1) ))
-        mark=""; (( flag[k] )) && mark="  ${C_RED}◀ 凹陷${C_OFF}"
+        mark=""
+        if (( flag[k] )); then
+            if [[ $rota == 1 ]]; then mark="  ${C_RED}◀ 凹陷${C_OFF}"
+            else mark="  ${C_BLU}◀ 波动${C_OFF}"; fi
+        fi
         out "$(printf '    %3d%%  %-40s %6s MB/s' "$pos" "$bar" "$(mbs "${sp[k]}")")$mark"
     done
     local avg=$(( sum/pts )) outer=${sp[0]} inner=${sp[pts-1]}
     out ""
-    info "峰值 $(mbs $max) MB/s   最低 $(mbs $min) MB/s   平均 $(mbs $avg) MB/s   内/外圈比 $(( outer>0 ? inner*100/outer : 0 ))%"
+    info "峰值 $(mbs $max) MB/s   最低 $(mbs $min) MB/s   平均 $(mbs $avg) MB/s"
+    [[ $rota == 1 ]] && info "内/外圈比 $(( outer>0 ? inner*100/outer : 0 ))%"
 
-    local rota=${D_ROTA[$(di "$name")]} tran=${D_TRAN[$(di "$name")]}
     if [[ $rota == 1 ]] && (( max < 60*1024 )); then
         warn "整体读速度偏低（峰值 < 60 MB/s）"
         [[ $tran == usb ]] && info "  USB 连接：若为 USB 2.0 口/盒，上限约 35-40 MB/s，属正常"
@@ -1249,8 +1374,12 @@ speed_one() {
     fi
     if (( errs > 0 )); then bad "有 $errs 个采样点读取出错"; pen 30 "采样点读取出错 $errs"; fi
     if (( anom > 0 )); then
-        warn "速度曲线有 $anom 处明显凹陷，可能是弱扇区反复重试，建议做 [6] 全盘读延迟扫描定位"
-        local p=$(( anom*8 )); (( p > 20 )) && p=20; pen $p "速度凹陷 $anom 处"
+        if [[ $rota == 1 ]]; then
+            warn "速度曲线有 $anom 处明显凹陷，建议结合全盘读延迟扫描复查"
+            local p=$(( anom*8 )); (( p > 20 )) && p=20; pen "$p" "速度凹陷 $anom 处"
+        else
+            info "固态盘有 $anom 处采样速度波动；单凭掉速不能判断弱块，不扣健康分"
+        fi
     else
         ok "速度曲线平滑，无明显凹陷"
     fi
@@ -1266,15 +1395,20 @@ speed_one() {
         if (( cnt > 0 )); then
             local oldavg=$(( oldsum/cnt ))
             if (( oldavg > 0 && avg*100 < oldavg*75 )); then
-                warn "平均速度较上次（$(age_str "$R_TS")）下降 $(( 100 - avg*100/oldavg ))%"
-                pen 5 "读速度较上次下降"
+                if [[ $rota == 1 ]]; then
+                    warn "平均速度较上次（$(age_str "$R_TS")）下降 $(( 100 - avg*100/oldavg ))%"
+                    pen 5 "读速度较上次下降"
+                else
+                    info "固态盘本次平均速度较上次下降 $(( 100 - avg*100/oldavg ))%；仅作性能对比，不扣健康分"
+                fi
             else
                 info "与上次（$(age_str "$R_TS")）相比平均速度变化 $(( avg*100/oldavg - 100 ))%"
             fi
         fi
     fi
     local sum_txt
-    sum_txt="峰值 $(mbs $max) / 平均 $(mbs $avg) MB/s，凹陷 $anom 处"
+    if [[ $rota == 1 ]]; then sum_txt="峰值 $(mbs $max) / 平均 $(mbs $avg) MB/s，凹陷 $anom 处"
+    else sum_txt="峰值 $(mbs $max) / 平均 $(mbs $avg) MB/s，采样波动 $anom 处（不计入健康评分）"; fi
     save_result "$id" speed "$(status_of_ded)" "$sum_txt" "R_CURVE=${sp[*]}"
 }
 
@@ -1856,9 +1990,12 @@ compute_overall() {
     # new quick check and full set are recorded; report viewing never rewrites it.
     if [[ -n $marker ]] && load_result "$id" iface \
        && [[ $R_BATCH != "$marker" ]] && (( R_TS >= full_ts )); then marker=""; fi
+    OV_MARKER=$marker
     OV_SCORE=100; OV_ISS=(); OV_ROWS=()
     for m in "${MODS[@]}"; do
         load_result "$id" "$m" || continue
+        [[ $m == quick ]] && normalize_quick_result
+        [[ $m == speed ]] && normalize_ssd_speed_result "$name"
         any=1
         age=$(( $(now) - R_TS ))
         (( age > VALID_DAYS*86400 || age < 0 )) && stale=1
@@ -1914,7 +2051,10 @@ report_table() {
     for name in "$@"; do
         compute_overall "$name"; i=$(di "$name")
         out "$(printf '  %-10s %-24.24s %-6s %-6s ' "/dev/$name" "${D_MODEL[$i]}" "$OV_SCORE" "$OV_COVER")${OV_COLOR}${OV_GRADE}${OV_COLOR:+$C_OFF}"
-        (( OV_LEVEL > WORST )) && WORST=$OV_LEVEL
+        # Partial coverage is uncertainty, not by itself a health warning.
+        if (( OV_LEVEL == 2 )); then WORST=2
+        elif (( OV_LEVEL == 1 && ( ${#OV_ISS[@]} > 0 || OV_STALE ) && WORST < 1 )); then WORST=1
+        fi
     done
     hr
 }
@@ -2276,6 +2416,18 @@ status_lines() {
     return 0
 }
 
+# Web polling must not probe every drive while firmware self-tests are active.
+status_brief() {
+    if ! instance_alive; then say "  没有正在运行的实例"; return; fi
+    say "  PID ${I_PID}   已运行 $(fmt_dur $(( $(now) - I_START )))   ${I_MODE:-运行中}"
+    say "  当前任务: ${I_TASK:-（在菜单中，空闲）}   目标: ${I_TARGETS}"
+    say "  日志: ${I_LOG}"
+    if [[ -r $I_LOG ]]; then
+        say "  ── 最近日志 ──"
+        tail -n 12 -- "$I_LOG" | cut -c 1-120
+    fi
+}
+
 stop_instance() {
     instance_alive || { say "  没有正在运行的实例"; return 1; }
     [[ -d $I_RUNDIR && ! -L $I_RUNDIR ]] && : > "$I_RUNDIR/stop_all"
@@ -2312,6 +2464,62 @@ status_view() {   # status_view [日志偏移 日志文件]：实时刷新；任
     elif (( finished )); then
         printf '%s\n' "${REDRAW_LINES[@]}"
     fi
+}
+
+# Machine-readable snapshot for the local Web service. Keep scoring in the
+# same code path as the terminal report; this mode never starts a scan.
+json_string() {
+    local s=$1 c i n LC_ALL=C
+    printf '"'
+    for ((i=0; i<${#s}; i++)); do
+        c=${s:i:1}
+        case $c in
+            '"') printf '\\"' ;;
+            '\') printf '\\\\' ;;
+            $'\n') printf '\\n' ;;
+            $'\r') printf '\\r' ;;
+            $'\t') printf '\\t' ;;
+            *) printf -v n '%d' "'$c"; if (( n < 32 )); then printf '\\u%04x' "$n"; else printf '%s' "$c"; fi ;;
+        esac
+    done
+    printf '"'
+}
+
+json_snapshot() {
+    local name id i m first=1 comma row ts st ded summary
+    enumerate_disks
+    printf '{"version":'; json_string "$SCRIPT_VERSION"
+    printf ',"disks":['
+    for name in "${D_NAME[@]}"; do
+        (( first )) || printf ','; first=0
+        prepare_disk "$name"; id=${DID[$name]}; i=$(di "$name")
+        compute_overall "$name"
+        printf '{"name":'; json_string "$name"
+        printf ',"id":'; json_string "$id"
+        printf ',"model":'; json_string "${D_MODEL[$i]}"
+        printf ',"size":'; json_string "${D_SIZE[$i]}"
+        printf ',"rotation":'; json_string "${D_ROTA[$i]}"
+        printf ',"transport":'; json_string "${D_TRAN[$i]}"
+        printf ',"score":'; if [[ $OV_SCORE == - ]]; then printf 'null'; else printf '%s' "$OV_SCORE"; fi
+        printf ',"coverage":'; json_string "$OV_COVER"
+        printf ',"grade":'; json_string "$OV_GRADE"
+        printf ',"level":%s,"stale":%s,"modules":[' "$OV_LEVEL" "$OV_STALE"
+        comma=0
+        for m in "${MODS[@]}"; do
+            load_result "$id" "$m" || continue
+            [[ $m == quick ]] && normalize_quick_result
+            [[ $m == speed ]] && normalize_ssd_speed_result "$name"
+            (( comma )) && printf ','; comma=1
+            printf '{"name":'; json_string "$m"
+            printf ',"timestamp":%s,"status":' "$R_TS"; json_string "$R_STATUS"
+            printf ',"summary":'; json_string "$R_SUMMARY"
+            printf ',"deduction":%s,"issues":' "$R_DEDUCT"; json_string "$R_ISSUES"
+            printf ',"current":'; if [[ $OV_COVER == 完整 && -n $R_BATCH && $R_BATCH == "$OV_MARKER" ]] && (( $(now) - R_TS <= VALID_DAYS*86400 )); then printf 'true'; else printf 'false'; fi
+            printf '}'
+        done
+        printf ']}'
+    done
+    printf ']}\n'
 }
 
 #==============================================================================
@@ -2436,8 +2644,10 @@ ${SCRIPT_NAME} v${SCRIPT_VERSION} —— 机械硬盘全方位健康评估 (Debi
 
 后台任务（终端断开后任务会自动转入后台跑完）:
       --status             查看后台任务实时进度
+      --json               输出结构化磁盘快照与当前评分（不启动检查）
       --stop               安全停止后台任务（全盘扫描进度保存，可续扫）
       --detach             批处理任务交给 systemd 后台运行（与终端/SSH 脱钩）
+      --no-install         缺少依赖时不自动安装软件包
 
   兼容 v1 参数: -t short|long → --run short/long；-s → speed；-b → badblocks；-w 忽略
 
@@ -2472,7 +2682,12 @@ while [[ $# -gt 0 ]]; do
         -y|--yes)        ASSUME_YES=1 ;;
         -q|--quiet)      QUIET=1; BATCH=1 ;;
         --status)        CLI_MODE=status ;;
+        --status-brief)  CLI_MODE=status_brief ;;
+        --json)          CLI_MODE=json ;;
+        --no-install)    NO_INSTALL=1 ;;
         --detach)        DETACH_REQ=1 ;;
+        --web-job-id)    [[ ${2:-} =~ ^[0-9a-f]{24}$ ]] || die "非法 Web 任务编号"
+                         WEB_JOB_ID=$2; shift ;;
         --plan)          [[ -n "${2:-}" ]] || die "$1 需要参数"; PLAN_FILE=$2; shift ;;
         --stop)          CLI_MODE=stop ;;
         -h|--help)       usage; exit 0 ;;
@@ -2481,11 +2696,33 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+if [[ -n $WEB_JOB_ID && $DETACH_REQ -eq 0 ]]; then
+    WEB_JOB_STARTED=$(now)
+    trap 'job_finish "$?"' EXIT
+fi
+
 #------------------------------ 前置检查 --------------------------------------
 [[ $EUID -eq 0 ]] || die "本脚本必须以 root 运行 (sudo $SCRIPT_NAME)"
 (( BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 3) )) || die "需要 bash ≥ 4.3"
 if (( ! BATCH )) && [[ -z ${CLI_MODE:-} ]]; then
     [[ -t 0 && -t 1 ]] || die "交互模式需要终端；非交互调用请加 -a / -d / --run"
+fi
+
+if [[ ${CLI_MODE:-} == json ]]; then
+    [[ ! -L $STATE_DIR ]] || die "数据目录不能是符号链接"
+    mkdir -p "$STATE_DIR" || die "无法创建数据目录 $STATE_DIR"
+    load_settings
+    json_snapshot
+    exit 0
+fi
+if [[ ${CLI_MODE:-} == status || ${CLI_MODE:-} == status_brief || ${CLI_MODE:-} == stop ]]; then
+    [[ ! -L $STATE_DIR ]] || die "数据目录不能是符号链接"
+    mkdir -p "$STATE_DIR" || die "无法创建数据目录 $STATE_DIR"
+    RUNINFO="$STATE_DIR/running.env"
+    if [[ $CLI_MODE == status ]]; then enumerate_disks; status_view
+    elif [[ $CLI_MODE == status_brief ]]; then status_brief
+    else stop_instance; fi
+    exit 0
 fi
 
 if [[ -r /etc/os-release ]]; then
@@ -2506,7 +2743,7 @@ command -v badblocks >/dev/null 2>&1 || MISS_PKG+=(e2fsprogs)
 if (( ${#MISS_PKG[@]} )); then
     mapfile -t MISS_PKG < <(printf '%s\n' "${MISS_PKG[@]}" | sort -u)
     say "缺少依赖: ${MISS_PKG[*]}"
-    if ask_yn "是否用 apt 安装?" Y; then
+    if (( ! NO_INSTALL )) && ask_yn "是否用 apt 安装?" Y; then
         export DEBIAN_FRONTEND=noninteractive
         if ! apt-get update -qq || ! apt-get install -y -qq "${MISS_PKG[@]}"; then
             die "依赖安装失败，请手动执行: apt install ${MISS_PKG[*]}"
@@ -2537,8 +2774,13 @@ if (( DETACH_REQ )); then
     declare -a PASS=()
     for a in "${ORIG_ARGS[@]}"; do [[ $a == --detach ]] || PASS+=("$a"); done
     if [[ -z $LOG_FILE ]]; then mkdir -p "$LOG_DIR"; LOG_FILE="${LOG_DIR}/hdd-health-$(date +%Y%m%d-%H%M%S).log"; PASS+=(-l "$LOG_FILE"); fi
+    WEB_JOB_STARTED=$(now)
+    job_write accepted || die "无法记录 Web 任务状态"
     unit="hdd-health-$(now)"
-    systemd_launch "$unit" "${PASS[@]}" -q || die "systemd-run 启动失败"
+    if ! systemd_launch "$unit" "${PASS[@]}" -q; then
+        job_write failed 3 || true
+        die "systemd-run 启动失败"
+    fi
     echo "已交给系统后台运行（systemd 单元 ${unit}），可以关闭终端。"
     echo "  查看进度: $SCRIPT_NAME --status"
     echo "  安全停止: $SCRIPT_NAME --stop"
@@ -2582,6 +2824,7 @@ trap on_int INT TERM
 trap on_hup HUP
 trap cleanup EXIT
 I_START=$(now)
+[[ -n $WEB_JOB_ID ]] && { WEB_JOB_STARTED=$I_START; job_write running || true; }
 
 {
     echo "########################################################################"

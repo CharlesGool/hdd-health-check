@@ -1,10 +1,18 @@
+---
+name: project-design
+description: Architecture, data model, and boundaries
+metadata:
+  version: "0.1.0"
+  lang: en
+---
+
 # hdd-health-check — Design
 
 This document describes the `v2.3.0` behavior, constraints and host-side state. This documentation describes `v2.3.0`. See GitHub Releases for tagged versions and downloads. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
 
 ## Multi-language
 
-**English** | [简体中文](zh_cn/DESIGN.md) | [繁體中文](zh_tw/DESIGN.md) | [繁體中文（香港）](zh_hk/DESIGN.md) | [हिन्दी](hi/DESIGN.md) | [Español](es/DESIGN.md) | [العربية](ar/DESIGN.md) | [Français](fr/DESIGN.md)
+**English** | [简体中文](zh_cn/DESIGN.md) | [繁體中文](zh_tw/DESIGN.md) | [繁體中文(香港)](zh_hk/DESIGN.md) | [हिन्दी](hi/DESIGN.md) | [Español](es/DESIGN.md) | [العربية](ar/DESIGN.md) | [Français](fr/DESIGN.md)
 
 ## Documentation
 
@@ -18,13 +26,17 @@ This document describes the `v2.3.0` behavior, constraints and host-side state. 
 - Provide quick HDD triage using SMART status and attributes, SMART error/self-test logs, mounts, kernel I/O errors and trends; present a heuristic score and actionable grade, not a failure probability.
 - Offer independent drive-internal short/long SMART tests, sampled raw reads, resumable surface latency scans, optional targeted read-only `badblocks` rechecks, full read-only `badblocks`, and post-repair interface read stress checks.
 - Support interactive selection, batch execution, persistent results, reuse and historical reports; optional transient systemd handoff for long-running tasks.
-- Exclude data recovery, write-mode `badblocks`, secure erase, filesystem modification, and a permanent monitoring daemon. SSD/NVMe inclusion is optional but HDD scoring is not designed to diagnose those devices fully. Structured JSON/CSV, deeper SAS scoring and NVMe-specific scoring are not implemented goals.
+- Exclude data recovery, write-mode `badblocks`, secure erase and filesystem modification. The Bash checker remains one-shot; an optional local Web companion provides a persistent controller and scheduled quick checks. SSD/NVMe inclusion is optional but HDD scoring is not designed to diagnose those devices fully. The JSON snapshot supports the Web UI; deeper SAS scoring and NVMe-specific scoring are not implemented goals.
 
 ## Architecture
 
 One Bash 4.3+ script enumerates disks with `lsblk`, chooses targets by menu or CLI, probes SMART access with `smartctl`, performs requested modules and generates a composite report. ATA SMART attributes and SAS/SCSI defect/error counters take separate scoring paths. The quick check includes mount and kernel-log evidence; speed, surface and interface checks use raw device reads. Results and per-device identity are persisted so later checks can reuse them. Interactive decisions can be transferred to a batch process via a constrained plan; a private lock prevents concurrent instances using the same state directory. A transient `systemd-run` unit handles detached jobs where available; `--status` and `--stop` consult the recorded instance.
 
 A full batch records quick, short and long SMART tests, speed sampling and a completed surface scan under one batch marker; it repeats the quick SMART/ATA/CRC probe at the end to capture post-scan changes. Only completed, valid results from that batch qualify for a numeric composite score. Reuse, interruption, expiry, legacy state without a batch marker and later interface verification leave older records visible as historical/pending review and the overall grade partial/unknown. Merely generating a report does not update the quick-check comparison baseline. Interface verification records its own resolved/unresolved conclusion; it does not reattribute old errors or make an old batch current. An ATA total with no previous quick-check counter is unresolved (5-point deduction); this risk persists through subsequent checks and complete assessments, including older records lacking a risk field. An increased total deducts 20 points; stability alone neither proves resolution nor makes an old error new. Interface verification cannot independently attribute ATA errors to an interface repair. Isolated slow reads prompt performance retesting rather than a bad-sector diagnosis; repeated surface read failures still deduct 40 points. These are heuristic weights, not failure probabilities.
+
+Quick-check power-on hours are displayed as usage information and never deduct health points on their own. Near-threshold ATA Pre-fail warnings require a nonzero raw error count as corroboration; historical threshold-only warnings without stored raw evidence become pending review without a deduction. New warning records include the SMART attribute and measured values. The Attention cards show the saved check cause directly. Web check and stop confirmations use an accessible in-page dialog, and the detail drawer uses the model as its heading with the device path beneath it.
+
+For solid-state drives, speed-sample dips and average-speed changes between runs are performance observations and do not reduce the health score; actual read failures still do. Previously saved speed results are interpreted the same way without changing their state files. The Web disk list fits as many cards as the available CSS viewport width allows, up to four on wider screens; browser zoom changes that width and reflows the cards. The dashboard disk card scrolls to the list.
 
 ## Design Constraints
 
@@ -49,4 +61,8 @@ A full batch records quick, short and long SMART tests, speed sampling and a com
 | `apt-get` | Offers missing-package installation; `-y` can accept it automatically. This changes host packages and may require network access. |
 | `systemd-run` | Optional transient unit for detached tasks; `--stop` requests shutdown of the script's recorded process, not a hardware self-test. |
 
-No network API is used by the health checks themselves. Scripts and integrations may use process exit codes `0` healthy, `1` attention, `2` danger, `3` runtime failure; see [Guidance](../README.md#guidance). There is no stable structured output API.
+The checks themselves use no network API. The optional local Web service uses a loopback API in manual mode; the installer enables authenticated LAN access, while `--json` provides a structured read-only snapshot using the same composite-scoring function as the terminal report. The Web login issues a short-lived, HTTP-only session cookie. A private exact-IPv4 allowlist may bypass the password for ordinary operations. Any authenticated visitor, including one admitted by that list, may edit it and the disk sleep policy; changing the Web password requires the current password. The service reads SMART details on demand when a disk is opened; its raw SMART verdict does not replace the checker's composite score. `--no-install` disables package installation during unattended calls. Web architecture, schedule and security boundaries are described in [WEB](WEB.md). Scripts may use exit codes `0` healthy, `1` attention, `2` danger, `3` runtime failure; see [Guidance](../README.md#guidance).
+
+Disk capacity uses a shared decimal/binary unit toggle and a separate detail button, leaving the row itself noninteractive. The disk snapshot includes physical capacity and mounted filesystem use from `lsblk`, deduplicating mounted filesystems by UUID, plus allocation from ZFS pools mapped to enumerated disks. These have different scopes when RAID or unmounted volumes exist. SSD detail derives host writes from NVMe Data Units Written or ATA Device Statistics with an explicit logical sector size, leaving vendor-specific counters unknown. The Web assessment endpoint filters the current server-side enumeration by SATA transport, rotation, SSD rotation, NVMe identity, or all disks. It validates one of the eight existing check modules and launches one detached `<module> --rescan` batch for the selected names, adding `--include-ssd` when needed. Device names are never accepted from the browser for this operation. Link data comes from smartctl's SATA version/current speed and the nearest available Linux sysfs SATA or NVMe PCIe link; absent fields remain unknown. The dashboard classifies media with rotation and transport separately and reads temperature in bounded background SMART probes that do not wake standby SATA disks by default. A private Web preference can opt into serially waking sleeping rotational disks once per page visit; standby is identified explicitly and shown as such instead of a missing temperature. The SMART detail shows device-reported form factor when present; transport alone cannot establish M.2 shape. SSD/NVMe can run each selected module, including the existing full-check workflow; only a complete full batch creates a current composite score, which remains HDD-oriented and uncalibrated for them.
+
+The detached launcher writes an accepted Web task receipt before asking systemd to start a transient unit. The worker updates it to running and records completed, stopped, or failed at exit. The Web status endpoint pairs an active receipt with the existing live process status and a bounded log tail. It removes terminal receipts and submitted receipts lacking a live process for over 15 seconds; per-disk results and host logs remain. A nonzero health result (`1` or `2`) remains a completed check rather than a launch failure. The UI uses the same warning result set for its attention count, filtered list, and detail causes. Each saved deduction records a reason; legacy records without one are shown as incomplete evidence instead of "no anomaly."
