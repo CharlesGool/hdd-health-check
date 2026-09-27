@@ -41,18 +41,18 @@ This record preserves accepted historical decisions, known limitations and relea
 
 ## Handoff — 2026-09-27
 
-- Branch `main`: the Web UI, Debian installer, scoring fixes, tests, and documentation are committed locally for source publication. No release tag, GitHub Release, or snapshot is planned for this update.
+- Branch `main`: the Web UI, Debian installer, scoring fixes, tests, and documentation are published as source on GitHub. This update has no new tag, GitHub Release, or snapshot.
 - Completed: authenticated LAN installation was checked on a Debian NAS with 13 enumerated drives. The service started and the browser showed disk data, task pages, themed confirmations, and responsive layouts. The installer preserved the existing password and host state. No new disk scan or reboot was run during the final UI checks.
 - Checks: Vue type check/build, shell syntax, synthetic scoring/state tests, Web authentication/job/assessment/SMART tests, authenticated API reads, LAN browser interactions, and documentation format checks passed. Hardware-wide full assessment and post-reboot service recovery remain unverified. Old threshold-only findings without raw evidence remain pending review until a future check.
 - Remaining documentation work: the multilingual structure checker reports 60 existing directory-name and navigation-template mismatches. The content formatter reports zero errors and six warnings. These structural issues do not affect the documented source installation path.
-- Blocker: outbound connections to GitHub timed out during the source push and remote verification, so the new commit is not confirmed on the remote branch.
-- Next action: retry a normal fast-forward push of `main` when GitHub connectivity returns, verify the remote commit, then observe normal NAS use and a future completed Web task. No temporary project rules were found.
+- Next action: observe normal NAS use and a future completed Web task; later fix the existing multilingual directory and navigation mismatches. No temporary project rules were found.
 
 ## Commit History
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this source publication commit.
 
-- 2026-09-27 | `HEAD` | `feat(web): publish LAN dashboard and docs` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
 - 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`

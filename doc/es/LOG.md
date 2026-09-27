@@ -43,17 +43,17 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 ## Entrega - 2026-09-27
 
-- Rama `main`: la interfaz Web inédita, el instalador Debian, las correcciones de puntuación, las pruebas y la documentación están listos para un commit y push revisados. Esta actualización no crea etiqueta, GitHub Release ni instantánea.
+- Rama `main`: la interfaz Web, el instalador Debian, las correcciones de puntuación, las pruebas y la documentación ya se publicaron como código fuente en GitHub. Esta actualización no crea etiqueta, GitHub Release ni instantánea.
 - Completado: la instalación LAN autenticada en un NAS Debian enumeró 13 discos; arrancó el servicio y el navegador mostró datos de discos, tareas, diálogos y diseño adaptable. El instalador conservó la contraseña y el estado del host. La comprobación final de la interfaz no inició un escaneo ni reinició el equipo.
 - Pruebas: pasaron tipos y compilación Vue, sintaxis shell, pruebas sintéticas de puntuación y estado, autenticación y tareas Web, lecturas de API y navegador LAN. La evaluación completa en HDD real y la recuperación tras reinicio siguen sin comprobarse. Los avisos antiguos sin prueba bruta esperan una nueva revisión.
-- Bloqueo: la conexión con GitHub agotó el tiempo al enviar el código y verificar la rama remota; no se ha confirmado el nuevo commit en el servidor. Al volver la conexión, haga un push fast-forward normal de `main` y compruebe el commit.
-- Siguiente acción: enviar el código revisado de `main` y observar el uso normal del NAS y una futura tarea Web completada. No se encontraron reglas temporales del proyecto.
+- Siguiente acción: observar el uso normal del NAS y una futura tarea Web completada; después corregir la estructura de directorios de idiomas y navegación. No se encontraron reglas temporales del proyecto.
 
 ## Historial de commits
 
 Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de publicación del código fuente.
 
-- 2026-09-27 | `HEAD` | `feat(web): publish LAN dashboard and docs` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
 - 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`

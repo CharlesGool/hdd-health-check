@@ -43,17 +43,17 @@ metadata:
 
 ## 交接 - 2026-09-27
 
-- 分支 `main`: 未發佈的 Web 介面, Debian 安裝程式, 評分修正, 測試及文件準備提交並推送原始碼;本次不建立新標籤, GitHub Release 或快照.
+- 分支 `main`: Web 介面, Debian 安裝程式,評分修正,測試及文件已作為原始碼推送至 GitHub.本次沒有建立新標籤, GitHub Release 或快照.
 - 已完成: 在 Debian NAS 的局域網認證安裝中辨識 13 隻硬碟;服務啟動,瀏覽器顯示硬碟資料,任務頁面,頁面內確認對話框和自適應版面.安裝程式保留密碼與主機狀態.最後的介面檢查未開始掃描或重新開機.
 - 檢查: Vue 類型與建置, shell 語法,模擬評分及狀態, Web 認證與任務,認證 API 和局域網瀏覽器互動通過.完整實體硬碟評估及重新開機後恢復仍未驗證.舊版缺少原始依據的閾值提示待日後覆核.
-- 阻礙: 推送原始碼及核對遠端時連線 GitHub 逾時,新提交尚未確認到達遠端.連線恢復後應正常快進推送 `main` 並核對提交.
-- 下一步: 推送已審查的 `main` 原始碼,觀察 NAS 一般使用及下一個完成的網頁任務.未發現臨時專案規則.
+- 下一步: 觀察 NAS 一般使用及下一個完成的網頁任務,之後修正文件語言目錄和導覽結構.未發現臨時專案規則.
 
 ## 提交記錄
 
 主分支完整記錄: `git log main --stat`.`HEAD` 指本次原始碼發布提交.
 
-- 2026-09-27 | `HEAD` | `feat(web): publish LAN dashboard and docs` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
 - 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`

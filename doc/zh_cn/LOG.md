@@ -43,17 +43,17 @@ metadata:
 
 ## 交接 - 2026-09-27
 
-- 分支 `main`: 未发布的 Web 界面, Debian 安装器, 评分修正, 测试和文档已准备提交并推送源码.本次不创建新标签, GitHub Release 或快照.
+- 分支 `main`: Web 界面, Debian 安装器,评分修正,测试和文档已作为源码推送至 GitHub.本次没有创建新标签, GitHub Release 或快照.
 - 已完成: 在 Debian NAS 的局域网认证安装中识别到 13 块盘;服务启动,浏览器显示磁盘数据,任务页面,站内确认弹窗和自适应布局.安装器保留原密码与主机状态.最终界面检查没有启动新扫描或重启.
 - 检查: Vue 类型检查和构建, shell 语法,模拟评分及状态测试, Web 认证和任务测试,认证接口读取以及局域网浏览器交互通过.真实硬盘完整评估与重启后恢复仍未验证.旧版缺少原始依据的阈值提示待以后复查.
-- 阻碍: 推送源码及核对远端时连接 GitHub 超时,新提交尚未确认到达远端.恢复连接后应正常快进推送 `main` 并核对提交.
-- 下一步: 推送已审查的 `main` 源码,再观察正常 NAS 使用及后续完成的网页任务.未发现临时项目规则.
+- 下一步: 观察正常 NAS 使用及后续完成的网页任务,之后修正文档语言目录和导航结构.未发现临时项目规则.
 
 ## 提交历史
 
 主分支完整历史: `git log main --stat`.`HEAD` 指本次源码发布提交.
 
-- 2026-09-27 | `HEAD` | `feat(web): publish LAN dashboard and docs` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
 - 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`

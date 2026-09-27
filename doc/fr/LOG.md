@@ -43,17 +43,17 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 ## Transmission - 2026-09-27
 
-- Branche `main` : l’interface Web non publiée, l’installateur Debian, les corrections du score, les tests et la documentation sont prêts pour un commit et un push examinés. Cette mise à jour ne crée ni tag, ni GitHub Release, ni instantané.
+- Branche `main` : le code source de l’interface Web, de l’installateur Debian, des corrections du score, des tests et de la documentation a été publié sur GitHub. Cette mise à jour ne crée ni tag, ni GitHub Release, ni instantané.
 - Terminé : une installation LAN authentifiée sur un NAS Debian a énuméré 13 disques ; le service a démarré et le navigateur a affiché disques, tâches, dialogues et mise en page adaptée. L’installateur a conservé le mot de passe et l’état de l’hôte. Le dernier contrôle de l’interface n’a lancé aucun scan ni redémarrage.
 - Vérifications : types et compilation Vue, syntaxe shell, tests synthétiques du score et de l’état, authentification et tâches Web, lectures d’API et navigateur LAN ont réussi. L’évaluation complète sur un vrai HDD et la reprise après redémarrage restent non vérifiées. Les anciens avis sans preuve brute attendent une nouvelle vérification.
-- Blocage : la connexion à GitHub a expiré lors du push du code et de la vérification de la branche distante ; le nouveau commit n’est pas confirmé sur le serveur. Une fois la connexion rétablie, faire un push fast-forward normal de `main` et vérifier le commit.
-- Suite : pousser le code révisé de `main` puis observer l’usage courant du NAS et une prochaine tâche Web terminée. Aucune règle temporaire du projet trouvée.
+- Suite : observer l’usage courant du NAS et une prochaine tâche Web terminée ; corriger ensuite la structure des répertoires de langues et de navigation. Aucune règle temporaire du projet trouvée.
 
 ## Historique des commits
 
 Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de publication du code source.
 
-- 2026-09-27 | `HEAD` | `feat(web): publish LAN dashboard and docs` | `git show HEAD`
+- 2026-09-27 | `HEAD` | `docs(handoff): confirm source publication` | `git show HEAD`
+- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
 - 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
 - 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
 - 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`
