@@ -142,8 +142,6 @@ const assessmentSelectOptions = computed(() => availableAssessmentModules.value.
 const diskSelectOptions = computed(() => (activeDisk.value?.rotation === '1' ? assessmentModules : ssdModules).map(value => ({ value, label: moduleLabel(value) })))
 function selectLanguage(value: string) { if (value in strings) lang.value = value as Lang }
 function selectScope(value: string) { if (scopeOptions.includes(value as Scope)) assessmentScope.value = value as Scope }
-watch(availableAssessmentModules, values => { if (!values.includes(assessmentModule.value)) assessmentModule.value = 'full' })
-watch(diskSelectOptions, values => { if (!values.some(option => option.value === moduleChoice.value)) moduleChoice.value = 'quick' })
 const relevantModules = (disk: Disk) => disk.score === null ? disk.modules : disk.modules.filter(m => m.current)
 const attentionModules = (disk: Disk) => relevantModules(disk).filter(m => m.status === 'bad' || m.status === 'warn')
 const attentionDisks = computed(() => snapshot.value?.disks.filter(d => attentionModules(d).length > 0) || [])
@@ -212,6 +210,8 @@ function showAttention() { go('attention') }
 function showTasks() { go('tasks') }
 const themeLabel = (name: string) => t(({ 'slate-blue': 'themeSlateBlue', sage: 'themeSage', teal: 'themeTeal', plum: 'themePlum' }[name] || 'themeSlateBlue') as Key)
 const scopeLabel = (name: Scope) => t(({ sata: 'scopeSata', hdd: 'scopeHdd', ssd: 'scopeSsd', nvme: 'scopeNvme', all: 'scopeAll' }[name]))
+watch(availableAssessmentModules, values => { if (!values.includes(assessmentModule.value)) assessmentModule.value = 'full' })
+watch(diskSelectOptions, values => { if (!values.some(option => option.value === moduleChoice.value)) moduleChoice.value = 'quick' })
 const assessmentNote = computed(() => {
   if (assessmentModule.value === 'full' && assessmentDisks.value.some(d => d.rotation !== '1'))
     return t(assessmentDisks.value.every(d => d.rotation !== '1') ? 'assessmentNoteFullSsd' : 'assessmentNoteFullMixed')
