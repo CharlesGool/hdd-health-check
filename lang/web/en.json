@@ -99,6 +99,8 @@
   "loginTitle": "Sign in",
   "loginDescription": "Enter the Web password to manage this device.",
   "password": "Password",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
   "login": "Sign in",
   "ipLogin": "Continue with IP access",
   "logout": "Sign out",

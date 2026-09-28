@@ -99,6 +99,8 @@
   "loginTitle": "登录",
   "loginDescription": "输入 Web 密码以管理这台设备。",
   "password": "密码",
+  "showPassword": "显示密码",
+  "hidePassword": "隐藏密码",
   "login": "登录",
   "ipLogin": "使用 IP 免密访问",
   "logout": "退出登录",

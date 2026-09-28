@@ -128,3 +128,23 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .theme-swatch.ocean{background:#245f86}.theme-swatch.olive{background:#57612e}.theme-swatch.terracotta{background:#8b4d38}.theme-swatch.indigo{background:#4f5487}
 .theme-button{min-height:34px;padding:5px 9px;font-size:12px}.theme-swatch{width:12px;height:12px}
 @media(max-width:700px){.main-nav a{min-height:40px;flex:none;padding:0 10px;font-size:12px}}
+
+/* Login dimensions follow the shared Web UI login template. */
+.topbar.app-login-header{box-sizing:border-box;height:auto;min-height:72px;padding:12px 24px}
+.app-login-brand{display:inline-flex;align-items:center;gap:12px}
+.app-login-brand-logo{width:40px;height:40px;flex:none}
+.app-login-main{box-sizing:border-box;min-height:calc(100dvh - 72px);padding:32px 24px;display:grid;place-items:center}
+.login-card.app-login-card{box-sizing:border-box;width:min(100%,480px);padding:32px;border-radius:16px}
+.app-login-card :is(.app-login-field,.app-login-action){box-sizing:border-box;min-height:48px}
+.app-login-card .app-login-field{height:48px}
+.password-field{position:relative;min-width:0}
+.password-field .app-login-field{width:100%;padding-inline-end:54px;border:1px solid var(--input);border-radius:8px;background:var(--card);color:var(--foreground)}
+.app-login-password-toggle{position:absolute;inset-block-start:50%;inset-inline-end:2px;transform:translateY(-50%);display:grid;place-items:center;min-width:44px;min-height:44px;border:0;border-radius:7px;background:transparent;color:var(--muted-foreground)}
+.app-login-password-toggle:hover{background:var(--accent);color:var(--foreground)}
+.app-login-footer{margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.app-login-version{margin-right:auto;color:var(--muted-foreground);font-size:12px;font-weight:600;text-decoration:underline;white-space:nowrap}
+.app-login-language{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
+.app-login-language label{margin:0;color:var(--muted-foreground);font-size:12px}
+.app-login-language .ui-select{min-width:130px;max-width:min(220px,100%)}
+.settings-body .password-field .app-login-field{width:100%;min-height:48px}
+@media(max-width:520px){.topbar.app-login-header{padding-inline:16px}.app-login-main{padding:24px 16px}.login-card.app-login-card{padding:24px}.app-login-language{width:100%;margin-left:0;justify-content:space-between}.app-login-language label{white-space:nowrap}.app-login-language .ui-select{width:160px;flex:0 1 160px}}

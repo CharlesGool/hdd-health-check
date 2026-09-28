@@ -99,6 +99,8 @@
   "loginTitle": "Connexion",
   "loginDescription": "Saisissez le mot de passe Web pour gérer cet appareil.",
   "password": "Mot de passe",
+  "showPassword": "Afficher le mot de passe",
+  "hidePassword": "Masquer le mot de passe",
   "login": "Se connecter",
   "ipLogin": "Continuer avec l’adresse IP",
   "logout": "Déconnexion",

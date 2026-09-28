@@ -99,6 +99,8 @@
   "loginTitle": "साइन इन",
   "loginDescription": "इस डिवाइस को प्रबंधित करने के लिए वेब पासवर्ड दर्ज करें।",
   "password": "पासवर्ड",
+  "showPassword": "पासवर्ड दिखाएँ",
+  "hidePassword": "पासवर्ड छिपाएँ",
   "login": "साइन इन",
   "ipLogin": "IP से प्रवेश करें",
   "logout": "साइन आउट",

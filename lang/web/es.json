@@ -99,6 +99,8 @@
   "loginTitle": "Iniciar sesión",
   "loginDescription": "Introduce la contraseña web para administrar este equipo.",
   "password": "Contraseña",
+  "showPassword": "Mostrar contraseña",
+  "hidePassword": "Ocultar contraseña",
   "login": "Iniciar sesión",
   "ipLogin": "Acceder por IP",
   "logout": "Cerrar sesión",
