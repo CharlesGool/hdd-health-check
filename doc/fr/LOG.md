@@ -43,6 +43,7 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 ## Transmission - 2026-09-28
 
+- Transmission actuelle : la compilation de développement `dev-c60d602` est installée sur le NAS Debian dans `/root/apps/hdd-health-check` ; `hdd-health-web.service` est actif et activé au démarrage sur `0.0.0.0:8765`. L’installateur a conservé le mot de passe et les sauvegardes précédentes de l’application et de l’unité. Le navigateur du réseau local ouvre la page de connexion sans erreur d’initialisation JavaScript ; les requêtes authentifiées en lecture seule pour les disques, les tâches et le journal ont réussi (13 disques, aucune tâche active). L’aperçu local à 390 px ne présente pas de débordement horizontal de la page. Les tests synthétiques Shell et Web ainsi que la compilation Vue ont réussi. Aucun balayage SSD complet réel, réveil individuel ni test de reprise après redémarrage n’a été lancé ; la prochaine étape est l’observation par l’utilisateur, puis une validation matérielle au moment opportun.
 - Branche `main` : le tag annoté `v3.0.0` est publié sur le commit `434ac7d` ; le commit suivant consigne seulement la passation. Aucun GitHub Release ni interface précompilée n’a été créé.
 - Déploiement : le tag `v3.0.0` a été installé sur le NAS Debian avec `hdd-health-web.service`, sous `/root/apps/hdd-health-check`. L’installateur a conservé le mot de passe et des copies de l’application et de l’unité précédentes ; l’état et les journaux ont aussi été sauvegardés avant le changement. Le service est actif et activé sur `0.0.0.0:8765`. Après connexion depuis le navigateur LAN, la page affichait 13 disques et `v3.0.0` ; les API authentifiées des disques, de l’état, de l’historique des tâches et des changements ont répondu. Aucun nouveau test de disque ni redémarrage n’a été lancé ; l’activation au démarrage est vérifiée, mais pas la reprise après un redémarrage.
 - Terminé : une installation LAN authentifiée sur un NAS Debian a énuméré 13 disques ; le service a démarré et le navigateur a affiché disques, tâches, dialogues et mise en page adaptée. L’installateur a conservé le mot de passe et l’état de l’hôte. Le dernier contrôle de l’interface n’a lancé aucun scan ni redémarrage.
@@ -54,7 +55,11 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de passation.
 
-- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record SSD assessment deployment` | `git show HEAD`
+- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
+- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
+- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
+- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
 - 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`

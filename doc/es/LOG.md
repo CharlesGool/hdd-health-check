@@ -43,6 +43,7 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 ## Entrega - 2026-09-28
 
+- Entrega actual: la compilación de desarrollo `dev-c60d602` está instalada en el NAS Debian bajo `/root/apps/hdd-health-check`; `hdd-health-web.service` está activo y habilitado al arrancar en `0.0.0.0:8765`. El instalador conservó la contraseña y las copias de la aplicación y unidad anteriores. El navegador LAN abrió la página de acceso sin error de inicialización JavaScript; las consultas autenticadas de solo lectura a discos, tareas e historial respondieron correctamente (13 discos, ninguna tarea activa). La vista local de 390 px no mostró desbordamiento horizontal de la página. Pasaron las pruebas sintéticas de Shell y Web y la compilación de Vue. No se ejecutaron un análisis integral SSD real, una activación individual ni una prueba tras reinicio; el siguiente paso es la observación del usuario y, cuando convenga, la validación del hardware.
 - Rama `main`: la etiqueta anotada `v3.0.0` se publicó sobre el commit `434ac7d`; el commit posterior solo registra la entrega. No se creó un GitHub Release ni una interfaz precompilada.
 - Despliegue: se instaló la etiqueta `v3.0.0` en el NAS Debian mediante `hdd-health-web.service`, bajo `/root/apps/hdd-health-check`. El instalador conservó la contraseña y copias de la aplicación y unidad anteriores; antes del cambio se guardó otra copia del estado y los registros. El servicio está activo y habilitado en `0.0.0.0:8765`. Tras iniciar sesión desde el navegador LAN aparecieron 13 discos y `v3.0.0`; respondieron las API autenticadas de discos, estado, historial de tareas y cambios. No se inició una nueva prueba de discos ni se reinició el NAS; se verificó la habilitación al arranque, pero no la recuperación tras un reinicio.
 - Completado: la instalación LAN autenticada en un NAS Debian enumeró 13 discos; arrancó el servicio y el navegador mostró datos de discos, tareas, diálogos y diseño adaptable. El instalador conservó la contraseña y el estado del host. La comprobación final de la interfaz no inició un escaneo ni reinició el equipo.
@@ -54,7 +55,11 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de entrega.
 
-- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record SSD assessment deployment` | `git show HEAD`
+- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
+- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
+- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
+- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
 - 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`

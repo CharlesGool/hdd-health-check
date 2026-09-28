@@ -43,6 +43,7 @@ metadata:
 
 ## 交接 - 2026-09-28
 
+- 目前交接:開發版 `dev-c60d602` 已安裝於 Debian NAS 的 `/root/apps/hdd-health-check`;`hdd-health-web.service` 正常運作並已設為開機啟動,監聽 `0.0.0.0:8765`.安裝程式保留原密碼及舊應用程式/服務單元備份.區域網絡瀏覽器可開啟登入頁,未再出現 JavaScript 初始化錯誤;驗證後的唯讀硬碟快照,任務狀態及更新紀錄請求成功(13 隻硬碟,沒有執行中的任務).本機 390 px 預覽沒有頁面級橫向溢出.Shell 及 Web 模擬測試,Vue 正式建置均通過.未執行實體 SSD 全碟掃描,單碟喚醒或重啟恢復測試;下一步由用戶觀察,之後再安排硬件驗證.
 - 分支 `main`: 帶註解的 `v3.0.0` 標籤已發佈,指向提交 `434ac7d`;之後的提交僅記錄交接狀態.未建立 GitHub Release 或預先建置的介面附件.
 - 部署: 已將 `v3.0.0` 標籤安裝到 Debian NAS 的 `/root/apps/hdd-health-check`,由 `hdd-health-web.service` 執行.安裝程式保留密碼,舊版應用及服務檔案;更新前另行備份狀態和日誌.服務在 `0.0.0.0:8765` 運行,並已設定開機啟動.局域網瀏覽器登入後顯示 13 隻硬碟和 `v3.0.0`;認證後的硬碟快照,任務狀態,任務歷史及更新記錄 API 均正常.本次未進行新硬碟檢查或重新開機;已確認開機啟動設定,但重新開機後的恢復仍未驗證.
 - 已完成: 在 Debian NAS 的局域網認證安裝中辨識 13 隻硬碟;服務啟動,瀏覽器顯示硬碟資料,任務頁面,頁面內確認對話框和自適應版面.安裝程式保留密碼與主機狀態.最後的介面檢查未開始掃描或重新開機.
@@ -54,7 +55,11 @@ metadata:
 
 主分支完整記錄: `git log main --stat`.`HEAD` 指本次交接提交.
 
-- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record SSD assessment deployment` | `git show HEAD`
+- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
+- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
+- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
+- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
 - 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
@@ -68,9 +73,9 @@ metadata:
 
 ## 變更紀錄
 
-### 開發更新 — 2026-09-28（v3.0.0 標籤之後）
+### 開發更新 — 2026-09-28(v3.0.0 標籤之後)
 
-- 固態硬碟及 NVMe 的完整評估現執行 SMART 快檢、短測、長測及全碟唯讀掃描，不執行速度取樣。完整而且沒有異常的批次得 100 分；單純慢讀不扣健康分。批量檢查項目會按所選硬碟類型調整。容量及固態硬碟累計寫入量可切換十進制/二進制單位；休眠中的機械硬碟可在 SMART 詳情中單獨喚醒。模擬測試通過；本次更新未啟動實碟全碟評估。
+- 固態硬碟及 NVMe 的完整評估現執行 SMART 快檢,短測,長測及全碟唯讀掃描,不執行速度取樣.完整而且沒有異常的批次得 100 分;單純慢讀不扣健康分.批量檢查項目會按所選硬碟類型調整.容量及固態硬碟累計寫入量可切換十進制/二進制單位;休眠中的機械硬碟可在 SMART 詳情中單獨喚醒.模擬測試通過;本次更新未啟動實碟全碟評估.
 
 ### v3.0.0 — 2026-09-27
 

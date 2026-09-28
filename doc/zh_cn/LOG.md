@@ -43,6 +43,7 @@ metadata:
 
 ## 交接 - 2026-09-28
 
+- 当前交接:开发构建 `dev-c60d602` 已安装在 Debian NAS 的 `/root/apps/hdd-health-check`;`hdd-health-web.service` 正常运行并设为开机启动,监听 `0.0.0.0:8765`.安装器保留原密码及旧应用/服务单元备份.局域网浏览器可打开登录页,未再出现 JavaScript 初始化错误;认证后的只读磁盘快照,任务状态与更新记录请求成功(13 块盘,无运行任务).本地 390 px 预览无页面级横向溢出.Shell 与 Web 模拟测试,Vue 生产构建均通过.未运行实盘固态全盘扫描,单盘唤醒或重启恢复测试;下一步由用户观察,再择机做硬件验证.
 - 分支 `main`: 带注释的 `v3.0.0` 标签已发布,指向提交 `434ac7d`;之后的提交仅记录交接状态.未创建 GitHub Release 或预构建界面附件.
 - 部署: 已将 `v3.0.0` 标签安装到 Debian NAS 的 `/root/apps/hdd-health-check`,由 `hdd-health-web.service` 运行.安装器保留密码及旧版应用和服务文件,升级前另行备份了状态和日志.服务在 `0.0.0.0:8765` 运行并已启用开机启动.局域网浏览器登录后显示 13 块磁盘和 `v3.0.0`;认证后的磁盘快照,任务状态,任务历史和更新记录接口均正常.本次未运行新磁盘检查或重启;已确认开机启动设置,但重启后的恢复仍未验证.
 - 已完成: 在 Debian NAS 的局域网认证安装中识别到 13 块盘;服务启动,浏览器显示磁盘数据,任务页面,站内确认弹窗和自适应布局.安装器保留原密码与主机状态.最终界面检查没有启动新扫描或重启.
@@ -54,7 +55,11 @@ metadata:
 
 主分支完整历史: `git log main --stat`.`HEAD` 指本次交接提交.
 
-- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record SSD assessment deployment` | `git show HEAD`
+- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
+- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
+- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
+- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
 - 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
@@ -68,9 +73,9 @@ metadata:
 
 ## 变更日志
 
-### 开发更新 — 2026-09-28（v3.0.0 标签之后）
+### 开发更新 — 2026-09-28(v3.0.0 标签之后)
 
-- 固态盘与 NVMe 的完整评估现执行 SMART 快检、短测、长测及全盘只读扫描，不运行速度采样。完整且无异常的批次得 100 分；单纯慢读不扣健康分。批量检测项目随所选磁盘类型调整。容量及固态盘累计写入量可切换十进制/二进制单位；休眠机械盘可在 SMART 详情中单独唤醒。模拟测试通过；本次更新未启动实盘全盘评估。
+- 固态盘与 NVMe 的完整评估现执行 SMART 快检,短测,长测及全盘只读扫描,不运行速度采样.完整且无异常的批次得 100 分;单纯慢读不扣健康分.批量检测项目随所选磁盘类型调整.容量及固态盘累计写入量可切换十进制/二进制单位;休眠机械盘可在 SMART 详情中单独唤醒.模拟测试通过;本次更新未启动实盘全盘评估.
 
 ### v3.0.0 — 2026-09-27
 

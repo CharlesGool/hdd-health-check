@@ -41,6 +41,7 @@ This record preserves accepted historical decisions, known limitations and relea
 
 ## Handoff — 2026-09-28
 
+- Current handoff: development build `dev-c60d602` is installed on the Debian NAS at `/root/apps/hdd-health-check`; `hdd-health-web.service` is active and enabled on `0.0.0.0:8765`. The installer retained the existing password and previous application/unit backups. LAN browser loaded the login page without a JavaScript initialization error; authenticated read-only snapshot, status and Changelog requests succeeded (13 disks, no running task). The local preview had no page-wide horizontal overflow at 390 px. Shell and Web synthetic tests and the Vue production build passed. A real SSD full scan, individual wake action and post-reboot recovery were not run; next action is user observation, followed by hardware checks only when convenient.
 - Branch `main`: the annotated `v3.0.0` tag is published on commit `434ac7d`; this later commit records the handoff only. No GitHub Release or prebuilt UI asset was created.
 - Deployment: installed the `v3.0.0` tag on the Debian NAS as `hdd-health-web.service` under `/root/apps/hdd-health-check`. The installer retained the password and previous application/unit copies; a separate state and log backup was made before the change. The service is active and enabled on `0.0.0.0:8765`. LAN browser login showed 13 disks and `v3.0.0`; authenticated snapshot, status, job-history, and Changelog APIs returned successfully. No new disk check or reboot was run; boot enablement was verified, but recovery after a reboot remains unverified.
 - Completed: authenticated LAN installation was checked on a Debian NAS with 13 enumerated drives. The service started and the browser showed disk data, task pages, themed confirmations, and responsive layouts. The installer preserved the existing password and host state. No new disk scan or reboot was run during the final UI checks.
@@ -54,7 +55,11 @@ This record preserves accepted historical decisions, known limitations and relea
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record SSD assessment deployment` | `git show HEAD`
+- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
+- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
+- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
+- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
 - 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
