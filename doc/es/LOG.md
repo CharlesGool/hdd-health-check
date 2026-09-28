@@ -41,9 +41,10 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 | 2026-08-13: Sustituir el historial público de v1.0.0 por un único commit limpio con identidad noreply y una etiqueta anotada, conservando el historial original en un archivo privado renombrado; rechazar forzar el envío del repositorio público anterior o conservar su commit intermedio sustituido. | El commit público anterior contenía una dirección de correo personal en los metadatos de Git. Las copias y bifurcaciones existentes no se migran automáticamente y no puede garantizarse que la exposición anterior se haya eliminado de las cachés. Es un hecho histórico, no una autorización para volver a reescribir el historial. |
 | Integración actual: Adoptar el comportamiento v2.2.0 suministrado sin garantías de compatibilidad con v1 y conservar la licencia MIT existente. | El nuevo script añade estado persistente y tareas opcionales en segundo plano; `-w` se ignora. Esta integración no implica publicación, etiqueta ni validación con hardware. |
 
-## Entrega - 2026-09-27
+## Entrega - 2026-09-28
 
 - Rama `main`: la etiqueta anotada `v3.0.0` se publicó sobre el commit `434ac7d`; el commit posterior solo registra la entrega. No se creó un GitHub Release ni una interfaz precompilada.
+- Despliegue: se instaló la etiqueta `v3.0.0` en el NAS Debian mediante `hdd-health-web.service`, bajo `/root/apps/hdd-health-check`. El instalador conservó la contraseña y copias de la aplicación y unidad anteriores; antes del cambio se guardó otra copia del estado y los registros. El servicio está activo y habilitado en `0.0.0.0:8765`. Tras iniciar sesión desde el navegador LAN aparecieron 13 discos y `v3.0.0`; respondieron las API autenticadas de discos, estado, historial de tareas y cambios. No se inició una nueva prueba de discos ni se reinició el NAS; se verificó la habilitación al arranque, pero no la recuperación tras un reinicio.
 - Completado: la instalación LAN autenticada en un NAS Debian enumeró 13 discos; arrancó el servicio y el navegador mostró datos de discos, tareas, diálogos y diseño adaptable. El instalador conservó la contraseña y el estado del host. La comprobación final de la interfaz no inició un escaneo ni reinició el equipo.
 - Pruebas: pasaron tipos y compilación Vue, sintaxis shell, pruebas sintéticas de puntuación y estado, autenticación y tareas Web, lecturas de API y navegador LAN. La evaluación completa en HDD real y la recuperación tras reinicio siguen sin comprobarse. Los avisos antiguos sin prueba bruta esperan una nueva revisión.
 - Verificación de versión: la copia limpia de la etiqueta y el archivo fuente compilaron y mostraron `v3.0.0`; la rama remota y la etiqueta se verificaron por separado. La copia local `snapshots/v3.0.0` contiene 87 archivos fuente, sin `web/dist` precompilado.
@@ -53,7 +54,8 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 
 Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de entrega.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`

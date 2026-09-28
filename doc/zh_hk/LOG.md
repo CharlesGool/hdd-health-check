@@ -41,9 +41,10 @@ metadata:
 | 2026-08-13:以使用 noreply 身份的一筆乾淨 commit 及附註 tag 取代公開的 v1.0.0 歷史,原有歷史保留於已改名的私人封存;拒絕強制推送舊的公開儲存庫或保留已被取代的中間 commit. | 先前公開的 commit 在 Git metadata 中包含個人電郵地址.現有 clone/fork 不會自動遷移,亦不能保證先前洩露的資料已從快取清除.這是歷史紀錄,並非再次改寫歷史的授權. |
 | 目前整合:採用所提供的 v2.2.0 行為,不保證兼容 v1,並保留現有 MIT 授權. | 新腳本加入持久狀態及可選的背景工作;`-w` 會被忽略.整合當時並未聲稱已發佈,建立 tag 或完成硬件驗證. |
 
-## 交接 - 2026-09-27
+## 交接 - 2026-09-28
 
 - 分支 `main`: 帶註解的 `v3.0.0` 標籤已發佈,指向提交 `434ac7d`;之後的提交僅記錄交接狀態.未建立 GitHub Release 或預先建置的介面附件.
+- 部署: 已將 `v3.0.0` 標籤安裝到 Debian NAS 的 `/root/apps/hdd-health-check`,由 `hdd-health-web.service` 執行.安裝程式保留密碼,舊版應用及服務檔案;更新前另行備份狀態和日誌.服務在 `0.0.0.0:8765` 運行,並已設定開機啟動.局域網瀏覽器登入後顯示 13 隻硬碟和 `v3.0.0`;認證後的硬碟快照,任務狀態,任務歷史及更新記錄 API 均正常.本次未進行新硬碟檢查或重新開機;已確認開機啟動設定,但重新開機後的恢復仍未驗證.
 - 已完成: 在 Debian NAS 的局域網認證安裝中辨識 13 隻硬碟;服務啟動,瀏覽器顯示硬碟資料,任務頁面,頁面內確認對話框和自適應版面.安裝程式保留密碼與主機狀態.最後的介面檢查未開始掃描或重新開機.
 - 檢查: Vue 類型與建置, shell 語法,模擬評分及狀態, Web 認證與任務,認證 API 和局域網瀏覽器互動通過.完整實體硬碟評估及重新開機後恢復仍未驗證.舊版缺少原始依據的閾值提示待日後覆核.
 - 版本檢查: 乾淨的標籤檢出及原始碼封存均建置成功,介面顯示 `v3.0.0`;遠端分支及標籤已分別核對.本機 `snapshots/v3.0.0` 含 87 個原始碼檔案,不含預先建置的 `web/dist`.
@@ -53,7 +54,8 @@ metadata:
 
 主分支完整記錄: `git log main --stat`.`HEAD` 指本次交接提交.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`

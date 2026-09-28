@@ -39,9 +39,10 @@ This record preserves accepted historical decisions, known limitations and relea
 | 2026-08-13: Replace the public v1.0.0 history with one clean noreply-identity commit and annotated tag, retaining the original history in a private renamed archive; reject force-pushing the prior public repository or preserving its superseded intermediate commit. | The prior public commit contained a personal email in Git metadata. Existing clones/forks do not migrate automatically and prior exposure cannot be guaranteed erased from caches. This is historical, not authorization for another rewrite. |
 | Current integration: Adopt the supplied v2.2.0 behavior without v1 compatibility guarantees and retain the existing MIT license. | The new script adds persistent state and optional background tasks; `-w` is ignored. At integration time, no release, tag or hardware validation was claimed. |
 
-## Handoff — 2026-09-27
+## Handoff — 2026-09-28
 
 - Branch `main`: the annotated `v3.0.0` tag is published on commit `434ac7d`; this later commit records the handoff only. No GitHub Release or prebuilt UI asset was created.
+- Deployment: installed the `v3.0.0` tag on the Debian NAS as `hdd-health-web.service` under `/root/apps/hdd-health-check`. The installer retained the password and previous application/unit copies; a separate state and log backup was made before the change. The service is active and enabled on `0.0.0.0:8765`. LAN browser login showed 13 disks and `v3.0.0`; authenticated snapshot, status, job-history, and Changelog APIs returned successfully. No new disk check or reboot was run; boot enablement was verified, but recovery after a reboot remains unverified.
 - Completed: authenticated LAN installation was checked on a Debian NAS with 13 enumerated drives. The service started and the browser showed disk data, task pages, themed confirmations, and responsive layouts. The installer preserved the existing password and host state. No new disk scan or reboot was run during the final UI checks.
 - Checks: Vue type check/build, shell syntax, synthetic scoring/state tests, Web authentication/job/assessment/SMART tests, authenticated API reads, LAN browser interactions, and documentation format checks passed. Hardware-wide full assessment and post-reboot service recovery remain unverified. Old threshold-only findings without raw evidence remain pending review until a future check.
 - Release checks: the clean tag checkout and source archive both built and displayed `v3.0.0`; remote branch and annotated tag refs were verified separately. The local `snapshots/v3.0.0` source export contains 87 files and no prebuilt `web/dist`.
@@ -53,7 +54,8 @@ This record preserves accepted historical decisions, known limitations and relea
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`

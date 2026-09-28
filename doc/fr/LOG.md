@@ -41,9 +41,10 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 | 2026-08-13 : Remplacer l'historique public v1.0.0 par un unique commit propre utilisant une identité noreply et un tag annoté, tout en conservant l'historique initial dans une archive privée renommée ; rejeter le recours à un push forcé sur l'ancien dépôt public ou la conservation de son commit intermédiaire remplacé. | Le commit public précédent contenait une adresse électronique personnelle dans les métadonnées Git. Les copies et forks existants ne sont pas migrés automatiquement et on ne peut garantir l'effacement de toute exposition antérieure des caches. Il s'agit d'un fait historique, non d'une autorisation de réécrire à nouveau l'historique. |
 | Intégration actuelle : Adopter le comportement v2.2.0 fourni sans garanties de compatibilité avec la v1 et conserver la licence MIT existante. | Le nouveau script ajoute un état persistant et des tâches facultatives en arrière-plan ; `-w` est ignoré. Cette intégration ne constitue ni une publication, ni un tag, ni une validation matérielle. |
 
-## Transmission - 2026-09-27
+## Transmission - 2026-09-28
 
 - Branche `main` : le tag annoté `v3.0.0` est publié sur le commit `434ac7d` ; le commit suivant consigne seulement la passation. Aucun GitHub Release ni interface précompilée n’a été créé.
+- Déploiement : le tag `v3.0.0` a été installé sur le NAS Debian avec `hdd-health-web.service`, sous `/root/apps/hdd-health-check`. L’installateur a conservé le mot de passe et des copies de l’application et de l’unité précédentes ; l’état et les journaux ont aussi été sauvegardés avant le changement. Le service est actif et activé sur `0.0.0.0:8765`. Après connexion depuis le navigateur LAN, la page affichait 13 disques et `v3.0.0` ; les API authentifiées des disques, de l’état, de l’historique des tâches et des changements ont répondu. Aucun nouveau test de disque ni redémarrage n’a été lancé ; l’activation au démarrage est vérifiée, mais pas la reprise après un redémarrage.
 - Terminé : une installation LAN authentifiée sur un NAS Debian a énuméré 13 disques ; le service a démarré et le navigateur a affiché disques, tâches, dialogues et mise en page adaptée. L’installateur a conservé le mot de passe et l’état de l’hôte. Le dernier contrôle de l’interface n’a lancé aucun scan ni redémarrage.
 - Vérifications : types et compilation Vue, syntaxe shell, tests synthétiques du score et de l’état, authentification et tâches Web, lectures d’API et navigateur LAN ont réussi. L’évaluation complète sur un vrai HDD et la reprise après redémarrage restent non vérifiées. Les anciens avis sans preuve brute attendent une nouvelle vérification.
 - Vérifications de version : la copie propre du tag et l’archive source ont été compilées et ont affiché `v3.0.0` ; la branche distante et le tag ont été vérifiés séparément. La copie locale `snapshots/v3.0.0` contient 87 fichiers source, sans `web/dist` précompilé.
@@ -53,7 +54,8 @@ Ce document conserve les décisions historiques acceptées, les limites connues 
 
 Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de passation.
 
-- 2026-09-27 | `HEAD` | `docs(handoff): record v3.0.0 tag publication` | `git show HEAD`
+- 2026-09-28 | `HEAD` | `docs(handoff): record NAS v3.0.0 deployment` | `git show HEAD`
+- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
 - 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
 - 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
 - 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
