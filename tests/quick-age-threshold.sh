@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 # shellcheck disable=SC1090
-source <(sed '/^#------------------------------ 参数解析 /,$d' hdd-health-check.sh)
+source <(sed '/^#------------------------------ 参数解析 /,$d' src/checker/hdd-health-check.sh)
 
 R_STATUS=warn R_DEDUCT=15 R_ISSUES='通电 50666h' R_SUMMARY='通电 50666h'
 normalize_quick_result

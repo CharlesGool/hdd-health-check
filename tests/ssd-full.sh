@@ -7,7 +7,7 @@ trap 'rm -rf -- "$tmp"' EXIT
 export HDD_STATE_DIR="$tmp/state" HDD_LOG_DIR="$tmp/log"
 mkdir -p "$HDD_STATE_DIR/ssd" "$HDD_LOG_DIR"
 # shellcheck disable=SC1090
-source <(sed '/^#------------------------------ 参数解析 /,$d' hdd-health-check.sh)
+source <(sed '/^#------------------------------ 参数解析 /,$d' src/checker/hdd-health-check.sh)
 DID[ssd]=ssd; D_NAME=(ssd); D_MODEL=(synthetic); D_SIZE=(64MiB); D_ROTA=(0); D_TRAN=(nvme)
 QUIET=1; PLAN_RECHECK=never
 quick_one() { CUR_DED=0; CUR_ISS=(); save_result "${DID[$1]}" quick good 'SMART clear'; }

@@ -7,7 +7,7 @@ trap 'rm -rf -- "$test_dir"' EXIT
 export HDD_STATE_DIR="$test_dir/state" HDD_LOG_DIR="$test_dir/log"
 mkdir -p "$HDD_STATE_DIR/mock" "$HDD_LOG_DIR"
 # shellcheck disable=SC1090
-source <(sed '/^#------------------------------ 参数解析 /,$d' hdd-health-check.sh)
+source <(sed '/^#------------------------------ 参数解析 /,$d' src/checker/hdd-health-check.sh)
 enumerate_disks() { :; }
 prepare_disk() { :; }
 DID[mock]=mock

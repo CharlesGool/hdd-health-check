@@ -8,7 +8,7 @@ export HDD_STATE_DIR="$tmp/state" HDD_LOG_DIR="$tmp/log"
 mkdir -p "$HDD_STATE_DIR/mock" "$HDD_LOG_DIR"
 # Source definitions only, before CLI/bootstrap/hardware logic.
 # shellcheck disable=SC1090
-source <(sed '/^#------------------------------ 参数解析 /,$d' hdd-health-check.sh)
+source <(sed '/^#------------------------------ 参数解析 /,$d' src/checker/hdd-health-check.sh)
 DID[mock]=mock; D_NAME=(mock); D_MODEL=(synthetic); D_SIZE=(64MiB)
 DOPT_CACHE[mock]=''; QUIET=1; PLAN_RECHECK=never
 # A firmware log must contain a newly completed entry for this launched test.

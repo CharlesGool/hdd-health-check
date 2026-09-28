@@ -8,12 +8,13 @@ import os
 from pathlib import Path
 import socket
 import tempfile
+import time
 import threading
 from http.server import ThreadingHTTPServer
 from unittest.mock import patch
 
 root = Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location('hdd_web_server', root / 'web/server.py')
+spec = importlib.util.spec_from_file_location('hdd_web_server', root / 'src/web/server.py')
 app = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(app)
 
@@ -32,7 +33,7 @@ with tempfile.TemporaryDirectory() as directory:
     thread.start()
     port = server.server_port
 
-    def request(method, path, *, body=None, cookie=None, host=None, origin=None, connect_host='127.0.0.1', extra=None):
+    def request(method, path, *, body=None, cookie=None, host=None, origin=None, connect_host='127.0.0.1', extra=None, csrf=True):
         connection = http.client.HTTPConnection(connect_host, port, timeout=3)
         connection.putrequest(method, path, skip_host=True)
         connection.putheader('Host', host or f'{connect_host}:{port}')
@@ -40,6 +41,8 @@ with tempfile.TemporaryDirectory() as directory:
             connection.putheader('Origin', origin)
         if cookie:
             connection.putheader('Cookie', cookie)
+        if csrf and method in ('POST', 'DELETE'):
+            connection.putheader('X-HDD-CSRF', '1')
         for key, value in (extra or {}).items():
             connection.putheader(key, value)
         payload = json.dumps(body or {}).encode() if method == 'POST' else None
@@ -57,16 +60,22 @@ with tempfile.TemporaryDirectory() as directory:
 
     try:
         assert request('GET', '/')[0] == 200
-        for route in ('/disks', '/attention', '/tasks', '/schedule', '/settings', '/changelog', '/attention/nvme0n1'):
+        for route in ('/disks', '/attention', '/tasks', '/schedule', '/settings', '/security', '/changelog', '/attention/nvme0n1'):
             assert request('GET', route)[0] == 200, route
         status, headers, data = request('GET', '/api/schedule')
         assert status == 401 and not any(k.lower() == 'www-authenticate' for k, _ in headers)
         assert request('GET', '/api/auth')[2]['authenticated'] is False
+        assert request('POST', '/api/auth/login', body={'password': 'bad'}, csrf=False)[0] == 403
         assert request('POST', '/api/auth/login', body={'password': 'bad'})[0] == 401
         status, headers, data = request('POST', '/api/auth/login', body={'password': 'test-password'})
         assert status == 200 and data['method'] == 'password' and data['canManageAccess'] is True
         cookie = next(v.split(';')[0] for k, v in headers if k.lower() == 'set-cookie' and v.startswith('hdd_session='))
         assert request('GET', '/api/schedule', cookie=cookie)[0] == 200
+        assert request('GET', '/api/build', cookie=cookie)[2] == json.loads((app.ASSETS / 'version.json').read_text())
+        with patch.object(app, 'lsblk_details', return_value={'sda': {'serial': 'SERIAL123456'}}):
+            assert request('GET', '/api/disks/sda/serial')[0] == 401
+            assert request('GET', '/api/disks/sda/serial', cookie=cookie)[2] == {'serial': 'SERIAL123456'}
+            assert request('GET', '/api/disks/sdb/serial', cookie=cookie)[0] == 404
         with patch.object(app, 'script', return_value=type('Result', (), {'returncode': 0, 'stdout': '  没有正在运行的实例\n', 'stderr': ''})()), patch.object(app, 'web_job', return_value={'state': 'completed', 'exitCode': 1}) as latest:
             task_status = request('GET', '/api/status', cookie=cookie)[2]
             assert task_status['running'] is False and task_status['job']['state'] == 'completed'
@@ -99,9 +108,9 @@ with tempfile.TemporaryDirectory() as directory:
         with patch.object(app, 'delete_smart_sample') as delete_sample:
             assert request('DELETE', '/api/history/samples/sdb/0', cookie=cookie)[2]['deleted'] is True
             delete_sample.assert_called_once_with('sdb', '0')
-        assert request('POST', '/api/auth/change-password', body={'currentPassword': 'bad', 'newPassword': 'a-new-password-123'}, cookie=cookie)[0] == 401
-        assert request('POST', '/api/auth/change-password', body={'currentPassword': 'test-password', 'newPassword': 'short'}, cookie=cookie)[0] == 400
-        status, headers, changed = request('POST', '/api/auth/change-password', body={'currentPassword': 'test-password', 'newPassword': 'a-new-password-123'}, cookie=cookie)
+        assert request('POST', '/api/auth/change-password', body={'newPassword': 'a-new-password-123', 'confirmPassword': 'mismatch'}, cookie=cookie)[0] == 400
+        assert request('POST', '/api/auth/change-password', body={'newPassword': 'short', 'confirmPassword': 'short'}, cookie=cookie)[0] == 400
+        status, headers, changed = request('POST', '/api/auth/change-password', body={'newPassword': 'a-new-password-123', 'confirmPassword': 'a-new-password-123'}, cookie=cookie)
         assert status == 200 and changed['changed'] is True
         assert server.password_file.read_text() == 'a-new-password-123\n'
         assert server.password_file.stat().st_mode & 0o777 == 0o600
@@ -110,11 +119,20 @@ with tempfile.TemporaryDirectory() as directory:
         status, headers, _ = request('POST', '/api/auth/login', body={'password': 'a-new-password-123'})
         assert status == 200
         cookie = next(v.split(';')[0] for k, v in headers if k.lower() == 'set-cookie' and v.startswith('hdd_session='))
-        assert request('POST', '/api/access', body={'ips': ['192.168.1.10']}, cookie=cookie)[2]['ips'] == ['192.168.1.10']
-        assert request('POST', '/api/access', body={'ips': ['192.168.1.0/24']}, cookie=cookie)[0] == 400
+        assert request('POST', '/api/access', body={'enabled': True, 'ips': ['192.168.1.10']}, cookie=cookie)[2]['ips'] == ['192.168.1.10']
+        assert request('POST', '/api/access', body={'enabled': True, 'ips': ['192.168.1.0/24']}, cookie=cookie)[0] == 400
+        for forbidden in ('8.8.8.8', '100.64.1.2', '127.0.0.1', '127.42.0.1', '::1', '::ffff:127.0.0.1', 'localhost', '169.254.1.1', '2001:4860::1'):
+            assert request('POST', '/api/access', body={'enabled': True, 'ips': [forbidden]}, cookie=cookie)[0] == 400
+        assert request('POST', '/api/access', body={'enabled': True, 'ips': ['fd00::abcd']}, cookie=cookie)[2]['ips'] == ['fd00::abcd']
+        assert request('POST', '/api/access', body={'enabled': False, 'ips': ['192.168.1.10']}, cookie=cookie)[2]['enabled'] is False
+        assert request('GET', '/api/access', cookie=cookie)[2]['ips'] == ['192.168.1.10']
+        assert request('POST', '/api/access', body={'enabled': True, 'ips': ['192.168.1.10']}, cookie=cookie)[0] == 200
+        app.ACCESS.write_text(json.dumps({'enabled': True, 'ips': ['8.8.8.8', '192.168.1.10']}))
+        assert request('GET', '/api/access', cookie=cookie)[2]['ips'] == ['192.168.1.10']
+        assert request('POST', '/api/access', body={'enabled': True, 'ips': ['192.168.1.10']}, cookie=cookie)[0] == 200
         assert request('GET', '/api/access')[0] == 401
         assert request('GET', '/api/schedule', cookie=cookie, host=f'other.invalid:{port}')[0] == 403
-        assert request('POST', '/api/access', body={'ips': []}, cookie=cookie, origin='http://other.invalid')[0] == 403
+        assert request('POST', '/api/access', body={'enabled': False, 'ips': []}, cookie=cookie, origin='http://other.invalid')[0] == 403
         assert request('POST', '/api/auth/logout', cookie=cookie)[0] == 200
         assert request('GET', '/api/schedule', cookie=cookie)[0] == 401
         try:
@@ -129,14 +147,30 @@ with tempfile.TemporaryDirectory() as directory:
             status, headers, _ = request('POST', '/api/auth/login', body={'password': 'a-new-password-123'}, connect_host=lan_ip)
             lan_cookie = next(v.split(';')[0] for k, v in headers if k.lower() == 'set-cookie' and v.startswith('hdd_session='))
             assert status == 200
-            assert request('POST', '/api/access', body={'ips': [lan_ip]}, cookie=lan_cookie, connect_host=lan_ip)[0] == 200
+            assert request('POST', '/api/access', body={'enabled': True, 'ips': [lan_ip]}, cookie=lan_cookie, connect_host=lan_ip)[0] == 200
             assert request('GET', '/api/schedule', connect_host=lan_ip)[0] == 200
-            assert request('GET', '/api/access', connect_host=lan_ip)[0] == 200
-            assert request('POST', '/api/access', body={'ips': [lan_ip]}, connect_host=lan_ip)[0] == 200
+            assert request('GET', '/api/access', connect_host='127.0.0.1', extra={'X-Forwarded-For': lan_ip})[0] == 401
+            assert request('GET', '/api/access', connect_host=lan_ip)[0] == 403
+            assert request('POST', '/api/access', body={'enabled': True, 'ips': [lan_ip]}, connect_host=lan_ip)[0] == 403
             assert request('GET', '/api/preferences', connect_host=lan_ip)[2]['wakeSleepingOnVisit'] is True
             assert request('POST', '/api/preferences', body={'wakeSleepingOnVisit': False}, connect_host=lan_ip)[0] == 200
-            assert request('POST', '/api/auth/change-password', body={'currentPassword': 'wrong', 'newPassword': 'another-password-123'}, connect_host=lan_ip)[0] == 401
-            assert request('POST', '/api/auth/change-password', body={'currentPassword': 'a-new-password-123', 'newPassword': 'another-password-123'}, connect_host=lan_ip)[0] == 200
+            assert request('POST', '/api/auth/change-password', body={'newPassword': 'another-password-123', 'confirmPassword': 'another-password-123'}, connect_host=lan_ip)[0] == 403
+            assert request('POST', '/api/auth/security-verify', body={'password': 'wrong'}, connect_host=lan_ip)[0] == 401
+            status, verified_headers, _ = request('POST', '/api/auth/security-verify', body={'password': 'a-new-password-123'}, connect_host=lan_ip)
+            assert status == 200
+            verified_cookie = next(v.split(';')[0] for k, v in verified_headers if k.lower() == 'set-cookie' and v.startswith('hdd_session='))
+            assert request('GET', '/api/access', cookie=verified_cookie, connect_host=lan_ip)[0] == 200
+            token = verified_cookie.split('=', 1)[1]
+            with app.session_lock:
+                app.sessions[token]['security_until'] = time.time() - 1
+            assert request('GET', '/api/access', cookie=verified_cookie, connect_host=lan_ip)[0] == 403
+            assert request('POST', '/api/auth/change-password', body={'newPassword': 'another-password-123', 'confirmPassword': 'another-password-123'}, cookie=verified_cookie, connect_host=lan_ip)[0] == 403
+            status, verified_headers, _ = request('POST', '/api/auth/security-verify', body={'password': 'a-new-password-123'}, cookie=verified_cookie, connect_host=lan_ip)
+            assert status == 200
+            renewed_cookie = next(v.split(';')[0] for k, v in verified_headers if k.lower() == 'set-cookie' and v.startswith('hdd_session='))
+            assert renewed_cookie != verified_cookie
+            assert request('GET', '/api/access', cookie=verified_cookie, connect_host=lan_ip)[0] == 403
+            assert request('POST', '/api/auth/change-password', body={'newPassword': 'another-password-123', 'confirmPassword': 'another-password-123'}, cookie=renewed_cookie, connect_host=lan_ip)[0] == 200
             assert server.password_file.read_text() == 'another-password-123\n'
             status, headers, _ = request('POST', '/api/auth/logout', connect_host=lan_ip)
             logout_cookie = next(v.split(';')[0] for k, v in headers if k.lower() == 'set-cookie' and v.startswith('hdd_logout='))

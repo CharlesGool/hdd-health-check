@@ -16,8 +16,8 @@ grep -q 'v3.0.0' "$tmp/test-help"
 if bash ./hdd-health-check.sh --not-an-option > "$tmp/unknown" 2>&1; then exit 1; fi
 grep -q '未知参数' "$tmp/unknown"
 # Load only pure declarations and record helpers; never enter the main workflow.
-# shellcheck source=hdd-health-check.sh
-source <(sed '/^#------------------------------ 磁盘枚举 /,$d' hdd-health-check.sh)
+# shellcheck source=src/checker/hdd-health-check.sh
+source <(sed '/^#------------------------------ 磁盘枚举 /,$d' src/checker/hdd-health-check.sh)
 printf -v payload "\$(touch %s)" "$tmp/unsafe-marker"
 printf 'R_TS=123\nR_STATUS=%s\n' "$payload" > "$tmp/evil.env"
 if read_record "$tmp/evil.env" result; then echo 'accepted executable syntax' >&2; exit 1; fi
@@ -35,15 +35,15 @@ ln -s "$tmp/good.env" "$tmp/link.env"
 if read_record "$tmp/link.env" result; then exit 1; fi
 # Load isolated state/progress helpers; no workflow or hardware probes.
 # shellcheck disable=SC1090
-source <(sed -n '/^surface_reset_vars()/,/^surface_init()/p' hdd-health-check.sh | sed '$d')
+source <(sed -n '/^surface_reset_vars()/,/^surface_init()/p' src/checker/hdd-health-check.sh | sed '$d')
 # shellcheck disable=SC1090
-source <(sed -n '/^surface_decide()/,/^# badblocks /p' hdd-health-check.sh | sed '$d')
+source <(sed -n '/^surface_decide()/,/^# badblocks /p' src/checker/hdd-health-check.sh | sed '$d')
 # shellcheck disable=SC1090
-source <(sed -n '/^instance_alive()/,/^status_lines()/p' hdd-health-check.sh | sed '$d')
+source <(sed -n '/^instance_alive()/,/^status_lines()/p' src/checker/hdd-health-check.sh | sed '$d')
 # shellcheck disable=SC1090
-source <(sed -n '/^status_lines()/,/^stop_instance()/p' hdd-health-check.sh | sed '$d')
+source <(sed -n '/^status_lines()/,/^stop_instance()/p' src/checker/hdd-health-check.sh | sed '$d')
 # shellcheck disable=SC1090
-source <(sed -n '/^stop_instance()/,/^status_view()/p' hdd-health-check.sh | sed '$d')
+source <(sed -n '/^stop_instance()/,/^status_view()/p' src/checker/hdd-health-check.sh | sed '$d')
 
 # Zero/zero represents a not-yet-initialized scan; progress without a
 # denominator (or with missing chunk size) must not reach any percentage path.
@@ -77,7 +77,7 @@ mktemp() {
     command mktemp "$@"
 }
 # shellcheck disable=SC1090,SC2016
-source <(sed -n '/^RUN_DIR=\$(mktemp -d /p' hdd-health-check.sh)
+source <(sed -n '/^RUN_DIR=\$(mktemp -d /p' src/checker/hdd-health-check.sh)
 [[ $RUN_DIR == /tmp/tmp.* && -d $RUN_DIR ]]
 RUNINFO="$HDD_STATE_DIR/running.env"
 printf 'I_PID=%s\nI_RUNDIR=%s\nI_TARGETS=mock\nI_LOG=%s\n' "$$" "$RUN_DIR" "$tmp/nonexistent" > "$RUNINFO"

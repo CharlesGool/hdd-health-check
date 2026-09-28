@@ -7,7 +7,7 @@ trap 'rm -rf -- "$test_dir"' EXIT
 export HDD_STATE_DIR="$test_dir/state" HDD_LOG_DIR="$test_dir/log"
 mkdir -p "$HDD_STATE_DIR/mock" "$HDD_LOG_DIR"
 # shellcheck disable=SC1090
-source <(sed '/^#------------------------------ 参数解析 /,$d' hdd-health-check.sh)
+source <(sed '/^#------------------------------ 参数解析 /,$d' src/checker/hdd-health-check.sh)
 WEB_JOB_ID=0123456789abcdef01234567
 WEB_JOB_STARTED=1700000000
 REQ_DISKS=(nvme0n1 nvme1n1)

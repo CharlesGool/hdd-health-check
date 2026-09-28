@@ -12,15 +12,17 @@ This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data
 
 ## Multi-language
 
-**English** | [简体中文](doc/zh_cn/README.md) | [繁體中文](doc/zh_tw/README.md) | [繁體中文(香港)](doc/zh_hk/README.md) | [हिन्दी](doc/hi/README.md) | [Español](doc/es/README.md) | [العربية](doc/ar/README.md) | [Français](doc/fr/README.md)
+**English** | [简体中文](doc/zh-CN/README.md) | [繁體中文 (台灣)](doc/zh-TW/README.md) | [繁體中文 (香港)](doc/zh-HK/README.md) | [हिन्दी](doc/hi/README.md) | [Español](doc/es/README.md) | [العربية](doc/ar/README.md) | [Français](doc/fr/README.md)
 
 ## Documentation
 
 - Project overview: [README](README.md)
-- Design rationale and host-side effects: [DESIGN](doc/DESIGN.md)
-- Local Web UI setup and API: [WEB](doc/WEB.md)
-- Decisions, bugs and version history: [LOG](doc/LOG.md)
-- Third-party inventory: [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md)
+
+- Design rationale: [DESIGN](doc/DESIGN.md)
+
+- Release history: [LOG](doc/LOG.md)
+
+- Third-party notices: [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md)
 
 ## Introduction
 
@@ -44,27 +46,27 @@ From a trusted checkout, run `sudo bash ./hdd-health-check.sh --help` to inspect
 
 ### Normal Install
 
-The following checkout uses the `v3.0.0` source tag.
+The following checkout uses the current source branch. The repository-root command remains a thin entry point; its implementation is in `src/checker/`.
 
 ```bash
-git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
-bash -n hdd-health-check.sh
+bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
 ```
 
 Review and install the required OS packages yourself before scanning to avoid the script's package-install prompt. To upgrade an existing checkout, back up any desired host logs and `${HDD_STATE_DIR:-/var/lib/hdd-health}` first; replace the script from a reviewed checkout, keep that state directory for history/resume, then review `--help` and run the chosen checks. v2.2 state parsing accepts only known data fields; nonconforming prior v2.2 state may be rejected. A rollback requires restoring the previous script **and its matching state backup**; do not assume newer state is backwards compatible. No v1 CLI behavior or state migration is promised.
 
-### Web UI from the v3.0.0 tag
+### Web UI from current source
 
-The `v3.0.0` tag contains Web UI source code but does not track `web/dist`. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm, build the UI, then run the installer:
+The current source does not track generated assets in `dist/web`. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm, build the UI, then run the installer:
 
 ```bash
-git clone --branch v3.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
-cd hdd-health-check/web
+git clone https://github.com/CharlesGool/hdd-health-check.git
+cd hdd-health-check/src/web
 npm ci
 npm run build
-cd ..
+cd ../..
 sudo bash deploy/install.sh
 ```
 
@@ -90,10 +92,18 @@ The parser also maps `-t short|long` to the matching self-test, `-s` to speed an
 
 Exit codes: `0` all healthy; `1` notice/warning; `2` danger; `3` runtime error. Logs default to `/var/log/disk-health/hdd-health-<timestamp>.log`; state defaults to `/var/lib/hdd-health`. The host writes and operational boundaries are detailed in [DESIGN](doc/DESIGN.md#data-design).
 
+## Upgrade
+
+For the current source layout, update the checkout, build in `src/web`, then run `sudo bash deploy/install.sh` from the repository root. The installer copies `src/checker/hdd-health-check.sh`, `src/web/server.py`, and `dist/web` into the existing service layout, preserves the Web password and keeps timestamped application and unit backups. Review changes before running the installer as root. The historical `v3.0.0` tag retains its original `web/` source layout and its own installation instructions.
+
 ## Uninstall
 
 - Remove the checkout or installed script to remove the CLI while retaining logs and history. The CLI installs no permanent systemd service; if you installed the optional Web service, stop and disable it first as described in [WEB](doc/WEB.md). Check for active transient tasks before removing the script.
 - For full removal, first stop any task and back up desired records, then manually remove the configured `HDD_STATE_DIR` (default `/var/lib/hdd-health`) and `HDD_LOG_DIR` (default `/var/log/disk-health`) after verifying their paths and contents. This deletes reports, progress, history, repair notes and logs; never blindly delete a shared or overridden directory. Packages installed via `apt-get` are not removed automatically.
+
+## Acknowledgements
+
+Third-party code and font credits are listed in [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md).
 
 ## License
 
@@ -101,4 +111,4 @@ MIT (SPDX: MIT); see [LICENSE](LICENSE).
 
 ## Current SSD assessment and controls
 
-A full SSD/NVMe assessment runs SMART quick, short and long self-tests plus a full read-only scan. It omits speed sampling; slow reads alone do not deduct health points. A completed clean batch scores 100, while SMART findings or actual read errors may reduce the heuristic score. When selected drives include SSDs, the Web UI offers only quick, short, long, read-only scan and full assessment. Capacity and host-write values switch between decimal and binary units by clicking the value. The SMART detail of a sleeping HDD offers a button to wake that drive alone.
+A full SSD/NVMe assessment runs SMART quick, short and long self-tests plus a full read-only scan. It omits speed sampling; slow reads alone do not deduct health points. A completed clean batch scores 100, while SMART findings or actual read errors may reduce the heuristic score. Batch controls show the union of checks supported by the selected drives; HDD-only checks skip selected SSDs. Capacity and host-write values switch between decimal and binary units by clicking the value. A SATA HDD can be woken or put in standby from its SMART detail.

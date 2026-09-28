@@ -12,14 +12,17 @@ This record preserves accepted historical decisions, known limitations and relea
 
 ## Multi-language
 
-**English** | [简体中文](zh_cn/LOG.md) | [繁體中文](zh_tw/LOG.md) | [繁體中文(香港)](zh_hk/LOG.md) | [हिन्दी](hi/LOG.md) | [Español](es/LOG.md) | [العربية](ar/LOG.md) | [Français](fr/LOG.md)
+**English** | [简体中文](zh-CN/LOG.md) | [繁體中文 (台灣)](zh-TW/LOG.md) | [繁體中文 (香港)](zh-HK/LOG.md) | [हिन्दी](hi/LOG.md) | [Español](es/LOG.md) | [العربية](ar/LOG.md) | [Français](fr/LOG.md)
 
 ## Documentation
 
 - Project overview: [README](../README.md)
+
 - Design rationale: [DESIGN](DESIGN.md)
+
 - Release history: [LOG](LOG.md)
-- Third-party inventory: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
+
+- Third-party notices: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
 ## Bugs
 
@@ -28,6 +31,18 @@ This record preserves accepted historical decisions, known limitations and relea
 - [ ] Heuristic health weights are not calibrated failure probabilities; SAS/SCSI scoring is less exercised than ATA and USB/RAID SMART passthrough may fail. Vendor-dependent temperature reporting is incomplete.
 - [ ] The authenticated Web UI and LAN service were checked on a Debian NAS with real disk inventory, but a complete assessment on real HDDs and recovery after a reboot remain unverified. Nonconforming pre-existing v2.2 state is rejected. CSV export is not provided.
 - [x] v1.0.0 normalization corrected clone instructions pointing to the nonexistent `hdd-health-check-repo/main` path and mixed Traditional Chinese characters in the Simplified Chinese README.
+
+## Limitations
+
+- The installed Debian service keeps its existing `/root/apps/hdd-health-check/web/` host layout for upgrade compatibility; the source layout is `src/web/` with generated output in `dist/web/`.
+
+### Compatibility entry points
+
+Baseline: `35f24e5`
+Reason: existing CLI commands and installation instructions invoke the repository-root shell entry point; the implementation now lives under `src/checker/`.
+Update boundary: retain the root dispatcher until a separately communicated CLI path migration replaces the established command.
+
+- `hdd-health-check.sh` -> `src/checker/hdd-health-check.sh`
 
 ## Decisions
 
@@ -39,75 +54,19 @@ This record preserves accepted historical decisions, known limitations and relea
 | 2026-08-13: Replace the public v1.0.0 history with one clean noreply-identity commit and annotated tag, retaining the original history in a private renamed archive; reject force-pushing the prior public repository or preserving its superseded intermediate commit. | The prior public commit contained a personal email in Git metadata. Existing clones/forks do not migrate automatically and prior exposure cannot be guaranteed erased from caches. This is historical, not authorization for another rewrite. |
 | Current integration: Adopt the supplied v2.2.0 behavior without v1 compatibility guarantees and retain the existing MIT license. | The new script adds persistent state and optional background tasks; `-w` is ignored. At integration time, no release, tag or hardware validation was claimed. |
 
-## Handoff — 2026-09-28
+## Handoff
 
-- Current work: moved the single-disk wake action beside the sleeping status, added SATA HDD standby, expanded per-check details, merged Web task receipts and SMART trend samples into one chronological history, and added authenticated deletion from both global and disk views. Mixed batches now show the union of supported modules, running HDD-only modules only on eligible HDDs. Renamed the Web surface module to "full read-only scan."
-- Checks: Vue production build and synthetic assessment, authentication, SMART power, job and history deletion tests passed. On the Debian NAS, authenticated API reads returned 13 disks, 34 SMART trend samples, one archived Web job and no running check. The LAN browser showed the clean `dev-a6086ff` build, a sleeping SATA disk's wake control beside its state, expandable check details and a chronological task/SMART history without console errors. The installer retained the existing password; application and unit backups were made. Manual power control, deletion of actual NAS history, a disk-wide scan and reboot recovery were not exercised.
-- Deployment: `hdd-health-web.service` is active and enabled on `0.0.0.0:8765` under `/root/apps/hdd-health-check`; the previous application remains at `/root/apps/hdd-health-check.backup-20260928-111808-1933511` and unit at `/etc/systemd/system/hdd-health-web.service.backup-20260928-111808-1933511`. Persistent state and logs remain at `/var/lib/hdd-health` and `/var/log/disk-health`.
-- Remaining: observe a real standby and wake action when convenient, and verify service recovery after a future NAS reboot. No new assessment was started for this deployment.
-- Next action: user review of the updated LAN page; investigate any device-specific sleep behavior before changing the power-control policy.
+2026-09-28. Branch `feat/standards-alignment`; the reviewed standards-alignment change is committed locally. No temporary project rules were found.
 
-- Previous handoff: development build `dev-c60d602` was installed on the Debian NAS. LAN browser login and read-only APIs succeeded with 13 disks. The local preview had no page-wide horizontal overflow at 390 px. A real SSD full scan, individual wake action and post-reboot recovery were not run.
-- Branch `main`: the annotated `v3.0.0` tag is published on commit `434ac7d`; this later commit records the handoff only. No GitHub Release or prebuilt UI asset was created.
-- Deployment: installed the `v3.0.0` tag on the Debian NAS as `hdd-health-web.service` under `/root/apps/hdd-health-check`. The installer retained the password and previous application/unit copies; a separate state and log backup was made before the change. The service is active and enabled on `0.0.0.0:8765`. LAN browser login showed 13 disks and `v3.0.0`; authenticated snapshot, status, job-history, and Changelog APIs returned successfully. No new disk check or reboot was run; boot enablement was verified, but recovery after a reboot remains unverified.
-- Completed: authenticated LAN installation was checked on a Debian NAS with 13 enumerated drives. The service started and the browser showed disk data, task pages, themed confirmations, and responsive layouts. The installer preserved the existing password and host state. No new disk scan or reboot was run during the final UI checks.
-- Checks: Vue type check/build, shell syntax, synthetic scoring/state tests, Web authentication/job/assessment/SMART tests, authenticated API reads, LAN browser interactions, and documentation format checks passed. Hardware-wide full assessment and post-reboot service recovery remain unverified. Old threshold-only findings without raw evidence remain pending review until a future check.
-- Release checks: the clean tag checkout and source archive both built and displayed `v3.0.0`; remote branch and annotated tag refs were verified separately. The local `snapshots/v3.0.0` source export contains 87 files and no prebuilt `web/dist`.
-- Versioned installation examples now clone `v3.0.0` and build `web/dist` before using the Debian installer. The source tag does not include a prebuilt UI.
-- Remaining documentation work: the project-structure checker reports 62 existing layout errors and the multilingual checker reports 60 existing directory-name and navigation-template mismatches. The content formatter reports zero errors and six warnings. These structural issues do not affect the documented source installation path.
-- Next action: observe normal NAS use and a future completed Web task. Later fix the existing project-layout and multilingual navigation mismatches. No temporary project rules were found.
+- Completed: reorganized the source into `src/checker/` and `src/web/`, moved generated Web output to `dist/web/`, retained the root CLI compatibility entry point, updated installer and test paths, and standardized locale directory names and document navigation. Source installs still copy into the existing Debian service layout. The UI now offers eight accent presets and light/dark modes in ordinary Settings, persists them independently, and uses a real Changelog link in top navigation.
+- Security: added a dedicated Security Settings page with a server-enforced five-minute administrator-password verification window. Verification rotates the session; an IP-only session cannot read or change the allowlist or password. Password change requests only the new password and confirmation during that window and invalidates all sessions. IP admission has an enable switch, accepts only exact RFC 1918 IPv4 or ULA IPv6 addresses, rejects disallowed legacy entries, uses the connection peer rather than client-supplied forwarding headers, and checks the original Host/Origin and a same-origin request header for mutations.
+- Privacy and version: snapshot and SMART responses now mask serials; an authenticated reveal request retrieves a full serial only on explicit user action, and the view clears it when hidden or closed. The version link sits beside the project name and opens Changelog; an untagged build uses a `test-<sha>` marker and serves the same value at `/api/build`.
+- Unreleased behavior: SSD/NVMe full assessments run quick SMART, short/long self-tests and a full read-only scan without speed sampling. Clean completed batches score 100; slow reads alone do not deduct points. Batch choices follow selected disk types; capacity and SSD host writes can switch decimal/binary units, and a sleeping HDD can be woken individually. Synthetic tests passed, with no real full-disk assessment started for this update.
+- Checks: Vue type check and production build passed. All shell and Python Web tests passed, including IP admission, permission expiry, session rotation, password change, serial reveal and masking. The theme checker passed all eight accents in both modes. Multilingual, document format (zero errors, eight warnings), local-link and project structure checks passed after browser artifacts were moved out of the source root. Shell syntax, Python compilation and `git diff --check` passed. Local Chromium showed the Security Settings page and responsive dark-mode appearance settings at 390 px with no horizontal overflow; direct Changelog navigation rendered the v3.0.0 section first. The isolated browser harness returned expected 503 responses for disk status because it has no checker process. The final review also changed source-archive builds to use a `test-archive-<package version>` marker instead of a bare release version.
+- Remaining: exercise the updated security flow on the NAS after deployment is authorized. The root compatibility entry point is recorded with its pre-move baseline under Limitations. No NAS upgrade, live disk operation or reboot check was performed in this worktree; these changes have not been published.
+- Next action: arrange a NAS deployment and live security-settings check.
 
-## Commit History
-
-Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
-
-- 2026-09-28 | `HEAD` | `docs(handoff): record SSD assessment deployment` | `git show HEAD`
-- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
-- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
-- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
-- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
-- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
-- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
-- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
-- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
-- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
-- 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
-- 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
-- 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`
-- 2026-08-13 | `7b18ca7` | `docs(status): record v1.0.0 release completion` | `git show 7b18ca7`
-- 2026-08-13 | `4e01f52` | `chore(release): v1.0.0 (clean history)` | `git show 4e01f52`
-
-## Changelog
-
-### Development update — 2026-09-28 (after the v3.0.0 tag)
-
-- SSD/NVMe full assessments now run quick SMART, short/long self-tests and a full read-only scan, omitting speed sampling. A completed clean batch scores 100; slow reads alone do not deduct health points. Batch check options follow the selected disk types. Capacity and SSD host-write values can switch decimal/binary units, and a sleeping HDD can be woken individually from SMART detail. Synthetic tests passed; no real full-disk assessment was started for this update.
-
-### v3.0.0 — 2026-09-27
-
-This major version adds the authenticated persistent Web UI and Debian installer to the existing disk checker. The Web service was checked on a Debian NAS with 13 enumerated disks; a complete assessment on real HDDs and post-reboot recovery remain unverified. The tag contains source code; no GitHub Release or prebuilt UI asset is published.
-
-#### Fixed in NAS follow-up
-
-- Reflow disk cards from available viewport width, including browser zoom: one to four columns while keeping controls visible and avoiding horizontal overflow.
-- Treat SSD/NVMe speed-sample dips and average-speed changes as performance information, retaining penalties for actual read failures and reinterpreting older saved results. Arrange the disk overview in responsive columns and let the dashboard disk card jump to the list.
-
-- Keep task updates responsive during an all-disk SMART self-test by reading the run record and recent log without polling every drive from the Web status endpoint. Refresh the disk list separately and reuse its last successful snapshot while one background read is in progress.
-- Color NVMe temperature independently from health scoring. Use controller warning and critical thresholds when available, or 70/80 °C display bands; temperature-only NVMe warnings do not deduct points. Saved historical assessments remain unchanged until rechecked.
-- Decode empty saved fields correctly and avoid a warning exit code when a clean check has only partial assessment coverage.
-- Move the four dashboard categories into dedicated top-level pages and keep one-click assessment on the disk home page.
-
-#### Added
-
-- A Python Web service, Vue interface, scheduled quick checks, task controls, SMART history view, and deployment unit. The installer configures authenticated LAN access; manual execution remains loopback-only.
-- A Web login and logout, an exact IPv4 passwordless list managed by authenticated users in Settings, disk cards with hardware basics, and separate SMART information and check tabs. The update record renders the Changelog section as Markdown.
-- Available SATA version and negotiated speed or NVMe PCIe generation, width, and rate; a switchable power-on time display; and batch checks scoped to SATA, HDD, SSD, NVMe, or all disks with any of the eight existing modules. The list labels bus and media type and shows cached temperature; SMART detail shows form factor only when reported. Only a full assessment can create a current composite score. SSD/NVMe scores remain HDD-oriented and are not separately calibrated.
-- A Debian installer that checks prerequisites, installs missing apt packages, deploys the prebuilt UI and service, and keeps a rollback copy during updates.
-- `--json` snapshots reuse the Bash composite scoring function. `--no-install` blocks automatic dependency installation for Web-initiated jobs. Web launches now persist accepted, running and terminal task states; the attention card filters disks and check details show recorded deductions, including a clear fallback for older records without a cause.
-
-#### Validation
-
-- The UI builds and type-checks; shell state/scoring tests and local HTTP authentication checks pass. The authenticated LAN service was installed and checked on a Debian NAS with 13 enumerated disks. A complete assessment on real HDDs and post-reboot recovery remain unverified.
+## Historical Source Baselines
 
 ### v2.3.0 — 2026-09-24 (untagged source baseline)
 
@@ -138,6 +97,34 @@ This source baseline includes the previously untagged v2.2 integration: persiste
 
 The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Root execution, package installation and systemd behavior have not been independently confirmed.
 
+## Changelog
+
+### v3.0.0 — 2026-09-27
+
+This major version adds the authenticated persistent Web UI and Debian installer to the existing disk checker. The Web service was checked on a Debian NAS with 13 enumerated disks; a complete assessment on real HDDs and post-reboot recovery remain unverified. The tag contains source code; no GitHub Release or prebuilt UI asset is published.
+
+#### Fixed in NAS follow-up
+
+- Reflow disk cards from available viewport width, including browser zoom: one to four columns while keeping controls visible and avoiding horizontal overflow.
+- Treat SSD/NVMe speed-sample dips and average-speed changes as performance information, retaining penalties for actual read failures and reinterpreting older saved results. Arrange the disk overview in responsive columns and let the dashboard disk card jump to the list.
+
+- Keep task updates responsive during an all-disk SMART self-test by reading the run record and recent log without polling every drive from the Web status endpoint. Refresh the disk list separately and reuse its last successful snapshot while one background read is in progress.
+- Color NVMe temperature independently from health scoring. Use controller warning and critical thresholds when available, or 70/80 °C display bands; temperature-only NVMe warnings do not deduct points. Saved historical assessments remain unchanged until rechecked.
+- Decode empty saved fields correctly and avoid a warning exit code when a clean check has only partial assessment coverage.
+- Move the four dashboard categories into dedicated top-level pages and keep one-click assessment on the disk home page.
+
+#### Added
+
+- A Python Web service, Vue interface, scheduled quick checks, task controls, SMART history view, and deployment unit. The installer configures authenticated LAN access; manual execution remains loopback-only.
+- A Web login and logout, an exact IPv4 passwordless list managed by authenticated users in Settings, disk cards with hardware basics, and separate SMART information and check tabs. The update record renders the Changelog section as Markdown.
+- Available SATA version and negotiated speed or NVMe PCIe generation, width, and rate; a switchable power-on time display; and batch checks scoped to SATA, HDD, SSD, NVMe, or all disks with any of the eight existing modules. The list labels bus and media type and shows cached temperature; SMART detail shows form factor only when reported. Only a full assessment can create a current composite score. SSD/NVMe scores remain HDD-oriented and are not separately calibrated.
+- A Debian installer that checks prerequisites, installs missing apt packages, deploys the prebuilt UI and service, and keeps a rollback copy during updates.
+- `--json` snapshots reuse the Bash composite scoring function. `--no-install` blocks automatic dependency installation for Web-initiated jobs. Web launches now persist accepted, running and terminal task states; the attention card filters disks and check details show recorded deductions, including a clear fallback for older records without a cause.
+
+#### Validation
+
+- The UI builds and type-checks; shell state/scoring tests and local HTTP authentication checks pass. The authenticated LAN service was installed and checked on a Debian NAS with 13 enumerated disks. A complete assessment on real HDDs and post-reboot recovery remain unverified.
+
 ### v1.0.0 — 2026-08-08
 
 #### Added
@@ -145,3 +132,26 @@ The user reports testing v2.2.0 on a real machine, but did not provide device, e
 - Initial 12-dimension HDD health check: device/interface data, SMART capability and overall verdict, ATA attributes or SAS defect/error counters, error and self-test logs, short/long self-test launch, lifespan/load, kernel I/O errors, mount and read-only detection, optional read-only `hdparm` benchmark and `badblocks` scan.
 - Heuristic 0–100 score and four grades with process exit codes 0/1/2/3, SMART passthrough auto-detection, interactive and batch disk selection, and offered `apt` installation of missing `smartmontools`.
 - The complete v1.0.0 design and usage documents remain in the `v1.0.0` Git tag (for example, `git show v1.0.0:DESIGN.md` and `git show v1.0.0:README.zh.md`); obsolete v1 commands are not current guidance.
+
+## Commit History
+
+Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
+
+- 2026-09-28 | intended | `feat(web): align project layout and security settings` | this commit
+- 2026-09-28 | `35f24e5` | `docs(handoff): record NAS Web update verification` | `git show 35f24e5`
+- 2026-09-28 | `a6086ff` | `feat(web): unify history and add per-disk standby` | `git show a6086ff`
+- 2026-09-28 | `f5f5dc7` | `docs(handoff): record SSD assessment deployment` | `git show f5f5dc7`
+- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
+- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
+- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
+- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
+- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
+- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
+- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
+- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
+- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
+- 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
+- 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
+- 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`
+- 2026-08-13 | `7b18ca7` | `docs(status): record v1.0.0 release completion` | `git show 7b18ca7`
+- 2026-08-13 | `4e01f52` | `chore(release): v1.0.0 (clean history)` | `git show 4e01f52`

@@ -7,7 +7,7 @@ trap 'rm -rf -- "$tmp"' EXIT
 export HDD_STATE_DIR="$tmp/state" HDD_LOG_DIR="$tmp/log"
 mkdir -p "$HDD_STATE_DIR/mock" "$HDD_LOG_DIR" "$tmp/run"
 # shellcheck disable=SC1090
-source <(sed '/^#------------------------------ 参数解析 /,$d' hdd-health-check.sh)
+source <(sed '/^#------------------------------ 参数解析 /,$d' src/checker/hdd-health-check.sh)
 DID[mock]=mock; D_NAME=(mock); D_MODEL=(synthetic); D_SIZE=(8MiB); D_ROTA=(0); D_TRAN=(nvme)
 QUIET=1; RUN_DIR="$tmp/run"; SAMPLE_POINTS=4; SAMPLE_MB=1
 now() { echo 1700000000; }

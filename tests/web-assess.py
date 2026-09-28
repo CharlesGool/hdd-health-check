@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 root = Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location('hdd_web_server', root / 'web/server.py')
+spec = importlib.util.spec_from_file_location('hdd_web_server', root / 'src/web/server.py')
 app = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(app)
 

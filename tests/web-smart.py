@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 root = Path(__file__).resolve().parent.parent
-spec = importlib.util.spec_from_file_location('hdd_web_server', root / 'web/server.py')
+spec = importlib.util.spec_from_file_location('hdd_web_server', root / 'src/web/server.py')
 app = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(app)
 
@@ -23,6 +23,7 @@ with patch.object(app.subprocess, 'run', return_value=SimpleNamespace(stdout=jso
     assert run.call_args.args[0] == ['smartctl', '-j', '-a', '-n', 'standby', '/dev/sda']
     assert result['passed'] is True and result['attributes'][0]['normalized'] == 100
     assert result['formFactor'] == '2.5 inches'
+    assert result['serial'] != 'ABC' and result['serial'].startswith('•')
     assert result['link']['sataVersion'] == 'SATA 3.3' and result['link']['speed'] == '6.0 Gb/s'
 
 nvme = {'nvme_smart_health_information_log': {'critical_warning': 0, 'available_spare': 99, 'percentage_used': 7},
@@ -71,6 +72,13 @@ with patch.object(app, 'snapshot', return_value={'disks': [{'name': 'sda'}]}) as
     assert app.web_snapshot()['disks'][0]['name'] == 'sda'
     assert app.web_snapshot()['disks'][0]['name'] == 'sda'
     assert scan.call_count == 1
+
+assert app.masked_serial('SERIAL123456') != 'SERIAL123456'
+assert app.masked_serial('SERIAL123456').endswith('3456')
+with patch.object(app, 'web_snapshot', return_value={'disks': [{'name': 'sda', 'id': 'MODEL_SERIAL123456', 'serial': app.masked_serial('SERIAL123456')}] }):
+    assert 'id' not in app.public_snapshot()['disks'][0]
+with patch.object(app, 'script', return_value=SimpleNamespace(returncode=0, stdout=json.dumps({'disks': [{'name': 'sda', 'rotation': '1'}]}))), patch.object(app, 'lsblk_details', return_value={'sda': {'serial': 'SERIAL123456'}}), patch.object(app, 'storage_usage', return_value={}), patch.object(app, 'interface_link', return_value={}), patch.object(app, 'cached_temperature', return_value=(None, {}, 'unavailable')):
+    assert app.snapshot()['disks'][0]['serial'] == app.masked_serial('SERIAL123456')
 
 with patch.object(app.subprocess, 'run', return_value=SimpleNamespace(stdout='not JSON', stderr='standby', returncode=2)):
     result = app.smart_details({'name': 'sdb', 'rotation': '1', 'model': ''})

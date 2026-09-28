@@ -36,7 +36,10 @@ venv/
 target/
 
 # Build output
-dist/
+private/*
+!private/.gitkeep
+dist/*
+!dist/.gitkeep
 build/
 *.egg-info/
 

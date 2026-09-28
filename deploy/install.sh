@@ -60,10 +60,10 @@ command -v dpkg-query >/dev/null || die "dpkg-query is required"
 command -v systemctl >/dev/null || die "systemd is required"
 [[ -d /run/systemd/system ]] || die "systemd is not running as the system manager"
 
-for file in hdd-health-check.sh web/server.py web/dist/index.html deploy/hdd-health-web.service doc/LOG.md; do
+for file in src/checker/hdd-health-check.sh src/web/server.py dist/web/index.html deploy/hdd-health-web.service doc/LOG.md; do
     [[ -f $source_dir/$file && ! -L $source_dir/$file ]] || die "Missing or linked package file: $file"
 done
-[[ -z $(find "$source_dir/web/dist" -type l -print -quit) ]] || die "web/dist contains a symbolic link"
+[[ -z $(find "$source_dir/dist/web" -type l -print -quit) ]] || die "dist/web contains a symbolic link"
 [[ ! -L /root/apps && ! -L $app_dir && ! -L $unit_file ]] || die "An installation path is a symbolic link"
 
 if [[ -f $unit_file ]]; then
@@ -101,10 +101,10 @@ fi
 
 mkdir -p /root/apps
 stage=$(mktemp -d /root/apps/.hdd-health-check.new.XXXXXX)
-install -m 0755 "$source_dir/hdd-health-check.sh" "$stage/hdd-health-check.sh"
+install -m 0755 "$source_dir/src/checker/hdd-health-check.sh" "$stage/hdd-health-check.sh"
 install -d -m 0755 "$stage/web" "$stage/doc"
-install -m 0644 "$source_dir/web/server.py" "$stage/web/server.py"
-cp -a -- "$source_dir/web/dist" "$stage/web/dist"
+install -m 0644 "$source_dir/src/web/server.py" "$stage/web/server.py"
+cp -a -- "$source_dir/dist/web" "$stage/web/dist"
 if [[ -f $app_dir/web-password && ! -L $app_dir/web-password ]]; then
     install -m 0600 "$app_dir/web-password" "$stage/web-password"
 else
@@ -112,7 +112,7 @@ else
     chmod 0600 "$stage/web-password"
 fi
 install -m 0644 "$source_dir/doc/LOG.md" "$stage/doc/LOG.md"
-for language in ar es fr hi zh_cn zh_hk zh_tw; do
+for language in ar es fr hi zh-CN zh-HK zh-TW; do
     [[ -f $source_dir/doc/$language/LOG.md && ! -L $source_dir/doc/$language/LOG.md ]] ||
         die "Missing or linked update record: doc/$language/LOG.md"
     install -d -m 0755 "$stage/doc/$language"

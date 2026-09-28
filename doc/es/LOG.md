@@ -10,20 +10,21 @@ metadata:
 
 Este registro conserva decisiones históricas aceptadas, limitaciones conocidas e historial de versiones. Esta documentación describe `v3.0.0`. La etiqueta de código fuente `v3.0.0` marca esta versión mayor; no se crea un GitHub Release. El usuario informa de que el código anterior `v2.2.0` se ejecutó en una máquina real, sin detalles sobre dispositivo, entorno ni cobertura. La puntuación revisada solo tiene validación simulada y aislada, no en un HDD real.
 
-## Multi-language
+## Multilingüe
 
-[English](../LOG.md) | [简体中文](../zh_cn/LOG.md) | [繁體中文](../zh_tw/LOG.md) | [繁體中文(香港)](../zh_hk/LOG.md) | [हिन्दी](../hi/LOG.md) | **Español** | [العربية](../ar/LOG.md) | [Français](../fr/LOG.md)
+[English](../LOG.md) | [简体中文](../zh-CN/LOG.md) | [繁體中文(台灣)](../zh-TW/LOG.md) | [繁體中文(香港)](../zh-HK/LOG.md) | [हिन्दी](../hi/LOG.md) | **Español** | [العربية](../ar/LOG.md) | [Français](../fr/LOG.md)
 
-- En esta etapa se pueden elegir cinco grupos y ocho tipos de prueba. La lista distingue SATA/NVMe y muestra la temperatura leída en segundo plano; los detalles muestran el formato informado por el dispositivo. Pasaron la compilación y las pruebas simuladas de comandos, temperatura y protección del reposo; falta comprobarlo en el NAS.
+## Documentación
 
-## Documentation
+- Descripción general del proyecto: [README](README.md)
 
-- Presentación del proyecto: [README](README.md)
-- Fundamentos de diseño: [DESIGN](DESIGN.md)
+- Justificación del diseño: [DESIGN](DESIGN.md)
+
 - Historial de versiones: [LOG](LOG.md)
-- Inventario de terceros: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
-## Bugs
+- Avisos de terceros: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
+
+## Errores
 
 - [ ] El usuario informa de pruebas de v2.2.0 en una máquina real, sin especificar dispositivos, entorno ni alcance; no se han confirmado pruebas de ejecución como root, instalación de paquetes ni comportamiento de systemd; las comprobaciones de la versión anterior v1.0.0 tampoco contaron con un HDD real ni datos SMART (solo sintaxis y ayuda). Según los informes, el script se había utilizado antes de la normalización original, pero eso no sustituye una prueba controlada con hardware.
 - [ ] La puntuación revisada por lotes y la repetición final de SMART/ATA/CRC solo cuentan con pruebas sintéticas, no con validación de este código en un HDD real. La resolución temporal del registro de autopruebas del firmware y la reanudación entre ejecuciones pueden causar una cobertura parcial/desconocida; no se pueden atribuir de nuevo automáticamente los errores históricos tras reparar. Se mantiene declarada esta limitación de validación de hardware; se sigue recomendando repetir las pruebas en un HDD autorizado.
@@ -31,7 +32,19 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 - [ ] Se comprobó el servicio Web autenticado en LAN y el inventario real de discos en un NAS Debian. Siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reiniciar. Se rechaza el estado v2.2 anterior no conforme. No se ofrece exportación CSV.
 - [x] La normalización de v1.0.0 corrigió instrucciones de clonación que apuntaban a la ruta inexistente `hdd-health-check-repo/main` y caracteres mezclados de chino tradicional en el README en chino simplificado.
 
-## Decisions
+## Limitaciones
+
+- El servicio Debian instalado conserva su disposición `/root/apps/hdd-health-check/web/` en el host para mantener la compatibilidad de actualización; el código fuente está en `src/web/` y la salida generada en `dist/web/`.
+
+### Puntos de entrada de compatibilidad
+
+Base: `35f24e5`
+Motivo: Los comandos CLI existentes y las instrucciones de instalación invocan el punto de entrada shell de la raíz del repositorio; la implementación reside ahora en `src/checker/`.
+Límite de actualización: Conservar el despachador de la raíz hasta que una migración de ruta CLI comunicada por separado sustituya el comando establecido.
+
+- `hdd-health-check.sh` -> `src/checker/hdd-health-check.sh`
+
+## Decisiones
 
 | Decisiones | Motivos |
 | --- | --- |
@@ -41,65 +54,19 @@ Este registro conserva decisiones históricas aceptadas, limitaciones conocidas 
 | 2026-08-13: Sustituir el historial público de v1.0.0 por un único commit limpio con identidad noreply y una etiqueta anotada, conservando el historial original en un archivo privado renombrado; rechazar forzar el envío del repositorio público anterior o conservar su commit intermedio sustituido. | El commit público anterior contenía una dirección de correo personal en los metadatos de Git. Las copias y bifurcaciones existentes no se migran automáticamente y no puede garantizarse que la exposición anterior se haya eliminado de las cachés. Es un hecho histórico, no una autorización para volver a reescribir el historial. |
 | Integración actual: Adoptar el comportamiento v2.2.0 suministrado sin garantías de compatibilidad con v1 y conservar la licencia MIT existente. | El nuevo script añade estado persistente y tareas opcionales en segundo plano; `-w` se ignora. Esta integración no implica publicación, etiqueta ni validación con hardware. |
 
-## Entrega - 2026-09-28
+## Traspaso
 
-- Entrega actual: la compilación de desarrollo `dev-c60d602` está instalada en el NAS Debian bajo `/root/apps/hdd-health-check`; `hdd-health-web.service` está activo y habilitado al arrancar en `0.0.0.0:8765`. El instalador conservó la contraseña y las copias de la aplicación y unidad anteriores. El navegador LAN abrió la página de acceso sin error de inicialización JavaScript; las consultas autenticadas de solo lectura a discos, tareas e historial respondieron correctamente (13 discos, ninguna tarea activa). La vista local de 390 px no mostró desbordamiento horizontal de la página. Pasaron las pruebas sintéticas de Shell y Web y la compilación de Vue. No se ejecutaron un análisis integral SSD real, una activación individual ni una prueba tras reinicio; el siguiente paso es la observación del usuario y, cuando convenga, la validación del hardware.
-- Rama `main`: la etiqueta anotada `v3.0.0` se publicó sobre el commit `434ac7d`; el commit posterior solo registra la entrega. No se creó un GitHub Release ni una interfaz precompilada.
-- Despliegue: se instaló la etiqueta `v3.0.0` en el NAS Debian mediante `hdd-health-web.service`, bajo `/root/apps/hdd-health-check`. El instalador conservó la contraseña y copias de la aplicación y unidad anteriores; antes del cambio se guardó otra copia del estado y los registros. El servicio está activo y habilitado en `0.0.0.0:8765`. Tras iniciar sesión desde el navegador LAN aparecieron 13 discos y `v3.0.0`; respondieron las API autenticadas de discos, estado, historial de tareas y cambios. No se inició una nueva prueba de discos ni se reinició el NAS; se verificó la habilitación al arranque, pero no la recuperación tras un reinicio.
-- Completado: la instalación LAN autenticada en un NAS Debian enumeró 13 discos; arrancó el servicio y el navegador mostró datos de discos, tareas, diálogos y diseño adaptable. El instalador conservó la contraseña y el estado del host. La comprobación final de la interfaz no inició un escaneo ni reinició el equipo.
-- Pruebas: pasaron tipos y compilación Vue, sintaxis shell, pruebas sintéticas de puntuación y estado, autenticación y tareas Web, lecturas de API y navegador LAN. La evaluación completa en HDD real y la recuperación tras reinicio siguen sin comprobarse. Los avisos antiguos sin prueba bruta esperan una nueva revisión.
-- Verificación de versión: la copia limpia de la etiqueta y el archivo fuente compilaron y mostraron `v3.0.0`; la rama remota y la etiqueta se verificaron por separado. La copia local `snapshots/v3.0.0` contiene 87 archivos fuente, sin `web/dist` precompilado.
-- Siguiente acción: observar el uso normal del NAS y una futura tarea Web completada. Corregir más adelante los problemas de estructura del proyecto y navegación multilingüe. No se encontraron reglas temporales del proyecto.
+2026-09-28. Rama `feat/standards-alignment`; este árbol de trabajo local no tiene commits nuevos. No se encontraron reglas temporales del proyecto.
 
-## Historial de commits
+- Completado: se reorganizó el código fuente en `src/checker/` y `src/web/`, se trasladó la salida Web generada a `dist/web/`, se conservó el punto de entrada CLI compatible en la raíz, se actualizaron las rutas del instalador y de las pruebas, y se normalizaron los nombres de los directorios de idiomas y la navegación documental. Las instalaciones desde código fuente siguen copiando al diseño existente del servicio Debian. La interfaz ahora ofrece ocho colores de acento y modos claro/oscuro en Ajustes, los conserva por separado y usa un enlace real a Changelog en la navegación superior.
+- Seguridad: se añadió una página específica de Security Settings con un período de verificación de contraseña de administrador de cinco minutos, impuesto por el servidor. La verificación renueva la sesión; una sesión admitida solo por IP no puede leer ni modificar la lista de permisos o la contraseña. Durante ese período, el cambio de contraseña solo pide la nueva contraseña y su confirmación e invalida todas las sesiones. La admisión por IP tiene un interruptor de activación, acepta solo direcciones exactas RFC 1918 IPv4 o ULA IPv6, rechaza las entradas heredadas no permitidas, utiliza el par de conexión en vez de encabezados de reenvío suministrados por el cliente y comprueba el Host/Origin original y un encabezado de petición del mismo origen para las mutaciones.
+- Privacidad y versión: las respuestas de instantáneas y SMART ahora ocultan los números de serie; una solicitud autenticada para mostrarlos recupera el número completo solo tras una acción explícita del usuario, y la vista lo borra al ocultarlo o cerrarse. El enlace de versión está junto al nombre del proyecto y abre Changelog; una compilación sin etiqueta usa el marcador `test-<sha>` y ofrece el mismo valor en `/api/build`.
+- Comportamiento no publicado: La evaluación completa de SSD/NVMe ahora ejecuta SMART rápido, autopruebas corta y larga y una lectura completa de solo lectura; omite el muestreo de velocidad. Un lote completo sin anomalías obtiene 100 puntos; las lecturas lentas por sí solas no descuentan puntos. Las opciones del lote dependen de los tipos de disco seleccionados. La capacidad y los datos escritos en SSD cambian entre unidades decimales y binarias; un HDD en reposo se puede activar individualmente desde sus detalles SMART. Pasaron las pruebas simuladas; no se inició una evaluación integral de discos reales en esta actualización.
+- Pruebas: pasaron la comprobación de tipos Vue y la compilación de producción. Pasaron todas las pruebas shell y Python Web, incluidas admisión por IP, caducidad de permisos, renovación de sesión, cambio de contraseña y revelación y ocultación de series. El comprobador de temas aprobó los ocho colores de acento en ambos modos. Pasaron los controles de multilingüismo, formato documental (cero errores y ocho advertencias), enlaces locales y estructura del proyecto tras trasladar los artefactos del navegador fuera de la raíz del código fuente. Chromium local mostró Security Settings y ajustes de apariencia adaptables en modo oscuro a 390 px sin desbordamiento horizontal; la navegación directa a Changelog mostró primero la sección v3.0.0. El entorno aislado del navegador devolvió las respuestas 503 previstas para el estado de discos porque carece del proceso del comprobador.
+- Pendiente: revisar el diff final y probar el flujo de seguridad actualizado en el NAS después de autorizar un despliegue. El punto de entrada compatible de la raíz figura en Limitations con su referencia anterior al traslado. No se realizó ninguna actualización del NAS, operación de disco real ni prueba de reinicio en este árbol de trabajo; estos cambios sin commit no se han publicado.
+- Próximo paso: revisar la rama y decidir si se despliega en el NAS para comprobar Security Settings en vivo.
 
-Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de entrega.
-
-- 2026-09-28 | `HEAD` | `docs(handoff): record SSD assessment deployment` | `git show HEAD`
-- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
-- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
-- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
-- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
-- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
-- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
-- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
-- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
-- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
-- 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
-- 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
-- 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`
-- 2026-08-13 | `7b18ca7` | `docs(status): record v1.0.0 release completion` | `git show 7b18ca7`
-- 2026-08-13 | `4e01f52` | `chore(release): v1.0.0 (clean history)` | `git show 4e01f52`
-
-## Changelog
-
-### Actualización de desarrollo — 2026-09-28 (después de la etiqueta v3.0.0)
-
-- La evaluación completa de SSD/NVMe ahora ejecuta SMART rápido, autopruebas corta y larga y una lectura completa de solo lectura; omite el muestreo de velocidad. Un lote completo sin anomalías obtiene 100 puntos; las lecturas lentas por sí solas no descuentan puntos. Las opciones del lote dependen de los tipos de disco seleccionados. La capacidad y los datos escritos en SSD cambian entre unidades decimales y binarias; un HDD en reposo se puede activar individualmente desde sus detalles SMART. Pasaron las pruebas simuladas; no se inició una evaluación integral de discos reales en esta actualización.
-
-### v3.0.0 — 2026-09-27
-
-Esta versión mayor añade una interfaz Web persistente con autenticación y un instalador Debian al comprobador de discos. El servicio Web se comprobó en un NAS Debian con 13 discos; siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reinicio. La etiqueta contiene el código fuente; no se publica un GitHub Release ni una interfaz compilada.
-
-Corrección para NAS: durante las autopruebas SMART, el estado Web ya no consulta cada disco de forma secuencial; la lista y el estado se actualizan por separado. La temperatura NVMe se colorea según los umbrales del dispositivo y no resta puntos por sí sola. También se corrigen los campos de problemas vacíos y la advertencia causada solo por una evaluación incompleta.
-
-La página principal permite una evaluación completa de todos los discos SATA, HDD, SSD, NVMe o todos los discos. El servidor selecciona los discos enumerados y lanza una tarea `full --rescan` en segundo plano. Incluye pruebas SMART cortas/largas, muestreo de velocidad y lectura completa; puede tardar horas. La puntuación SSD/NVMe usa reglas orientadas a HDD sin calibración propia. La versión y velocidad SATA proceden de smartctl; cuando existen, Linux sysfs aporta la velocidad SATA o la generación, ancho y velocidad PCIe de NVMe. Los datos ausentes figuran como desconocidos. Pulse las horas de uso para alternar con años de 365 días, días y horas.
-
-Esta actualización Web añade inicio y cierre de sesión en la página, lista de IPv4 exactas en Ajustes, datos básicos de discos, pestañas SMART y comprobaciones, e historial de cambios en Markdown. Pasaron la compilación local y las pruebas de sesiones, acceso IP y SMART simulado; falta actualizar el NAS y validar discos reales.
-
-
-Las caídas de velocidad y los cambios de velocidad media de SSD/NVMe pasan a ser información de rendimiento; se mantienen las penalizaciones por errores reales de lectura y se reinterpretan los resultados anteriores. La lista se adapta a tres, dos o una columna y la tarjeta de discos del panel permite saltar a ella.
-
-- Las tarjetas de discos se reorganizan automáticamente entre una y cuatro columnas según el ancho disponible, incluido el zoom del navegador, sin ocultar botones ni generar desbordamiento horizontal.
-
-#### Añadido
-
-- Servicio Web Python, interfaz Vue, comprobaciones programadas, control de tareas, historial SMART y unidad systemd. El instalador permite acceso LAN autenticado; el modo manual permanece en loopback.
-- Las instantáneas `--json` reutilizan la función de puntuación compuesta de Bash. `--no-install` impide instalar automáticamente dependencias para las tareas iniciadas desde la Web.
-
-#### Validación
-
-- Pasaron la compilación y comprobación de tipos de la UI, las pruebas shell de estado y puntuación y las pruebas HTTP locales de autenticación. El servicio LAN autenticado se comprobó en un NAS Debian con 13 discos enumerados; siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reiniciar.
+## Bases históricas del código fuente
 
 ### v2.3.0 — 2026-09-24 (untagged source baseline)
 
@@ -130,6 +97,32 @@ Esta versión incluye la integración v2.2 antes no etiquetada: resultados persi
 
 El usuario informa de pruebas de v2.2.0 en una máquina real, sin especificar dispositivos, entorno ni alcance; no se han confirmado de forma independiente la ejecución como root, la instalación de paquetes ni el comportamiento de systemd.
 
+## Historial de cambios
+
+### v3.0.0 — 2026-09-27
+
+Esta versión mayor añade la interfaz Web persistente y autenticada y el instalador Debian al comprobador de discos existente. El servicio se verificó en un NAS Debian con 13 discos enumerados; siguen pendientes una evaluación completa de HDD reales y la recuperación tras reiniciar. La etiqueta contiene código fuente; no se publicó un GitHub Release ni una interfaz precompilada.
+
+#### Corregido en el seguimiento del NAS
+
+- Las tarjetas de discos se distribuyen en una a cuatro columnas según el ancho disponible, incluido el zoom del navegador, sin ocultar controles ni generar desbordamiento horizontal.
+- Las caídas de velocidad y los cambios de velocidad media de SSD/NVMe son información de rendimiento; los errores reales de lectura siguen penalizados y los resultados guardados se reinterpretan. La lista se organiza en columnas adaptables y la tarjeta del panel lleva a la lista.
+- Durante una autoprueba SMART de todos los discos, el estado Web consulta el registro de ejecución y el tramo reciente del log, sin sondear cada unidad. La lista se actualiza por separado y reutiliza el último resultado válido mientras hay una lectura en segundo plano.
+- La temperatura NVMe se colorea por separado de la puntuación. Usa los umbrales de advertencia y críticos del controlador cuando existen, o bandas visuales de 70/80 °C; la temperatura sola no resta puntos. Las evaluaciones anteriores permanecen igual hasta otra comprobación.
+- Se interpretan correctamente los campos guardados vacíos y una comprobación limpia con cobertura parcial no produce un código de salida de advertencia.
+- Las cuatro categorías del panel tienen páginas principales propias y la evaluación en un clic sigue en la página de discos.
+
+#### Añadido
+
+- Servicio Web Python, interfaz Vue, comprobaciones rápidas programadas, control de tareas, historial SMART y unidad de despliegue. El instalador habilita acceso LAN autenticado; la ejecución manual permanece en loopback.
+- Acceso y salida Web, lista IPv4 exacta gestionada por usuarios autenticados en Ajustes, tarjetas con datos básicos y pestañas separadas de SMART y comprobaciones. El historial de cambios se presenta como Markdown.
+- Versión y velocidad negociada SATA, o generación, ancho y velocidad PCIe NVMe cuando están disponibles; tiempo de encendido alternable; lotes para SATA, HDD, SSD, NVMe o todos, con cualquiera de los ocho módulos. La lista muestra bus, tipo de medio y temperatura en caché; el detalle SMART solo muestra el formato si se informa. Solo la evaluación completa da una puntuación actual; las puntuaciones SSD/NVMe no se calibran por separado.
+- Instalador Debian que comprueba requisitos, instala paquetes apt ausentes, despliega la interfaz compilada y el servicio, y guarda una copia de reversión durante las actualizaciones.
+- Las instantáneas `--json` reutilizan la puntuación compuesta Bash. `--no-install` impide instalar dependencias automáticamente en tareas Web. Los lanzamientos guardan estados aceptado, en curso y final; la tarjeta de atención filtra discos y los detalles muestran deducciones registradas, con aviso claro para datos antiguos sin causa.
+
+#### Validación
+
+- Pasaron la compilación y tipos de la UI, las pruebas shell de estado y puntuación y las comprobaciones HTTP locales de autenticación. El servicio LAN autenticado se instaló y comprobó en un NAS Debian con 13 discos. La evaluación completa de HDD reales y la recuperación tras reiniciar siguen sin verificarse.
 
 ### v1.0.0 — 2026-08-08
 
@@ -138,3 +131,23 @@ El usuario informa de pruebas de v2.2.0 en una máquina real, sin especificar di
 - Comprobación inicial de salud de HDD de 12 dimensiones: datos de dispositivo e interfaz, capacidad SMART y evaluación global, atributos ATA o contadores de defectos/errores SAS, registros de errores y autopruebas, inicio de autopruebas cortas/largas, vida útil/carga, errores de E/S del kernel, detección de montajes y de solo lectura, medición opcional de rendimiento con `hdparm` de solo lectura y exploración con `badblocks`.
 - Puntuación heurística de 0 a 100 y cuatro niveles con códigos de salida del proceso 0/1/2/3, detección automática del acceso directo a SMART, selección interactiva y por lotes de discos, y oferta de instalación mediante `apt` de `smartmontools` si faltaba.
 - Los documentos completos de diseño y uso de v1.0.0 se conservan en la etiqueta Git `v1.0.0` (por ejemplo, `git show v1.0.0:DESIGN.md` y `git show v1.0.0:README.zh.md`); los comandos antiguos de v1 no son instrucciones actuales.
+
+## Historial de commits
+
+Historial completo de la rama principal: `git log main --stat`. `HEAD` identifica este commit de entrega.
+
+- 2026-09-28 | `35f24e5` | `docs(handoff): record NAS Web update verification` | `git show 35f24e5`
+- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
+- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
+- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
+- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
+- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
+- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
+- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
+- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
+- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
+- 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
+- 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
+- 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`
+- 2026-08-13 | `7b18ca7` | `docs(status): record v1.0.0 release completion` | `git show 7b18ca7`
+- 2026-08-13 | `4e01f52` | `chore(release): v1.0.0 (clean history)` | `git show 4e01f52`
