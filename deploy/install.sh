@@ -19,7 +19,11 @@ app_swapped=0
 unit_swapped=0
 
 say() { printf '%s\n' "$*"; }
-die() { say "Error: $*" >&2; exit 1; }
+die() {
+    say "Error: $*" >&2
+    if (( install_started )); then rollback 1; fi
+    exit 1
+}
 
 rollback() {
     local code=$1
@@ -147,7 +151,7 @@ systemctl enable --now "$service"
 
 ready=0
 for ((attempt=0; attempt<10; attempt++)); do
-    if python3 -c 'import json, pathlib, urllib.request; password=pathlib.Path("/root/apps/hdd-health-check/web-password").read_text().strip(); request=urllib.request.Request("http://127.0.0.1:8765/api/auth/login", data=json.dumps({"password":password}).encode(), headers={"Content-Type":"application/json"}); response=urllib.request.urlopen(request, timeout=3); data=json.load(response); assert data["authenticated"] and any(cookie.startswith("hdd_session=") for cookie in response.headers.get_all("Set-Cookie", []))' 2>/dev/null; then
+    if python3 -c 'import json, pathlib, urllib.request; password=pathlib.Path("/root/apps/hdd-health-check/web-password").read_text().strip(); request=urllib.request.Request("http://127.0.0.1:8765/api/auth/login", data=json.dumps({"password":password}).encode(), headers={"Content-Type":"application/json", "X-HDD-CSRF":"1"}); response=urllib.request.urlopen(request, timeout=3); data=json.load(response); assert data["authenticated"] and any(cookie.startswith("hdd_session=") for cookie in response.headers.get_all("Set-Cookie", []))' 2>/dev/null; then
         ready=1
         break
     fi
