@@ -56,7 +56,7 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 
 ## Handoff
 
-2026-09-28. Branch `feat/standards-alignment`; the reviewed standards-alignment change is committed locally. No temporary project rules were found.
+2026-09-28. Branch `main`; the `v4.0.0` release is published. No temporary project rules were found.
 
 - NAS installer follow-up: the first NAS run of `test-bf14ed5` started the new service, but its health probe received HTTP 403 because it omitted the required `X-HDD-CSRF` header. The installer then reported failure without rolling back because its `die` path bypassed the rollback trap. The service remained active and the prior application remained available. Commit `cd7d69b` adds the header and calls rollback for explicit errors after installation starts. A fresh installation of `test-cd7d69b` then passed the installer health check. The service is active and enabled on `0.0.0.0:8765`; the installer preserved the previous application and unit backups. The Web password matched the previous backup, and `/var/lib/hdd-health` and `/var/log/disk-health` remained in place.
 
@@ -66,10 +66,11 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 - Unreleased behavior: SSD/NVMe full assessments run quick SMART, short/long self-tests and a full read-only scan without speed sampling. Clean completed batches score 100; slow reads alone do not deduct points. Batch choices follow selected disk types; capacity and SSD host writes can switch decimal/binary units, and a sleeping HDD can be woken individually. Synthetic tests passed, with no real full-disk assessment started for this update.
 - Checks: Vue type check and production build passed. All shell and Python Web tests passed, including IP admission, permission expiry, session rotation, password change, serial reveal and masking. The theme checker passed all eight accents in both modes. Multilingual, document format (zero errors, eight warnings), local-link and project structure checks passed after browser artifacts were moved out of the source root. Shell syntax, Python compilation and `git diff --check` passed. Local Chromium showed the Security Settings page and responsive dark-mode appearance settings at 390 px with no horizontal overflow; direct Changelog navigation rendered the v3.0.0 section first. The isolated browser harness returned expected 503 responses for disk status because it has no checker process. The final review also changed source-archive builds to use a `test-archive-<package version>` marker instead of a bare release version.
 - NAS verification: the installed `/api/build` matched the `test-cd7d69b` artifact. Password login, rejection of unauthenticated Security Settings, administrator verification, session rotation, protected allowlist read and serial masking in a 13-disk snapshot passed. The LAN Security page and favicon returned HTTP 200; an unauthenticated LAN request to the ordinary and protected APIs returned 401. An authenticated Chromium session opened Security Settings and showed the saved IP controls and password-change form; at 390 px, document scroll width equaled the viewport width. The browser session was closed and its local temporary password file removed. No disk scan, password change or reboot was run. The installed test build is not a formal release.
-- Remaining: observe service recovery after a real reboot when convenient. A controlled full assessment on real HDDs also remains unverified. The root compatibility entry point is recorded with its pre-move baseline under Limitations. The local branch is not published.
-- Release preparation: `v4.0.0` is the next formal version. The Changelog covers the post-`v3.0.0` commits. The release commit, tag, GitHub Release, snapshot and Notion sync remain pending. The previously installed NAS build remains `test-cd7d69b` until a separate deployment.
-- Translation recovery: the current seven core-document translations lag English-only Handoff and Commit History updates, so `check-doc-difference.py` has no structurally synchronized baseline for this release. The affected documents are being resynchronized in full against the current English source under the documented recovery rule; all seven languages and protected navigation remain required.
-- Next action: complete translations and release checks, then publish `v4.0.0` from `main`; schedule a reboot and controlled HDD assessment separately.
+- Remaining: observe service recovery after a real reboot when convenient. A controlled full assessment on real HDDs also remains unverified. The root compatibility entry point is recorded with its pre-move baseline under Limitations. The NAS still runs `test-cd7d69b`; this release task did not deploy the formal build.
+- Release: `main` and `feat/standards-alignment` were pushed at `3cf9da0`. The annotated `v4.0.0` tag points to that commit, and the formal GitHub Release includes the 6,697,392-byte prebuilt Web archive and `SHA256SUMS`; the archive SHA-256 is `491a0c61a99525f9a293b1b49c2de500e47c7b60e20bad5c4e955ecc048121d4`. The `../snapshots/v4.0.0` source snapshot was exported, and the complete Changelog was verified on the project's Notion child page under `My Projects`.
+- Release checks: all shell and Python tests, Vue type checking, production build, document and link checks, multilingual and project structure checks passed. The production build from the exact `v4.0.0` tag served `/api/build`, `version.json`, the main and deep routes, and the favicon with matching `v4.0.0` metadata. Document checking reported zero errors and eight existing English-language warnings. No real disk scan, password change or reboot was performed for the release.
+- Translation recovery: all seven core-document translations were resynchronized with current English, including Handoff and Commit History, under the documented recovery rule. Structural and protected-token checks passed; the English release documents and translations were committed together.
+- Next action: deploy the formal archive to the NAS if requested, then schedule a reboot and controlled HDD assessment separately.
 
 ## Historical Source Baselines
 
@@ -166,7 +167,8 @@ This major version adds the authenticated persistent Web UI and Debian installer
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-28 | intended | `chore(release): prepare v4.0.0` | this commit
+- 2026-09-28 | intended | `docs(handoff): record v4.0.0 publication` | this commit
+- 2026-09-28 | `3cf9da0` | `chore(release): prepare v4.0.0` | `git show 3cf9da0`
 - 2026-09-28 | `ebf6e39` | `docs(handoff): record NAS browser verification` | `git show ebf6e39`
 - 2026-09-28 | `0b5f053` | `docs(handoff): record NAS installer and security verification` | `git show 0b5f053`
 - 2026-09-28 | `cd7d69b` | `fix(deploy): verify authenticated service with CSRF header` | `git show cd7d69b`
