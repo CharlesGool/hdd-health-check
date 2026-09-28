@@ -72,6 +72,7 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 - Translation recovery: all seven core-document translations were resynchronized with current English, including Handoff and Commit History, under the documented recovery rule. Structural and protected-token checks passed; the English release documents and translations were committed together.
 - Web design alignment: the login header and card now use the shared dimensions. The login-card footer contains the build-version Changelog link and a language selector available before authentication. Login, administrator-verification, new-password and confirmation fields each start masked and have an independent labeled show/hide control with a 44 px touch target. The controls preserve input values without moving focus; language and password-control labels cover all eight UI languages. No NAS deployment was made for this change.
 - Web checks: Vue type checking and production build passed in a separate local build tree. In local Chromium, the login layout had no page-level horizontal overflow at 1280 px and 320 px; Chinese and Arabic login layouts, English language persistence, a failed-login error, login password toggling, and independent new/confirmation password toggles were checked. The isolated server could not read real disk data because its checker was not run as root; that expected API error was outside the login-layout check. Document and project checks are recorded with this handoff commit.
+- Changelog navigation follow-up: the login-card version link now opens the bundled Changelog for an unauthenticated visitor; that page shows the linked version beside the brand and a labeled Changelog navigation entry. Local Chromium followed the version link, rendered the v4.0.0 entry, and returned to login. Unauthenticated `/api/build`, `/api/access`, and `/api/snapshot` requests still returned 401. Vue type checking and production build passed after this change.
 - Next action: deploy an updated test build to the NAS if requested, then schedule a reboot and controlled HDD assessment separately. The published `v4.0.0` tag and release remain unchanged.
 
 ## Historical Source Baselines
@@ -169,7 +170,8 @@ This major version adds the authenticated persistent Web UI and Debian installer
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-28 | intended | `fix(web): align login with updated design rules` | this commit
+- 2026-09-28 | intended | `fix(web): open changelog before login` | this commit
+- 2026-09-28 | `c38e6d6` | `fix(web): align login with updated design rules` | `git show c38e6d6`
 - 2026-09-28 | `df35b42` | `docs(handoff): record v4.0.0 publication` | `git show df35b42`
 - 2026-09-28 | `3cf9da0` | `chore(release): prepare v4.0.0` | `git show 3cf9da0`
 - 2026-09-28 | `ebf6e39` | `docs(handoff): record NAS browser verification` | `git show ebf6e39`
