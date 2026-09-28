@@ -68,6 +68,10 @@ Complete primary-branch history: `git log main --stat`. The `HEAD` entry identif
 
 ## Changelog
 
+### Development update — 2026-09-28 (after the v3.0.0 tag)
+
+- SSD/NVMe full assessments now run quick SMART, short/long self-tests and a full read-only scan, omitting speed sampling. A completed clean batch scores 100; slow reads alone do not deduct health points. Batch check options follow the selected disk types. Capacity and SSD host-write values can switch decimal/binary units, and a sleeping HDD can be woken individually from SMART detail. Synthetic tests passed; no real full-disk assessment was started for this update.
+
 ### v3.0.0 — 2026-09-27
 
 This major version adds the authenticated persistent Web UI and Debian installer to the existing disk checker. The Web service was checked on a Debian NAS with 13 enumerated disks; a complete assessment on real HDDs and post-reboot recovery remain unverified. The tag contains source code; no GitHub Release or prebuilt UI asset is published.

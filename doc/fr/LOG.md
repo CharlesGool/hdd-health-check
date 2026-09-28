@@ -68,6 +68,10 @@ Historique complet de la branche principale : `git log main --stat`. `HEAD` dés
 
 ## Changelog
 
+### Mise à jour de développement — 2026-09-28 (après l’étiquette v3.0.0)
+
+- L’évaluation complète SSD/NVMe exécute désormais le contrôle SMART rapide, les autotests court et long et une lecture intégrale en lecture seule, sans échantillonnage de vitesse. Un lot complet sans anomalie obtient 100 points ; les lectures lentes seules ne retirent aucun point. Les choix de contrôle groupé suivent les types de disques sélectionnés. Les valeurs de capacité et de données écrites sur SSD passent entre unités décimales et binaires ; un HDD en veille peut être réveillé individuellement depuis ses détails SMART. Les tests simulés ont réussi ; aucune évaluation intégrale de disques réels n’a été lancée pour cette mise à jour.
+
 ### v3.0.0 — 2026-09-27
 
 Cette version majeure ajoute au vérificateur de disques une interface Web persistante avec authentification et un installateur Debian. Le service Web a été vérifié sur un NAS Debian avec 13 disques ; une évaluation complète sur de vrais HDD et la reprise après redémarrage restent à vérifier. Le tag contient le code source ; aucun GitHub Release ni interface précompilée n’est publié.

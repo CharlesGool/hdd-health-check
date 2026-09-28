@@ -68,6 +68,10 @@ Historial completo de la rama principal: `git log main --stat`. `HEAD` identific
 
 ## Changelog
 
+### Actualización de desarrollo — 2026-09-28 (después de la etiqueta v3.0.0)
+
+- La evaluación completa de SSD/NVMe ahora ejecuta SMART rápido, autopruebas corta y larga y una lectura completa de solo lectura; omite el muestreo de velocidad. Un lote completo sin anomalías obtiene 100 puntos; las lecturas lentas por sí solas no descuentan puntos. Las opciones del lote dependen de los tipos de disco seleccionados. La capacidad y los datos escritos en SSD cambian entre unidades decimales y binarias; un HDD en reposo se puede activar individualmente desde sus detalles SMART. Pasaron las pruebas simuladas; no se inició una evaluación integral de discos reales en esta actualización.
+
 ### v3.0.0 — 2026-09-27
 
 Esta versión mayor añade una interfaz Web persistente con autenticación y un instalador Debian al comprobador de discos. El servicio Web se comprobó en un NAS Debian con 13 discos; siguen sin verificarse la evaluación completa en HDD reales y la recuperación tras reinicio. La etiqueta contiene el código fuente; no se publica un GitHub Release ni una interfaz compilada.
