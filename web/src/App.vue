@@ -129,11 +129,6 @@ const ssdModules: readonly string[] = ['quick', 'short', 'long', 'surface', 'ful
 const activeDisk = computed(() => snapshot.value?.disks.find(d => d.name === selected.value) || null)
 const languageOptions = languages.map(item => ({ value: item.code, label: item.label }))
 const scopeSelectOptions = computed(() => scopeOptions.map(value => ({ value, label: scopeLabel(value) })))
-const availableAssessmentModules = computed(() => assessmentDisks.value.some(d => d.rotation !== '1') ? ssdModules : assessmentModules)
-const assessmentSelectOptions = computed(() => availableAssessmentModules.value.map(value => ({ value, label: moduleLabel(value) })))
-const diskSelectOptions = computed(() => (activeDisk.value?.rotation === '1' ? assessmentModules : ssdModules).map(value => ({ value, label: moduleLabel(value) })))
-function selectLanguage(value: string) { if (value in strings) lang.value = value as Lang }
-function selectScope(value: string) { if (scopeOptions.includes(value as Scope)) assessmentScope.value = value as Scope }
 const assessmentDisks = computed(() => (snapshot.value?.disks || []).filter(d => {
   const transport = d.transport?.toLowerCase()
   if (assessmentScope.value === 'sata') return transport === 'sata'
@@ -142,6 +137,11 @@ const assessmentDisks = computed(() => (snapshot.value?.disks || []).filter(d =>
   if (assessmentScope.value === 'nvme') return transport === 'nvme' || d.name.startsWith('nvme')
   return true
 }))
+const availableAssessmentModules = computed(() => assessmentDisks.value.some(d => d.rotation !== '1') ? ssdModules : assessmentModules)
+const assessmentSelectOptions = computed(() => availableAssessmentModules.value.map(value => ({ value, label: moduleLabel(value) })))
+const diskSelectOptions = computed(() => (activeDisk.value?.rotation === '1' ? assessmentModules : ssdModules).map(value => ({ value, label: moduleLabel(value) })))
+function selectLanguage(value: string) { if (value in strings) lang.value = value as Lang }
+function selectScope(value: string) { if (scopeOptions.includes(value as Scope)) assessmentScope.value = value as Scope }
 watch(availableAssessmentModules, values => { if (!values.includes(assessmentModule.value)) assessmentModule.value = 'full' })
 watch(diskSelectOptions, values => { if (!values.some(option => option.value === moduleChoice.value)) moduleChoice.value = 'quick' })
 const relevantModules = (disk: Disk) => disk.score === null ? disk.modules : disk.modules.filter(m => m.current)
