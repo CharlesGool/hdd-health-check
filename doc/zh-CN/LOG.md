@@ -56,7 +56,7 @@ metadata:
 
 ## 交接
 
-2026-09-28.分支 `feat/standards-alignment`;标准对齐变更已在本地提交.未发现临时项目规则.
+2026-09-28.分支 `main`;`v4.0.0` 已发布.未发现临时项目规则.
 
 - NAS 安装器后续检查:首次安装 `test-bf14ed5` 时新服务已启动,但健康探针因缺少 `X-HDD-CSRF` 请求头收到 HTTP 403;其 `die` 报错路径也未触发回滚.`cd7d69b` 修复了请求头和回滚.重新安装 `test-cd7d69b` 后,健康检查通过,服务在 `0.0.0.0:8765` 运行且已设为开机启用.安装器保留旧应用和服务单元备份;Web 密码与旧备份一致,`/var/lib/hdd-health` 和 `/var/log/disk-health` 保持原状.
 - 已完成:源码整理到 `src/checker/` 和 `src/web/`,生成的 Web 文件移到 `dist/web/`;保留根目录 CLI 兼容入口,更新安装器及测试路径,规范语言目录和文档导航.源码安装沿用现有 Debian 服务目录.普通设置页提供八种主题色和明暗模式,分别保存选择;顶部导航使用真正的 Changelog 链接.
@@ -65,10 +65,16 @@ metadata:
 - 评估行为:SSD/NVMe 完整评估运行 SMART 快检,短测,长测和全盘只读扫描,不采样速度.完成且无异常的批次得 100 分;单纯慢读不扣分.批量选择依所选磁盘类型提供可用检查.容量和 SSD 主机写入量可切换十进制/二进制单位;休眠 HDD 可单独唤醒.模拟测试通过,此次未启动真实磁盘的完整评估.
 - 检查:Vue 类型检查及生产构建,全部 Shell 和 Python Web 测试,八种主题色两种模式的检查,多语言,文档格式(0 个错误,8 个警告),本地链接及项目结构检查均通过.Shell 语法,Python 编译及 `git diff --check` 通过.本地 Chromium 在 390 px 无横向溢出,可显示 Security Settings 和深色设置;直接打开 Changelog 时先显示 v3.0.0.隔离浏览器环境缺少检查器,磁盘状态请求按预期返回 503.源码包构建以 `test-archive-<package version>` 标识,不显示为正式版本.
 - NAS 验证:安装后的 `/api/build` 与 `test-cd7d69b` 一致.密码登录,未认证的安全设置拒绝,管理员验证,会话轮换,受保护名单读取及 13 块磁盘快照的序列号遮蔽均通过.局域网安全页面和 favicon 返回 HTTP 200;未认证的普通及受保护 API 请求返回 401.已登录的 Chromium 打开安全页面,显示保存的 IP 控件和密码修改表单;390 px 下页面宽度等于视口宽度.浏览器会话及本地临时密码文件已清理.未进行磁盘扫描,密码修改或重启;安装的测试构建不是正式版本.
-- 剩余事项:适时观察实机重启后的服务恢复.真实 HDD 的受控完整评估仍未验证.根目录兼容入口及搬迁前基线记录在限制章节.本地分支尚未发布.
-- 发布准备:`v4.0.0` 是下一正式版本.Changelog 包含 `v3.0.0` 之后的提交;发布提交,标签,GitHub Release,快照和 Notion 同步待完成.NAS 仍运行 `test-cd7d69b`,除非另行部署.
-- 翻译恢复:目前七种语言的核心文档译文落后于仅更新英文的交接和提交历史,因此本次发布没有可供 `check-doc-difference.py` 使用的结构同步基线.依照文档规定的恢复规则,受影响文档正以当前英文为准完整同步;仍须涵盖全部七种语言并保留受保护的导航内容.
-- 下一步:完成翻译和发布检查,再从 `main` 发布 `v4.0.0`;重启检查及受控 HDD 评估另行安排.
+- 发布时状态:实机重启后的服务恢复和真实 HDD 的受控完整评估仍未验证.根目录兼容入口及搬迁前基线记录在限制章节.发布时 NAS 运行 `test-cd7d69b`;该发布任务没有部署正式构建.
+- 发布:`main` 和 `feat/standards-alignment` 已推送至 `3cf9da0`.附注标签 `v4.0.0` 指向该提交;正式 GitHub Release 包含 6,697,392 字节的预构建 Web 归档和 `SHA256SUMS`;归档的 SHA-256 为 `491a0c61a99525f9a293b1b49c2de500e47c7b60e20bad5c4e955ecc048121d4`.已导出 `../snapshots/v4.0.0` 源码快照,并在 `My Projects` 下的项目 Notion 子页面验证完整 Changelog.
+- 发布检查:全部 Shell 和 Python 测试,Vue 类型检查,生产构建,文档与链接检查,多语言及项目结构检查均通过.从精确的 `v4.0.0` 标签构建的产物提供 `/api/build`,`version.json`,主页及深层路由和 favicon,元数据均匹配 `v4.0.0`.文档检查报告 0 个错误和 8 个现有英文警告.此次发布未运行真实磁盘扫描,未修改密码,也未重启.
+- 翻译恢复:依据记录在案的恢复规则,七种语言的核心文档译文已与当前英文同步,包括交接和提交历史.结构与受保护 token 检查通过;英文发布文档和译文一同提交.
+- Web 设计规范化:登录页页眉及卡片现在采用统一尺寸.登录卡片底部提供构建版本的 Changelog 链接和登录前可用的语言选择器.登录密码,管理员验证密码,新密码及确认密码字段默认隐藏输入内容,各有独立的带标签显示/隐藏控件,触控区域为 44 px.控件保留输入值且不移动焦点;语言和密码控件标签覆盖全部八种 UI 语言.此次变更未部署到 NAS.
+- Web 检查:在单独的本地构建目录中通过 Vue 类型检查和生产构建.本地 Chromium 中,登录页在 1280 px 和 320 px 下均无页面级横向溢出;已检查中文及阿拉伯文登录布局,英文语言偏好的持久保存,登录失败提示,登录密码显示切换,以及新密码和确认密码的独立切换.隔离服务器未以 root 运行检查器,因此无法读取真实磁盘数据;该预期 API 错误不属于登录布局检查范围.文档和项目检查随本次交接提交记录.
+- Changelog 导航后续修复:登录卡片的版本链接现在允许未认证访客打开随程序提供的 Changelog;该页面在品牌名旁显示所链接版本,并有带标签的 Changelog 导航入口.本地 Chromium 点击版本链接,显示 v4.0.0 条目,并返回登录页.未认证的 `/api/build`,`/api/access` 和 `/api/snapshot` 请求仍返回 401.此变更后 Vue 类型检查和生产构建通过.
+- NAS UI 部署:在干净的本地检出中将当前 `main` 提交 `2e6201e` 构建为 `test-2e6201e`.Vue 类型检查和生产构建通过,传输的归档校验和一致.Debian 安装器升级了端口 8765 上现有的局域网服务,保留 Web 密码以及带时间戳的应用和服务单元备份.服务运行中且已设为开机启用;现有状态和日志目录保持原状.经认证的 `/api/build` 返回 `test-2e6201e`,`/api/snapshot` 列出 13 块磁盘;局域网磁盘页和 Changelog 页返回 HTTP 200,未认证的 `/api/build` 返回 401.局域网 Chromium 显示更新后的登录页及其版本链接和语言选择器,随后通过版本链接打开 v4.0.0 Changelog 条目.未运行磁盘扫描,未修改密码,也未重启.
+- 剩余事项:适时观察实机重启后的服务恢复.真实 HDD 的受控完整评估仍未验证.根目录兼容入口及搬迁前基线记录在限制章节.
+- 下一步:检查 NAS 上已部署的登录页和 Changelog 外观;另行安排重启和受控 HDD 评估.已发布的 `v4.0.0` 标签和 Release 保持不变.
 
 ## 历史源码基线
 
@@ -102,6 +108,14 @@ metadata:
 用户报告已在实机测试 v2.2.0,但未提供设备,环境或测试范围;root 执行,软件包安装及 systemd 行为尚未得到独立确认.
 
 ## 变更日志
+
+### 未发布的 Web 更新 — 2026-09-28
+
+#### 变更
+
+- 登录页页眉与卡片现在遵循统一布局尺寸.版本链接和语言选择器位于卡片底部,访客可在登录前选择语言.
+- 登录密码,管理员验证密码,新密码及确认密码字段默认隐藏输入内容,各有带标签的显示/隐藏控件.切换显示状态时保留字段内容和焦点.
+- 登录页版本链接无需认证即可打开随程序提供的 Changelog.磁盘和设置 API 仍受保护.
 
 ### v4.0.0 — 2026-09-28
 
@@ -164,7 +178,12 @@ metadata:
 
 主分支完整历史: `git log main --stat`.`HEAD` 条目标识本次交接提交.
 
-- 2026-09-28 | intended | `chore(release): prepare v4.0.0` | this commit
+- 2026-09-28 | intended | `docs(changelog): record latest Web update` | this commit
+- 2026-09-28 | `0a91897` | `docs(handoff): record NAS UI deployment` | `git show 0a91897`
+- 2026-09-28 | `2e6201e` | `fix(web): open changelog before login` | `git show 2e6201e`
+- 2026-09-28 | `c38e6d6` | `fix(web): align login with updated design rules` | `git show c38e6d6`
+- 2026-09-28 | `df35b42` | `docs(handoff): record v4.0.0 publication` | `git show df35b42`
+- 2026-09-28 | `3cf9da0` | `chore(release): prepare v4.0.0` | `git show 3cf9da0`
 - 2026-09-28 | `ebf6e39` | `docs(handoff): record NAS browser verification` | `git show ebf6e39`
 - 2026-09-28 | `0b5f053` | `docs(handoff): record NAS installer and security verification` | `git show 0b5f053`
 - 2026-09-28 | `cd7d69b` | `fix(deploy): verify authenticated service with CSRF header` | `git show cd7d69b`

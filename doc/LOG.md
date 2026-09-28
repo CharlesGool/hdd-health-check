@@ -110,6 +110,14 @@ The user reports testing v2.2.0 on a real machine, but did not provide device, e
 
 ## Changelog
 
+### Unreleased Web update — 2026-09-28
+
+#### Changed
+
+- The login header and card now follow the shared layout dimensions. The version link and a language selector sit inside the card footer, so visitors can choose a language before signing in.
+- Login, administrator verification, new-password and confirmation fields start masked and have separate labeled show/hide controls. Toggling a field preserves its value and focus.
+- The login version link opens the bundled Changelog without authentication. Disk and settings APIs remain protected.
+
 ### v4.0.0 — 2026-09-28
 
 This major version updates the local Web controller, its security model and source layout. The authenticated test build was checked on a Debian NAS with 13 enumerated disks. A complete assessment on real HDDs and service recovery after a host reboot remain unverified.
@@ -172,7 +180,8 @@ This major version adds the authenticated persistent Web UI and Debian installer
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-28 | intended | `docs(handoff): record NAS UI deployment` | this commit
+- 2026-09-28 | intended | `docs(changelog): record latest Web update` | this commit
+- 2026-09-28 | `0a91897` | `docs(handoff): record NAS UI deployment` | `git show 0a91897`
 - 2026-09-28 | `2e6201e` | `fix(web): open changelog before login` | `git show 2e6201e`
 - 2026-09-28 | `c38e6d6` | `fix(web): align login with updated design rules` | `git show c38e6d6`
 - 2026-09-28 | `df35b42` | `docs(handoff): record v4.0.0 publication` | `git show df35b42`
