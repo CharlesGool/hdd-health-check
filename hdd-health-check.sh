@@ -1598,6 +1598,7 @@ bb_recheck() {
 
 surface_finalize() {
     local name=$1 id=${DID[$1]}
+    local rota=${D_ROTA[$(di "$name")]:-?}
     local map="$STATE_DIR/$id/surface.map"
     surface_load "$STATE_DIR/$id/surface.state"
     CUR_DED=0; CUR_ISS=()
@@ -1617,14 +1618,18 @@ surface_finalize() {
     fi
 
     (( S_ERR > 0 ))   && { bad "发现 $S_ERR 个不可读块 —— 存在实际坏道"; pen 40 "表面读错误 $S_ERR 块"; }
-    if   (( S_VSLOW > 5 )); then warn "极慢块 $S_VSLOW 个，持续性能异常，需复测排查"; pen 20 "极慢读 $S_VSLOW 块（性能异常）"
-    elif (( S_VSLOW > 0 )); then warn "极慢块 $S_VSLOW 个，单次慢读不等于介质损坏，建议空闲时复测"; pen 2 "极慢读 $S_VSLOW 块（性能提示，建议复测）"; fi
-    if   (( S_SLOW > S_TOTAL/200 && S_SLOW > 0 )); then warn "慢块 $S_SLOW 个，占比偏高，建议空闲时复测"; pen 8 "广泛慢读 $S_SLOW 块"
-    elif (( S_SLOW > 0 )); then info "慢块 $S_SLOW 个，占比很小，建议结合空闲复测"; fi
+    if [[ $rota == 0 ]]; then
+        (( S_SLOW + S_VSLOW > 0 )) && info "固态盘慢读仅记录为性能波动，不扣健康分；读错误仍会扣分"
+    else
+        if   (( S_VSLOW > 5 )); then warn "极慢块 $S_VSLOW 个，持续性能异常，需复测排查"; pen 20 "极慢读 $S_VSLOW 块（性能异常）"
+        elif (( S_VSLOW > 0 )); then warn "极慢块 $S_VSLOW 个，单次慢读不等于介质损坏，建议空闲时复测"; pen 2 "极慢读 $S_VSLOW 块（性能提示，建议复测）"; fi
+        if   (( S_SLOW > S_TOTAL/200 && S_SLOW > 0 )); then warn "慢块 $S_SLOW 个，占比偏高，建议空闲时复测"; pen 8 "广泛慢读 $S_SLOW 块"
+        elif (( S_SLOW > 0 )); then info "慢块 $S_SLOW 个，占比很小，建议结合空闲复测"; fi
+    fi
     (( S_TRANS >= 5 && S_TRANS*100 > S_TOTAL )) && info "复测后恢复正常的块较多（${S_TRANS}），扫描期间可能有其它 I/O 干扰"
     (( S_ERR + S_VSLOW + S_SLOW == 0 )) && ok "全盘读取无慢块、无错误"
 
-    if (( S_ERR + S_VSLOW > 0 )); then
+    if (( S_ERR > 0 )) || { [[ $rota == 1 ]] && (( S_VSLOW > 0 )); }; then
         local doit=0 pol=${PLAN_RECHECK:-$AUTO_RECHECK}
         case $pol in
             always) doit=1 ;;
@@ -2031,6 +2036,7 @@ compute_overall() {
     fi
     OV_STALE=$stale
     if   (( ! any )); then OV_COVER="未评估"
+    elif [[ ${D_ROTA[$(di "$name")]:-?} == 0 ]] && (( have_q && have_short && have_l && have_s && ! stale )); then OV_COVER="完整"
     elif (( have_q && have_short && have_l && have_speed && have_s && ! stale )); then OV_COVER="完整"
     elif (( have_q && (have_l || have_s || have_o) )); then OV_COVER="标准"
     elif (( have_q )); then OV_COVER="基础"
@@ -2301,7 +2307,9 @@ finish_full_batch() {
         # Repeat SMART after the long read: keep the initial quick result as the
         # comparison reference until the final measurement has been saved.
         quick_one "$name"
-        for m in quick selftest_short selftest_long speed surface; do
+        local -a required=(quick selftest_short selftest_long surface)
+        [[ ${D_ROTA[$(di "$name")]:-?} == 1 ]] && required+=(speed)
+        for m in "${required[@]}"; do
             if ! load_result "$id" "$m" || [[ $R_BATCH != "$FULL_BATCH" || ! $R_STATUS =~ ^(good|warn|bad)$ ]]; then
                 complete=0; break
             fi
@@ -2331,7 +2339,9 @@ plan_full() {
             decide_run "$id" selftest_short "$name"; PLAN["selftest_short:$name"]=$DEC
             decide_run "$id" selftest_long  "$name"; PLAN["selftest_long:$name"]=$DEC
         fi
-        decide_run "$id" speed "$name"; PLAN["speed:$name"]=$DEC
+        if [[ ${D_ROTA[$(di "$name")]:-?} == 1 ]]; then
+            decide_run "$id" speed "$name"; PLAN["speed:$name"]=$DEC
+        fi
         surface_decide "$name"; PLAN["surface:$name"]=$DEC
     done
     if [[ $AUTO_RECHECK == ask ]]; then
@@ -2358,7 +2368,7 @@ mod_full() {
     done
     (( PARALLEL )) && est=$maxest
     head1 "一键完整评估"
-    info "流程 : 快速体检 → 短自检 → 长自检 → 读性能曲线 → 全盘读延迟扫描(+异常复查) → 综合报告"
+    info "流程 : 快速体检 → 短自检 → 长自检 → 机械盘速度采样 → 全盘只读扫描 → 综合报告"
     info "预计 : 长自检约 $(fmt_dur $((maxmin*60)))（多盘并行）＋ 全盘扫描约 $(fmt_dur "$est")"
     info "全程只读，不写入硬盘；中途按 Ctrl+C 可停止，已完成的项目会保存，下次可沿用/续扫"
     ask_yn "开始?" Y || { PLAN=(); return; }
@@ -2370,7 +2380,9 @@ mod_full() {
     mod_quick "${names[@]}";                       [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
     mod_selftest short 0 "${names[@]}";            [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
     mod_selftest long 0 "${names[@]}";             [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
-    mod_speed "${names[@]}";                       [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
+    local -a hdds=()
+    for name in "${names[@]}"; do [[ ${D_ROTA[$(di "$name")]:-?} == 1 ]] && hdds+=("$name"); done
+    if (( ${#hdds[@]} )); then mod_speed "${hdds[@]}"; [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }; fi
     mod_surface "${names[@]}";                     [[ $INTERRUPTED -eq 1 ]] && { PLAN=(); return; }
     finish_full_batch "${names[@]}"
     PLAN=(); PLAN_RECHECK=""
@@ -2884,7 +2896,9 @@ if (( BATCH )); then
                        mod_quick "${SELECTED[@]}"; (( INTERRUPTED )) && continue
                        mod_selftest short 0 "${SELECTED[@]}"; (( INTERRUPTED )) && continue
                        mod_selftest long 0 "${SELECTED[@]}"; (( INTERRUPTED )) && continue
-                       mod_speed "${SELECTED[@]}"; (( INTERRUPTED )) && continue
+                       hdds=()
+                       for n in "${SELECTED[@]}"; do [[ ${D_ROTA[$(di "$n")]:-?} == 1 ]] && hdds+=("$n"); done
+                       if (( ${#hdds[@]} )); then mod_speed "${hdds[@]}"; (( INTERRUPTED )) && continue; fi
                        mod_surface "${SELECTED[@]}"; (( INTERRUPTED )) && continue
                        finish_full_batch "${SELECTED[@]}" ;;
             iface)     mod_iface "${SELECTED[@]}" ;;

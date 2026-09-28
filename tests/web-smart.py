@@ -83,6 +83,24 @@ with patch.object(app.subprocess, 'run', return_value=SimpleNamespace(stdout=jso
     assert app.smart_details({'name': 'sdb', 'rotation': '1', 'model': ''})['temperatureState'] == 'sleeping'
 assert app.smart_standby({'smartctl': {'messages': [{'string': 'Device failed to open'}]}}, 2) is False
 
+with patch.object(app, 'lsblk_details', return_value={'sdb': {'rota': 1, 'tran': 'sata'}, 'nvme0n1': {'rota': 0, 'tran': 'nvme'}}):
+    for name in ('nvme0n1', '../sdb', 'sdc'):
+        try:
+            app.wake_disk(name)
+            assert False
+        except ValueError:
+            pass
+    checks = [SimpleNamespace(stdout=json.dumps(sleeping), stderr='', returncode=2),
+              SimpleNamespace(stdout=json.dumps({'temperature': {'current': 37}}), stderr='', returncode=0)]
+    with patch.object(app.subprocess, 'run', side_effect=checks) as run, patch.object(app, 'probe_temperature') as probe:
+        assert app.wake_disk('sdb')['reason'] == 'woken'
+        assert run.call_count == 2
+        assert run.call_args_list[0].args[0][-3:] == ['-n', 'standby', '/dev/sdb']
+        assert run.call_args_list[1].args[0][-1] == '/dev/sdb'
+        assert '-n' not in run.call_args_list[1].args[0]
+        probe.assert_called_once_with('sdb', 'sata')
+    assert not app.waking_disks
+
 with tempfile.TemporaryDirectory() as directory:
     base = Path(directory)
     with patch.object(app, 'STATE', base), patch.object(app, 'PREFERENCES', base / 'web-preferences.json'):

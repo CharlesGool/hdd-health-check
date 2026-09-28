@@ -36,11 +36,27 @@ with patch.object(app, 'snapshot', return_value={'disks': disks}), patch.object(
         assert False
     except ValueError:
         pass
-    for module in app.MODULES:
+    for module in app.SSD_MODULES:
         result = app.assess_disks('ssd', module)
         assert result['module'] == module
         assert run.call_args.args[2:4] == ('-r', module)
         assert '--include-ssd' in run.call_args.args
+    for module in app.MODULES - app.SSD_MODULES:
+        for scope in ('ssd', 'sata', 'all'):
+            try:
+                app.assess_disks(scope, module)
+                assert False
+            except ValueError as exc:
+                assert 'limited to HDDs' in str(exc)
+    assert app.assess_disks('hdd', 'speed')['module'] == 'speed'
+    for module in app.SSD_MODULES:
+        assert app.start_job('nvme0n1', module)['jobId']
+    for module in app.MODULES - app.SSD_MODULES:
+        try:
+            app.start_job('nvme0n1', module)
+            assert False
+        except ValueError as exc:
+            assert 'limited to HDDs' in str(exc)
     try:
         app.assess_disks('all', 'invalid')
         assert False

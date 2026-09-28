@@ -31,6 +31,7 @@ PREFERENCES = STATE / "web-preferences.json"
 SYS_BLOCK = Path("/sys/class/block")
 SYS_ATA_LINK = Path("/sys/class/ata_link")
 MODULES = {"quick", "short", "long", "speed", "surface", "badblocks", "iface", "full"}
+SSD_MODULES = {"quick", "short", "long", "surface", "full"}
 ASSESS_SCOPES = {"sata", "hdd", "ssd", "nvme", "all"}
 MIME = {".js": "text/javascript", ".css": "text/css", ".html": "text/html", ".svg": "image/svg+xml", ".woff2": "font/woff2", ".woff": "font/woff", ".txt": "text/plain", ".ico": "image/x-icon"}
 gate = threading.Lock()
@@ -44,6 +45,7 @@ temperature_cache = {}
 temperature_pending = set()
 wake_lock = threading.Lock()
 wake_in_progress = False
+waking_disks = set()
 snapshot_pool = ThreadPoolExecutor(max_workers=1)
 snapshot_lock = threading.Lock()
 snapshot_cache = None
@@ -555,15 +557,8 @@ def wake_sleeping_drives():
             if not re.fullmatch(r"[A-Za-z0-9_-]+", name) or details.get("rota") not in (1, "1", True):
                 continue
             try:
-                checked = subprocess.run(["smartctl", "-j", "-A", "-n", "standby", "/dev/" + name],
-                                         capture_output=True, text=True, timeout=25, check=False)
-                raw = json.loads(checked.stdout)
-                if not smart_standby(raw, checked.returncode):
-                    continue
-                subprocess.run(["smartctl", "-j", "-A", "/dev/" + name],
-                               capture_output=True, text=True, timeout=90, check=False)
-                probe_temperature(name, str(details.get("tran") or "").lower())
-            except (OSError, ValueError, subprocess.TimeoutExpired):
+                wake_disk(name)
+            except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
                 continue
     finally:
         with wake_lock:
@@ -587,6 +582,39 @@ def start_wake_on_visit():
     return {"started": True}
 
 
+def wake_disk(name):
+    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", name):
+        raise ValueError("Unknown disk")
+    details = lsblk_details().get(name)
+    if not details or details.get("rota") not in (1, "1", True):
+        raise ValueError("Only an enumerated hard drive can be woken")
+    with wake_lock:
+        if name in waking_disks:
+            return {"started": False, "reason": "in-progress"}
+        waking_disks.add(name)
+    try:
+        device = "/dev/" + name
+        checked = subprocess.run(["smartctl", "-j", "-A", "-n", "standby", device],
+                                 capture_output=True, text=True, timeout=25, check=False)
+        try:
+            raw = json.loads(checked.stdout)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("Could not read drive power state") from exc
+        sleeping = smart_standby(raw, checked.returncode)
+        if checked.returncode & 2 and not sleeping:
+            raise RuntimeError("Could not determine drive power state")
+        if sleeping:
+            result = subprocess.run(["smartctl", "-j", "-A", device],
+                                    capture_output=True, text=True, timeout=90, check=False)
+            if result.returncode & 2:
+                raise RuntimeError("Could not wake the drive")
+        probe_temperature(name, str(details.get("tran") or "").lower())
+        return {"started": sleeping, "reason": "woken" if sleeping else "already-awake"}
+    finally:
+        with wake_lock:
+            waking_disks.discard(name)
+
+
 def start_job(disk, module):
     if module not in MODULES:
         raise ValueError("Unknown check type")
@@ -594,7 +622,7 @@ def start_job(disk, module):
     match = next((item for item in disks if item["name"] == disk), None)
     if match is None or not re.fullmatch(r"[A-Za-z0-9_-]+", disk):
         raise ValueError("Unknown disk")
-    if match["rotation"] != "1" and module not in ("quick", "full"):
+    if match["rotation"] != "1" and module not in SSD_MODULES:
         raise ValueError("This check is limited to HDDs")
     job_id = secrets.token_hex(12)
     args = ["-d", disk, "-r", module, "--detach", "--no-install", "-y", "--web-job-id", job_id]
@@ -627,6 +655,8 @@ def assess_disks(scope, module):
                 and re.fullmatch(r"[A-Za-z0-9_-]+", disk["name"])]
     if not selected:
         raise ValueError("No disks in this assessment scope")
+    if any(disk.get("rotation") != "1" for disk in selected) and module not in SSD_MODULES:
+        raise ValueError("This check is limited to HDDs in the selected scope")
     names = [disk["name"] for disk in selected]
     job_id = secrets.token_hex(12)
     args = ["-d", ",".join(names), "-r", module, "--rescan", "--detach", "--no-install", "-y", "--web-job-id", job_id]
@@ -828,6 +858,11 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(length))
             if not isinstance(body, dict):
                 raise ValueError("JSON object required")
+            if path.startswith("/api/disks/") and path.endswith("/wake"):
+                name = path.split("/")[3]
+                if path != f"/api/disks/{name}/wake":
+                    return self.send_json(404, {"error": "Unknown API route"})
+                return self.send_json(200, wake_disk(name))
             if path == "/api/auth/login":
                 if self.server.password is None:
                     return self.send_json(400, {"error": "Password login is disabled"})

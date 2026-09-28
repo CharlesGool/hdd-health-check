@@ -72,6 +72,7 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .storage-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px;padding:18px 24px;margin-bottom:24px}.storage-summary div{display:flex;flex-direction:column;gap:3px}.storage-summary small,.storage-summary p{color:var(--muted-foreground)}.storage-summary strong{font-size:24px;line-height:1.2}.storage-summary p{grid-column:1/-1;font-size:12px;margin:3px 0 0}
 
 .capacity-toggle{border:0;padding:0;color:var(--foreground);background:transparent;font-weight:700;text-align:left}.capacity-toggle:hover,.disk-detail-button:hover{color:var(--primary);text-decoration:underline}.disk-detail-button{border:0;background:transparent;color:var(--primary);font-size:13px;font-weight:700;padding:5px 0}.disk-card:focus-within{outline:2px solid var(--ring);outline-offset:-2px}.storage-summary .capacity-toggle{font-size:24px;line-height:1.2}
+.capacity-toggle:focus-visible,.disk-wake-button:focus-visible{outline:3px solid var(--ring);outline-offset:3px;border-radius:4px}.disk-wake-button{display:inline-flex;width:max-content;margin-top:8px;padding:6px 10px;border:1px solid var(--primary);border-radius:8px;background:var(--accent);color:var(--primary);font:inherit;font-size:13px;font-weight:700;cursor:pointer}.disk-wake-button:hover:not(:disabled){background:var(--primary);color:var(--primary-foreground)}.disk-wake-button:disabled{opacity:.6;cursor:wait}
 
 /* Shared select control, including its option surface. */
 .ui-select{position:relative;min-width:0;width:100%;font-size:14px}

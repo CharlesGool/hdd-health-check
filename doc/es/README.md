@@ -98,3 +98,7 @@ Códigos de salida: `0`, todo correcto; `1`, aviso/advertencia; `2`, peligro; `3
 ## License
 
 MIT (SPDX: MIT); consulte [LICENSE](../../LICENSE).
+
+## Evaluación y controles actuales de SSD
+
+La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, autopruebas corta y larga y una lectura completa del disco. Omite el muestreo de velocidad; las lecturas lentas por sí solas no restan puntos de salud. Un lote completo sin anomalías obtiene 100 puntos; los hallazgos SMART o errores reales de lectura pueden reducir esta puntuación heurística. Si la selección incluye SSD, la interfaz solo ofrece comprobación rápida, autopruebas corta y larga, lectura completa y evaluación completa. Al pulsar la capacidad o los datos escritos se alternan unidades decimales y binarias. En los detalles SMART de un HDD en reposo hay un botón para activar solo ese disco.

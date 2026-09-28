@@ -83,6 +83,10 @@ with tempfile.TemporaryDirectory() as directory:
         with patch.object(app, 'start_wake_on_visit', return_value={'started': True}) as wake:
             assert request('POST', '/api/disks/wake-on-visit', cookie=cookie)[2]['started'] is True
             wake.assert_called_once_with()
+        assert request('POST', '/api/disks/sdb/wake')[0] == 401
+        with patch.object(app, 'wake_disk', return_value={'started': True, 'reason': 'woken'}) as wake:
+            assert request('POST', '/api/disks/sdb/wake', cookie=cookie)[2]['reason'] == 'woken'
+            wake.assert_called_once_with('sdb')
         assert request('POST', '/api/auth/change-password', body={'currentPassword': 'bad', 'newPassword': 'a-new-password-123'}, cookie=cookie)[0] == 401
         assert request('POST', '/api/auth/change-password', body={'currentPassword': 'test-password', 'newPassword': 'short'}, cookie=cookie)[0] == 400
         status, headers, changed = request('POST', '/api/auth/change-password', body={'currentPassword': 'test-password', 'newPassword': 'a-new-password-123'}, cookie=cookie)
