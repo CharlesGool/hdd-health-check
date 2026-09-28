@@ -75,8 +75,11 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 - Changelog navigation follow-up: the login-card version link now opens the bundled Changelog for an unauthenticated visitor; that page shows the linked version beside the brand and a labeled Changelog navigation entry. Local Chromium followed the version link, rendered the v4.0.0 entry, and returned to login. Unauthenticated `/api/build`, `/api/access`, and `/api/snapshot` requests still returned 401. Vue type checking and production build passed after this change.
 - NAS UI deployment: built current `main` commit `2e6201e` as `test-2e6201e` in a clean local checkout. Vue type checking and production build passed, and the transferred archive checksum matched. The Debian installer upgraded the existing LAN service on port 8765, preserving the Web password and timestamped application and unit backups. The service is active and enabled; the existing state and log directories remain in place. Authenticated `/api/build` returned `test-2e6201e`, `/api/snapshot` listed 13 disks, the LAN disk and Changelog pages returned HTTP 200, and unauthenticated `/api/build` returned 401. LAN Chromium showed the revised login page with its version link and language selector, then followed the version link to the v4.0.0 Changelog entry. No disk scan, password change or reboot was performed.
 - Version and Changelog follow-up: added the post-v4.0.0 Web changes to the English Changelog and all seven translated Changelogs, and synchronized their older Handoff and Commit History sections with the English source through commit `3c3451f`. The clean build embeds `test-3c3451f`; Vue type checking and production build passed. Multilingual, project structure, document format, local-link and diff checks passed; document format reported one existing warning for language names in the English navigation. The transferred package checksum matched. The NAS installer retained the Web password, application and unit backups, and the existing state and log directories. The service is active and enabled on port 8765; authenticated `/api/build` returned `test-3c3451f`, `/api/snapshot` listed 13 disks, the LAN disk and Changelog pages returned HTTP 200, and unauthenticated `/api/build` returned 401. LAN Chromium showed the same version on the login card and Changelog page, with the new Simplified Chinese entry above v4.0.0. No disk scan, password change or reboot was performed.
+- Web design standardization on `main`: the authenticated header now has linked brand/version and Home, Changelog, Settings, Sign out in the prescribed order; each child page has a Back control. Settings and protected Security use responsive section navigation, each route has a distinct matching favicon, and the login card always offers IP access with a server-checked error path. Appearance contains a Beta page-transition switch with persistent choice and a mobile-off default; browser history, viewport resize and reduced motion are handled separately. The exact test build identifier heads a localized candidate Changelog entry in all eight UI languages, followed by formal versions; the English Changelog no longer carries an unversioned post-release section. Existing `v4.0.0` tag and Release are unchanged.
+- Local verification for this Web change: Vue type checking and production build passed in an isolated build tree. Chromium checked the Settings and Security layouts at desktop and 390 px, each language's candidate entry above `v4.0.0`, favicon changes, browser Back/Forward, the page-motion off path without calling View Transitions, the enabled path, and repeated resizes from 320 to 1280 px without horizontal overflow or a persistent transform. The multilingual and project structure checkers passed; document and local-link checks passed with zero errors and five format warnings in the three checked English documents. No real mobile-browser visual transition check was run.
+- Deployment pending for this commit: build a clean `test-<sha>` package, upgrade the authorized NAS service on port 8765 with the installer, and verify the reported version, LAN pages, authentication boundary and service status. No temporary project rules were found.
 - Remaining: observe service recovery after a real reboot when convenient. A controlled full assessment on real HDDs remains unverified. The root compatibility entry point is recorded with its pre-move baseline under Limitations.
-- Next action: review the deployed version and Changelog appearance on the NAS; schedule a reboot and controlled HDD assessment separately. The published `v4.0.0` tag and release remain unchanged.
+- Next action: deploy and verify this test build on the NAS, then inspect the live design. Schedule a reboot and controlled HDD assessment separately. The published `v4.0.0` tag and release remain unchanged.
 
 ## Historical Source Baselines
 
@@ -110,14 +113,6 @@ This source baseline includes the previously untagged v2.2 integration: persiste
 The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Root execution, package installation and systemd behavior have not been independently confirmed.
 
 ## Changelog
-
-### Unreleased Web update — 2026-09-28
-
-#### Changed
-
-- The login header and card now follow the shared layout dimensions. The version link and a language selector sit inside the card footer, so visitors can choose a language before signing in.
-- Login, administrator verification, new-password and confirmation fields start masked and have separate labeled show/hide controls. Toggling a field preserves its value and focus.
-- The login version link opens the bundled Changelog without authentication. Disk and settings APIs remain protected.
 
 ### v4.0.0 — 2026-09-28
 
@@ -181,7 +176,8 @@ This major version adds the authenticated persistent Web UI and Debian installer
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-28 | intended | `docs(handoff): record version and Changelog deployment` | this commit
+- 2026-09-29 | intended | `feat(web): align pages with current design standard` | this commit
+- 2026-09-28 | `c0e7ae7` | `docs(handoff): record version and Changelog deployment` | `git show c0e7ae7`
 - 2026-09-28 | `3c3451f` | `docs(changelog): record latest Web update` | `git show 3c3451f`
 - 2026-09-28 | `0a91897` | `docs(handoff): record NAS UI deployment` | `git show 0a91897`
 - 2026-09-28 | `2e6201e` | `fix(web): open changelog before login` | `git show 2e6201e`
