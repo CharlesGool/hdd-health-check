@@ -20,7 +20,7 @@
   "short": "SMART 短測試",
   "long": "SMART 長測試",
   "speed": "速度抽樣",
-  "surface": "表面掃描",
+  "surface": "全碟唯讀掃描",
   "badblocks": "唯讀 badblocks",
   "iface": "介面驗證",
   "full": "完整評估",
@@ -214,5 +214,16 @@
   "writesUnavailable": "裝置未提供可靠的寫入總量。",
   "toggleCapacity": "切換 TB / TiB",
   "taskHistory": "任務歷史",
-  "noTaskHistory": "暫無已完成的任務記錄。"
+  "noTaskHistory": "暫無已完成的任務記錄。",
+  "assessmentHddOnly": "僅機械硬碟執行，略過固態硬碟：",
+  "sleepDisk": "手動休眠",
+  "sleepingDisk": "正在休眠…",
+  "sleepDiskDone": "已要求休眠",
+  "sleepDiskConfirm": "系統讀寫可能立即再次喚醒硬碟。確定讓這塊硬碟進入休眠？",
+  "deleteHistory": "刪除記錄",
+  "deleteJobConfirm": "刪除此任務記錄及詳細日誌？",
+  "deleteSampleConfirm": "刪除此 SMART 趨勢樣本？",
+  "smartSample": "SMART 取樣",
+  "viewDetails": "查看詳情",
+  "summary": "說明"
 }

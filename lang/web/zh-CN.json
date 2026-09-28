@@ -20,7 +20,7 @@
   "short": "SMART 短测",
   "long": "SMART 长测",
   "speed": "速度采样",
-  "surface": "盘面扫描",
+  "surface": "全盘只读扫描",
   "badblocks": "只读坏块扫描",
   "iface": "接口复查",
   "full": "完整评估",
@@ -214,5 +214,16 @@
   "writesUnavailable": "设备未提供可靠的写入总量。",
   "toggleCapacity": "切换 TB / TiB",
   "taskHistory": "任务历史",
-  "noTaskHistory": "暂无已完成的任务记录。"
+  "noTaskHistory": "暂无已完成的任务记录。",
+  "assessmentHddOnly": "仅机械硬盘执行，跳过固态硬盘：",
+  "sleepDisk": "手动休眠",
+  "sleepingDisk": "正在休眠…",
+  "sleepDiskDone": "已请求休眠",
+  "sleepDiskConfirm": "系统读写可能立即再次唤醒硬盘。确认让这块盘进入休眠？",
+  "deleteHistory": "删除记录",
+  "deleteJobConfirm": "删除该任务记录及详细日志？",
+  "deleteSampleConfirm": "删除此 SMART 趋势样本？删除后可能影响后续趋势比较。",
+  "smartSample": "SMART 采样",
+  "viewDetails": "查看详情",
+  "summary": "说明"
 }

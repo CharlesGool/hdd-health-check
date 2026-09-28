@@ -20,7 +20,7 @@
   "short": "اختبار SMART قصير",
   "long": "اختبار SMART طويل",
   "speed": "عينة السرعة",
-  "surface": "فحص السطح",
+  "surface": "فحص كامل للقراءة فقط",
   "badblocks": "فحص badblocks للقراءة فقط",
   "iface": "التحقق من الواجهة",
   "full": "تقييم كامل",
@@ -214,5 +214,16 @@
   "writesUnavailable": "لا يبلّغ القرص عن إجمالي موثوق للكتابة.",
   "toggleCapacity": "التبديل بين TB وTiB",
   "taskHistory": "سجل المهام",
-  "noTaskHistory": "لم تُسجَّل أي مهام مكتملة بعد."
+  "noTaskHistory": "لم تُسجَّل أي مهام مكتملة بعد.",
+  "assessmentHddOnly": "للأقراص الميكانيكية فقط؛ أقراص SSD المتخطاة:",
+  "sleepDisk": "وضع القرص في الاستعداد",
+  "sleepingDisk": "جارٍ وضع القرص في الاستعداد…",
+  "sleepDiskDone": "طُلب وضع القرص في الاستعداد",
+  "sleepDiskConfirm": "قد يعيد نشاط النظام تشغيل القرص فوراً. هل تريد وضعه في الاستعداد؟",
+  "deleteHistory": "حذف السجل",
+  "deleteJobConfirm": "حذف المهمة وسجلها التفصيلي؟",
+  "deleteSampleConfirm": "حذف عينة SMART هذه؟",
+  "smartSample": "عينة SMART",
+  "viewDetails": "عرض التفاصيل",
+  "summary": "ملخص"
 }

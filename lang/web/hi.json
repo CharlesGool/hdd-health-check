@@ -20,7 +20,7 @@
   "short": "छोटा SMART स्व-परीक्षण",
   "long": "लंबा SMART स्व-परीक्षण",
   "speed": "गति नमूना",
-  "surface": "सतह स्कैन",
+  "surface": "पूरी डिस्क का केवल-पठन स्कैन",
   "badblocks": "केवल-पठन badblocks",
   "iface": "इंटरफ़ेस सत्यापन",
   "full": "पूर्ण आकलन",
@@ -214,5 +214,16 @@
   "writesUnavailable": "ड्राइव विश्वसनीय कुल लेखन मात्रा नहीं बताती।",
   "toggleCapacity": "TB और TiB बदलें",
   "taskHistory": "कार्य इतिहास",
-  "noTaskHistory": "अभी तक कोई पूर्ण कार्य दर्ज नहीं है।"
+  "noTaskHistory": "अभी तक कोई पूर्ण कार्य दर्ज नहीं है।",
+  "assessmentHddOnly": "केवल HDD; छोड़े गए SSD:",
+  "sleepDisk": "डिस्क को स्टैंडबाय में रखें",
+  "sleepingDisk": "स्टैंडबाय में डाला जा रहा है…",
+  "sleepDiskDone": "स्टैंडबाय का अनुरोध किया गया",
+  "sleepDiskConfirm": "सिस्टम इसे तुरंत जगा सकता है। इस डिस्क को स्टैंडबाय में रखें?",
+  "deleteHistory": "रिकॉर्ड हटाएँ",
+  "deleteJobConfirm": "यह कार्य रिकॉर्ड और विस्तृत लॉग हटाएँ?",
+  "deleteSampleConfirm": "यह SMART नमूना हटाएँ?",
+  "smartSample": "SMART नमूना",
+  "viewDetails": "विवरण देखें",
+  "summary": "सारांश"
 }

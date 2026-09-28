@@ -20,7 +20,7 @@
   "short": "SMART short test",
   "long": "SMART long test",
   "speed": "Speed sample",
-  "surface": "Surface scan",
+  "surface": "Full read-only scan",
   "badblocks": "Read-only badblocks",
   "iface": "Interface verification",
   "full": "Full assessment",
@@ -214,5 +214,16 @@
   "writesUnavailable": "This drive does not report a reliable total.",
   "toggleCapacity": "Switch between TB and TiB",
   "taskHistory": "Task history",
-  "noTaskHistory": "No completed tasks have been recorded yet."
+  "noTaskHistory": "No completed tasks have been recorded yet.",
+  "assessmentHddOnly": "HDDs only; SSDs skipped:",
+  "sleepDisk": "Put disk in standby",
+  "sleepingDisk": "Putting disk in standby…",
+  "sleepDiskDone": "Standby requested",
+  "sleepDiskConfirm": "System activity may wake the disk immediately. Put this disk in standby?",
+  "deleteHistory": "Delete record",
+  "deleteJobConfirm": "Delete this task record and detailed log?",
+  "deleteSampleConfirm": "Delete this SMART trend sample? Future trend comparisons may change.",
+  "smartSample": "SMART sample",
+  "viewDetails": "View details",
+  "summary": "Summary"
 }

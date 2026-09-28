@@ -101,6 +101,17 @@ with patch.object(app, 'lsblk_details', return_value={'sdb': {'rota': 1, 'tran':
         probe.assert_called_once_with('sdb', 'sata')
     assert not app.waking_disks
 
+with patch.object(app, 'lsblk_details', return_value={'sdb': {'rota': 1, 'tran': 'sata'}, 'nvme0n1': {'rota': 0, 'tran': 'nvme'}}):
+    for name in ('nvme0n1', '../sdb', 'sdc'):
+        try:
+            app.sleep_disk(name)
+            assert False
+        except ValueError:
+            pass
+    with patch.object(app, 'script', return_value=SimpleNamespace(stdout='没有正在运行的实例', returncode=0)), patch.object(app.subprocess, 'run', return_value=SimpleNamespace(stdout='', stderr='', returncode=0)) as run:
+        assert app.sleep_disk('sdb')['requested'] is True
+        assert run.call_args.args[0] == ['smartctl', '-s', 'standby,now', '/dev/sdb']
+
 with tempfile.TemporaryDirectory() as directory:
     base = Path(directory)
     with patch.object(app, 'STATE', base), patch.object(app, 'PREFERENCES', base / 'web-preferences.json'):

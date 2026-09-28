@@ -84,9 +84,21 @@ with tempfile.TemporaryDirectory() as directory:
             assert request('POST', '/api/disks/wake-on-visit', cookie=cookie)[2]['started'] is True
             wake.assert_called_once_with()
         assert request('POST', '/api/disks/sdb/wake')[0] == 401
+        assert request('POST', '/api/disks/sdb/sleep')[0] == 401
+        assert request('DELETE', '/api/jobs/history/' + 'a' * 24)[0] == 401
+        assert request('DELETE', '/api/history/samples/sdb/0')[0] == 401
         with patch.object(app, 'wake_disk', return_value={'started': True, 'reason': 'woken'}) as wake:
             assert request('POST', '/api/disks/sdb/wake', cookie=cookie)[2]['reason'] == 'woken'
             wake.assert_called_once_with('sdb')
+        with patch.object(app, 'sleep_disk', return_value={'requested': True}) as standby:
+            assert request('POST', '/api/disks/sdb/sleep', cookie=cookie)[2]['requested'] is True
+            standby.assert_called_once_with('sdb')
+        with patch.object(app, 'delete_web_job') as delete_job:
+            assert request('DELETE', '/api/jobs/history/' + 'a' * 24, cookie=cookie)[2]['deleted'] is True
+            delete_job.assert_called_once()
+        with patch.object(app, 'delete_smart_sample') as delete_sample:
+            assert request('DELETE', '/api/history/samples/sdb/0', cookie=cookie)[2]['deleted'] is True
+            delete_sample.assert_called_once_with('sdb', '0')
         assert request('POST', '/api/auth/change-password', body={'currentPassword': 'bad', 'newPassword': 'a-new-password-123'}, cookie=cookie)[0] == 401
         assert request('POST', '/api/auth/change-password', body={'currentPassword': 'test-password', 'newPassword': 'short'}, cookie=cookie)[0] == 400
         status, headers, changed = request('POST', '/api/auth/change-password', body={'currentPassword': 'test-password', 'newPassword': 'a-new-password-123'}, cookie=cookie)

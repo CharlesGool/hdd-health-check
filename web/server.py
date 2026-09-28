@@ -3,6 +3,7 @@
 
 import argparse
 import csv
+import fcntl
 import hmac
 import ipaddress
 import json
@@ -452,7 +453,68 @@ def web_job_history():
                          "finished": job["finished"], "exitCode": job.get("exitCode", 3)})
         except (OSError, ValueError, TypeError, AttributeError):
             continue
-    return sorted(jobs, key=lambda item: item["finished"], reverse=True)[:30]
+    return sorted(jobs, key=lambda item: item["finished"], reverse=True)
+
+
+def smart_history_samples():
+    samples = []
+    for disk in web_snapshot()["disks"]:
+        name = disk["name"]
+        file = STATE / disk["id"] / "history.csv"
+        if not file.is_file() or file.is_symlink():
+            continue
+        with file.open(newline="") as stream:
+            for index, row in enumerate(csv.reader(stream)):
+                if len(row) in (8, 9) and all(part.isdigit() for part in row):
+                    samples.append({"disk": name, "index": index, "values": [int(part) for part in row]})
+    return sorted(samples, key=lambda item: item["values"][0], reverse=True)
+
+
+def delete_smart_sample(name, index):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", name) or not re.fullmatch(r"\d+", index):
+        raise ValueError("Unknown history entry")
+    disk = next((item for item in web_snapshot()["disks"] if item["name"] == name), None)
+    if disk is None:
+        raise ValueError("Unknown disk")
+    file = STATE / disk["id"] / "history.csv"
+    if not file.is_file() or file.is_symlink():
+        raise ValueError("Unknown history entry")
+    with (STATE / ".lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise RuntimeError("A disk check is running; try again later") from exc
+        with file.open(newline="") as stream:
+            rows = list(csv.reader(stream))
+        number = int(index)
+        if number >= len(rows) or len(rows[number]) not in (8, 9) or not all(part.isdigit() for part in rows[number]):
+            raise ValueError("Unknown history entry")
+        rows.pop(number)
+        temp = file.with_name(file.name + ".web-tmp")
+        try:
+            with temp.open("w", newline="") as stream:
+                csv.writer(stream).writerows(rows)
+                stream.flush()
+                os.fsync(stream.fileno())
+            temp.chmod(0o600)
+            os.replace(temp, file)
+        finally:
+            temp.unlink(missing_ok=True)
+
+
+def delete_web_job(job_id):
+    if not re.fullmatch(r"[0-9a-f]{24}", job_id):
+        raise ValueError("Unknown job")
+    record = STATE / "web-job-history" / (job_id + ".json")
+    if not record.is_file() or record.is_symlink() or record.stat().st_size > 4096:
+        raise ValueError("Unknown job")
+    job = json.loads(record.read_text())
+    if job.get("id") != job_id or job.get("state") not in ("completed", "failed", "stopped"):
+        raise ValueError("Unknown job")
+    log = Path(str(job.get("log", "")))
+    record.unlink()
+    if log.is_file() and not log.is_symlink() and log.resolve().is_relative_to(LOG_DIR.resolve()):
+        log.unlink()
 
 
 def snapshot():
@@ -615,6 +677,32 @@ def wake_disk(name):
             waking_disks.discard(name)
 
 
+def sleep_disk(name):
+    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_-]+", name):
+        raise ValueError("Unknown disk")
+    details = lsblk_details().get(name)
+    if not details or details.get("rota") not in (1, "1", True) or str(details.get("tran") or "").lower() != "sata":
+        raise ValueError("Manual standby is available only for enumerated SATA hard drives")
+    with wake_lock:
+        if name in waking_disks:
+            raise RuntimeError("Drive power operation already in progress")
+        waking_disks.add(name)
+    try:
+        active = script("--status-brief", timeout=8)
+        if active.returncode or "没有正在运行的实例" not in active.stdout:
+            raise RuntimeError("Cannot put a drive in standby during a check")
+        result = subprocess.run(["smartctl", "-s", "standby,now", "/dev/" + name],
+                                capture_output=True, text=True, timeout=30, check=False)
+        if result.returncode:
+            raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "Could not put the drive in standby")
+        with temperature_lock:
+            temperature_cache.pop(name, None)
+        return {"requested": True}
+    finally:
+        with wake_lock:
+            waking_disks.discard(name)
+
+
 def start_job(disk, module):
     if module not in MODULES:
         raise ValueError("Unknown check type")
@@ -655,17 +743,19 @@ def assess_disks(scope, module):
                 and re.fullmatch(r"[A-Za-z0-9_-]+", disk["name"])]
     if not selected:
         raise ValueError("No disks in this assessment scope")
-    if any(disk.get("rotation") != "1" for disk in selected) and module not in SSD_MODULES:
-        raise ValueError("This check is limited to HDDs in the selected scope")
-    names = [disk["name"] for disk in selected]
+    eligible = [disk for disk in selected if disk.get("rotation") == "1" or module in SSD_MODULES]
+    if not eligible:
+        raise ValueError("No selected disks support this check")
+    names = [disk["name"] for disk in eligible]
+    skipped = [disk["name"] for disk in selected if disk not in eligible]
     job_id = secrets.token_hex(12)
     args = ["-d", ",".join(names), "-r", module, "--rescan", "--detach", "--no-install", "-y", "--web-job-id", job_id]
-    if any(disk.get("rotation") != "1" for disk in selected):
+    if any(disk.get("rotation") != "1" for disk in eligible):
         args.append("--include-ssd")
     result = script(*args, timeout=30)
     if result.returncode:
         raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "Could not start assessment")
-    return {"message": result.stdout.strip(), "disks": names, "scope": scope, "module": module, "jobId": job_id}
+    return {"message": result.stdout.strip(), "disks": names, "skipped": skipped, "scope": scope, "module": module, "jobId": job_id}
 
 
 def run_schedule():
@@ -790,6 +880,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {"running": running, "text": output, "job": web_job(running)})
             if path == "/api/jobs/history":
                 return self.send_json(200, {"jobs": web_job_history()})
+            if path == "/api/history/samples":
+                return self.send_json(200, {"samples": smart_history_samples()})
             if path.startswith("/api/jobs/history/"):
                 job_id = path.removeprefix("/api/jobs/history/")
                 if not re.fullmatch(r"[0-9a-f]{24}", job_id):
@@ -818,7 +910,7 @@ class Handler(BaseHTTPRequestHandler):
                 if file.is_file() and not file.is_symlink():
                     with file.open(newline="") as stream:
                         for row in list(csv.reader(stream))[-30:]:
-                            if len(row) == 8 and all(part.isdigit() for part in row):
+                            if len(row) in (8, 9) and all(part.isdigit() for part in row):
                                 rows.append([int(part) for part in row])
                 return self.send_json(200, {"rows": rows})
             if path.startswith("/api/disks/") and path.endswith("/smart"):
@@ -863,6 +955,11 @@ class Handler(BaseHTTPRequestHandler):
                 if path != f"/api/disks/{name}/wake":
                     return self.send_json(404, {"error": "Unknown API route"})
                 return self.send_json(200, wake_disk(name))
+            if path.startswith("/api/disks/") and path.endswith("/sleep"):
+                name = path.split("/")[3]
+                if path != f"/api/disks/{name}/sleep":
+                    return self.send_json(404, {"error": "Unknown API route"})
+                return self.send_json(200, sleep_disk(name))
             if path == "/api/auth/login":
                 if self.server.password is None:
                     return self.send_json(400, {"error": "Password login is disabled"})
@@ -953,6 +1050,29 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, TypeError, json.JSONDecodeError) as exc:
             self.send_json(400, {"error": str(exc)})
         except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
+            self.send_json(503, {"error": str(exc)})
+
+    def do_DELETE(self):
+        if not self.trusted():
+            return self.send_json(403, {"error": "Untrusted origin"})
+        if not self.permitted():
+            return
+        path = urlparse(self.path).path
+        try:
+            with gate:
+                if path.startswith("/api/jobs/history/"):
+                    delete_web_job(path.removeprefix("/api/jobs/history/"))
+                elif path.startswith("/api/history/samples/"):
+                    match = re.fullmatch(r"/api/history/samples/([A-Za-z0-9_-]+)/(\d+)", path)
+                    if not match:
+                        return self.send_json(404, {"error": "Unknown history entry"})
+                    delete_smart_sample(*match.groups())
+                else:
+                    return self.send_json(404, {"error": "Unknown API route"})
+            return self.send_json(200, {"deleted": True})
+        except (ValueError, TypeError, json.JSONDecodeError) as exc:
+            self.send_json(400, {"error": str(exc)})
+        except (OSError, RuntimeError) as exc:
             self.send_json(503, {"error": str(exc)})
 
 

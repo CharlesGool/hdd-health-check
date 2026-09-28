@@ -20,7 +20,7 @@
   "short": "Autoprueba SMART corta",
   "long": "Autoprueba SMART larga",
   "speed": "Muestra de velocidad",
-  "surface": "Exploración de superficie",
+  "surface": "Escaneo completo de solo lectura",
   "badblocks": "badblocks de solo lectura",
   "iface": "Verificación de interfaz",
   "full": "Evaluación completa",
@@ -214,5 +214,16 @@
   "writesUnavailable": "La unidad no informa un total fiable.",
   "toggleCapacity": "Cambiar entre TB y TiB",
   "taskHistory": "Historial de tareas",
-  "noTaskHistory": "Aún no hay tareas completadas registradas."
+  "noTaskHistory": "Aún no hay tareas completadas registradas.",
+  "assessmentHddOnly": "Solo HDD; SSD omitidos:",
+  "sleepDisk": "Poner disco en espera",
+  "sleepingDisk": "Poniendo en espera…",
+  "sleepDiskDone": "Espera solicitada",
+  "sleepDiskConfirm": "El sistema puede reactivar el disco enseguida. ¿Ponerlo en espera?",
+  "deleteHistory": "Eliminar registro",
+  "deleteJobConfirm": "¿Eliminar esta tarea y su registro detallado?",
+  "deleteSampleConfirm": "¿Eliminar esta muestra SMART?",
+  "smartSample": "Muestra SMART",
+  "viewDetails": "Ver detalles",
+  "summary": "Resumen"
 }

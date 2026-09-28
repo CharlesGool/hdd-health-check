@@ -20,7 +20,7 @@
   "short": "Autotest SMART court",
   "long": "Autotest SMART long",
   "speed": "Échantillon de vitesse",
-  "surface": "Balayage de surface",
+  "surface": "Analyse complète en lecture seule",
   "badblocks": "badblocks en lecture seule",
   "iface": "Vérification de l’interface",
   "full": "Évaluation complète",
@@ -214,5 +214,16 @@
   "writesUnavailable": "Ce disque ne fournit pas de total fiable.",
   "toggleCapacity": "Basculer entre TB et TiB",
   "taskHistory": "Historique des tâches",
-  "noTaskHistory": "Aucune tâche terminée enregistrée pour le moment."
+  "noTaskHistory": "Aucune tâche terminée enregistrée pour le moment.",
+  "assessmentHddOnly": "Disques durs seulement ; SSD ignorés :",
+  "sleepDisk": "Mettre le disque en veille",
+  "sleepingDisk": "Mise en veille…",
+  "sleepDiskDone": "Mise en veille demandée",
+  "sleepDiskConfirm": "Le système peut réveiller le disque aussitôt. Le mettre en veille ?",
+  "deleteHistory": "Supprimer la trace",
+  "deleteJobConfirm": "Supprimer cette tâche et son journal détaillé ?",
+  "deleteSampleConfirm": "Supprimer cet échantillon SMART ?",
+  "smartSample": "Échantillon SMART",
+  "viewDetails": "Voir les détails",
+  "summary": "Résumé"
 }
