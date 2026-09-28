@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Journal
 
-Ce document conserve les décisions historiques acceptées, les limites connues et l'historique des versions. Cette documentation décrit `v3.0.0`. Le tag source `v3.0.0` marque cette version majeure ; aucun GitHub Release n’est créé. L’utilisateur indique que l’ancien code `v2.2.0` a été exécuté sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée n’a été validée que par des simulations isolées, pas sur un vrai disque dur.
+Ce document conserve les décisions historiques acceptées, les limites connues et l’historique des versions. La version majeure actuelle est `v4.0.0`. L’utilisateur indique avoir exécuté l’ancien code `v2.2.0` sur une machine réelle, sans préciser le périphérique, l’environnement ou la portée des tests. La notation révisée a fait l’objet de tests synthétiques et de vérifications Web sur un NAS Debian, mais d’aucune évaluation complète et contrôlée sur de vrais HDD.
 
 ## Multilingue
 
@@ -56,15 +56,19 @@ Limite de mise à jour: Conserver le répartiteur racine jusqu’à ce qu’une 
 
 ## Passation
 
-2026-09-28. Branche `feat/standards-alignment` ; cet arbre de travail local n’a pas encore été validé. Aucune règle temporaire du projet n’a été trouvée.
+2026-09-28. Branche `feat/standards-alignment`; la modification de normalisation vérifiée est validée localement. Aucune règle temporaire du projet n’a été trouvée.
 
-- Terminé : le code source a été réorganisé sous `src/checker/` et `src/web/`, la sortie Web générée déplacée vers `dist/web/`, le point d’entrée CLI de compatibilité à la racine conservé, les chemins de l’installateur et des tests actualisés, et les noms des répertoires de langues ainsi que la navigation documentaire normalisés. L’installation depuis les sources copie toujours les fichiers dans la structure de service Debian existante. L’interface propose désormais huit couleurs d’accent et les modes clair/sombre dans Paramètres, les conserve séparément et utilise un véritable lien Changelog dans la navigation supérieure.
-- Sécurité : une page Security Settings dédiée a été ajoutée, avec une vérification du mot de passe administrateur valable cinq minutes et imposée par le serveur. Cette vérification renouvelle la session ; une session admise par IP seulement ne peut ni lire ni modifier la liste d’autorisation ou le mot de passe. Pendant cette période, le changement de mot de passe ne demande que le nouveau mot de passe et sa confirmation, et invalide toutes les sessions. L’admission IP dispose d’un interrupteur, n’accepte que les adresses exactes RFC 1918 IPv4 ou ULA IPv6, rejette les anciennes entrées interdites, utilise le pair de la connexion plutôt que les en-têtes de transfert fournis par le client, et contrôle le Host/Origin d’origine ainsi qu’un en-tête de requête du même domaine pour les modifications.
-- Confidentialité et version : les réponses snapshot et SMART masquent désormais les numéros de série ; une requête authentifiée de révélation ne récupère le numéro complet qu’après une action explicite de l’utilisateur, et la vue l’efface lorsqu’il est masqué ou qu’elle se ferme. Le lien de version se trouve à côté du nom du projet et ouvre Changelog ; une compilation sans tag utilise le marqueur `test-<sha>` et expose la même valeur sur `/api/build`.
-- Comportement non publié: L’évaluation complète SSD/NVMe exécute désormais le contrôle SMART rapide, les autotests court et long et une lecture intégrale en lecture seule, sans échantillonnage de vitesse. Un lot complet sans anomalie obtient 100 points ; les lectures lentes seules ne retirent aucun point. Les choix de contrôle groupé suivent les types de disques sélectionnés. Les valeurs de capacité et de données écrites sur SSD passent entre unités décimales et binaires ; un HDD en veille peut être réveillé individuellement depuis ses détails SMART. Les tests simulés ont réussi ; aucune évaluation intégrale de disques réels n’a été lancée pour cette mise à jour.
-- Vérifications : le contrôle des types Vue et la compilation de production ont réussi. Tous les tests shell et Python Web ont réussi, y compris l’admission IP, l’expiration des droits, le renouvellement de session, le changement de mot de passe et la révélation et le masquage des numéros de série. Le contrôle des thèmes a validé les huit couleurs d’accent dans les deux modes. Les contrôles du multilinguisme, du format documentaire (zéro erreur, huit avertissements), des liens locaux et de la structure du projet ont réussi après le déplacement des artefacts du navigateur hors de la racine des sources. Chromium local a montré Security Settings et les réglages d’apparence adaptatifs en mode sombre à 390 px sans débordement horizontal ; l’accès direct à Changelog a affiché la section v3.0.0 en premier. L’environnement de navigateur isolé a renvoyé les réponses 503 attendues pour l’état des disques, car il ne dispose pas du processus de vérification.
-- Reste à faire : examiner le diff final et tester le parcours de sécurité actualisé sur le NAS après autorisation du déploiement. Le point d’entrée de compatibilité à la racine figure avec sa référence antérieure au déplacement dans Limitations. Aucune mise à niveau du NAS, opération sur un disque réel ni vérification après redémarrage n’a été effectuée dans cet arbre de travail ; ces changements non validés n’ont pas été publiés.
-- Prochaine étape : examiner la branche et décider de son déploiement sur le NAS pour vérifier Security Settings en conditions réelles.
+- Suivi de l’installateur sur le NAS: le premier déploiement de `test-bf14ed5` a démarré le service, mais son contrôle de santé a reçu HTTP 403 parce que l’en-tête `X-HDD-CSRF` manquait. Le chemin d’erreur explicite `die` n’effectuait pas non plus le retour arrière; le service est resté actif et l’ancienne application disponible. Le commit `cd7d69b` a corrigé les deux problèmes. Une nouvelle installation de `test-cd7d69b` a passé le contrôle; le service est actif et activé sur `0.0.0.0:8765`. Les sauvegardes précédentes de l’application et de l’unité ont été conservées; le mot de passe Web correspondait à la sauvegarde précédente, et les répertoires `/var/lib/hdd-health` et `/var/log/disk-health` ont été conservés.
+- Terminé: code déplacé vers `src/checker/` et `src/web/`, sortie générée vers `dist/web/`, point d’entrée CLI compatible conservé et chemins d’installation et de tests mis à jour. Les répertoires de langues et la navigation ont été normalisés. L’interface offre huit couleurs d’accent et les modes clair/sombre conservés séparément; la version ouvre Changelog.
+- Sécurité: page distincte avec vérification du mot de passe administrateur valable cinq minutes et imposée par le serveur. La vérification renouvelle la session; une session admise seulement par IP ne peut ni lire ni modifier la liste d’autorisation ou le mot de passe. Le changement de mot de passe invalide toutes les sessions. L’admission IP dispose d’un interrupteur et n’accepte que les adresses exactes RFC 1918 IPv4 ou ULA IPv6; elle utilise le pair de la connexion et impose les contrôles Host/Origin ainsi qu’un en-tête du même domaine pour toute modification.
+- Confidentialité et version: les réponses snapshot et SMART masquent les numéros de série; une requête authentifiée ne les révèle qu’après une action explicite et la vue les masque de nouveau à la fermeture. Les compilations sans tag utilisent `test-<sha>` et `/api/build` affiche le même identifiant.
+- Comportement inclus: l’évaluation complète SSD/NVMe exécute SMART rapide, autotests court et long et analyse intégrale en lecture seule, sans échantillonnage de vitesse. Un lot complet sans anomalie obtient 100 points; les lectures lentes seules ne retirent aucun point. Les choix du lot dépendent des disques sélectionnés. Capacité et données écrites alternent entre unités décimales et binaires; un HDD en veille peut être réveillé individuellement.
+- Vérifications: les tests Shell et Python, les contrôles de types et compilation Vue, les thèmes, la structure, le format documentaire, les liens locaux et le multilinguisme ont réussi. La syntaxe Shell, la compilation Python et `git diff --check` ont aussi réussi. La revue finale a attribué `test-archive-<package version>` aux archives source sans métadonnées Git. Chromium local a affiché Security Settings et les paramètres d’apparence en mode sombre à 390 px sans débordement horizontal; la navigation directe vers Changelog affichait d’abord v3.0.0. L’environnement isolé du navigateur a renvoyé le HTTP 503 attendu pour l’état des disques faute de processus vérificateur.
+- NAS: `/api/build` correspondait à `test-cd7d69b`. Connexion, refus de l’accès non authentifié, vérification administrateur, renouvellement de session, lecture protégée de la liste d’autorisation et masquage des numéros de série de 13 disques ont réussi. La page Security Settings et le favicon ont répondu HTTP 200 sur le réseau local; les API ordinaires et protégées ont répondu 401 sans authentification. Chromium authentifié a affiché les commandes IP enregistrées et le formulaire de mot de passe à 390 px sans débordement. La session du navigateur a été fermée et le fichier local temporaire du mot de passe supprimé. Aucune analyse, modification de mot de passe ni redémarrage n’a été effectué. Cette installation de test n’est pas une version formelle.
+- Restant: observer la reprise du service après un redémarrage et effectuer une évaluation complète et contrôlée sur de vrais HDD. La branche locale n’est pas encore publiée. Le point d’entrée compatible à la racine figure sous Limitations avec sa référence antérieure au déplacement.
+- Préparation de la version: `v4.0.0` est la prochaine version formelle. Changelog couvre les commits après `v3.0.0`. Le commit de version, le tag, GitHub Release, l’instantané et la synchronisation Notion restent à faire. Le NAS conserve `test-cd7d69b` jusqu’à un autre déploiement.
+- Récupération des traductions: les sept traductions des documents principaux sont en retard sur les mises à jour anglaises de Handoff et Commit History; `check-doc-difference.py` ne dispose donc pas d’une référence structurellement synchronisée pour cette version. Les documents concernés sont intégralement resynchronisés avec la source anglaise actuelle selon la règle de récupération documentée; les sept langues et la navigation protégée restent requises.
+- Prochaine étape: terminer les traductions et les contrôles de publication, puis publier `v4.0.0` depuis `main`; planifier séparément le redémarrage et l’évaluation des HDD.
 
 ## Bases historiques du code source
 
@@ -98,6 +102,30 @@ Cette version inclut l’intégration v2.2 jusque-là sans tag : résultats pers
 L’utilisateur indique avoir testé v2.2.0 sur une machine réelle, sans préciser les appareils, l’environnement ni la portée des tests ; l’exécution en tant que root, l’installation de paquets et le comportement de systemd n’ont pas été confirmés indépendamment.
 
 ## Historique des modifications
+
+### v4.0.0 — 2026-09-28
+
+Cette version majeure met à jour le contrôleur Web local, son modèle de sécurité et l’organisation du code source. La compilation de test authentifiée a été vérifiée sur un NAS Debian avec 13 disques recensés. Une évaluation complète sur de vrais HDD et la reprise du service après redémarrage de l’hôte restent à vérifier.
+
+#### Ajouté
+
+- Les évaluations complètes SSD/NVMe exécutent SMART rapide, les autotests court et long ainsi qu’une analyse intégrale en lecture seule, sans échantillonnage de vitesse réservé aux HDD. Un lot complet sans anomalie obtient 100 points selon l’heuristique existante; les lectures lentes seules ne retirent aucun point, mais les erreurs de lecture et les constatations SMART peuvent encore le faire. Les commandes des lots mixtes proposent l’ensemble des contrôles pris en charge et excluent les SSD des modules réservés aux HDD.
+- L’historique des tâches conserve les exécutions Web terminées, arrêtées et échouées séparément du dernier résultat par disque et des tendances des compteurs SMART. Le détail d’un disque peut mettre en veille un HDD SATA admissible ou réveiller individuellement un HDD endormi.
+- Les paramètres proposent huit couleurs d’accent et les modes clair/sombre. La version près du nom du projet ouvre Changelog, et `/api/build` indique le même identifiant intégré. Les numéros de série restent masqués dans les réponses ordinaires et ne sont obtenus qu’après une action authentifiée de révélation.
+
+#### Modifié
+
+- Security Settings dispose d’une route distincte avec une vérification du mot de passe administrateur valable cinq minutes et imposée par le serveur. La vérification renouvelle la session; pendant cette période, le changement de mot de passe exige la nouvelle valeur et sa confirmation puis invalide toutes les sessions. L’admission IP sans mot de passe dispose d’un interrupteur et n’accepte que des adresses exactes RFC 1918 IPv4 ou ULA IPv6. Elle ne permet pas de lire ni de modifier les paramètres de sécurité. Les requêtes qui modifient des données exigent un en-tête du même domaine; les en-têtes de transfert fournis par le client ne déterminent pas l’adresse du pair.
+- Le code source se trouve dans `src/checker/` et `src/web/`, avec les fichiers générés de l’interface dans `dist/web/`; le point d’entrée CLI à la racine et l’agencement installé sur le NAS restent compatibles. Les répertoires de langues utilisent les noms BCP-47. La vue des disques s’adapte à la largeur disponible et les quatre fonctions du tableau de bord disposent de pages dédiées.
+
+#### Corrigé
+
+- L’état des tâches reste réactif pendant les autotests de tous les disques, affiche distinctement les résultats SMART courts et longs et conserve des reçus historiques séparés. Les bandes de température NVMe sont corrigées et la température seule ou les variations de vitesse SSD ne réduisent pas le score. Les contrôles propres avec couverture partielle ne renvoient plus d’avertissement pour cette seule raison.
+- L’installateur Debian inclut désormais l’en-tête requis dans son contrôle de santé authentifié et effectue un retour arrière si une erreur explicite survient après le début du remplacement des fichiers.
+
+#### Validation
+
+- Les tests Shell et Python, les contrôles de types Vue et la compilation de production, les contrôles documentaires et structurels et les essais locaux dans un navigateur ont réussi. Le déploiement de test sur NAS a passé les contrôles d’API authentifiée et de Security Settings dans le navigateur, y compris le masquage des numéros de série et l’affichage à 390 px sans débordement horizontal. Aucune analyse de disque, modification de mot de passe ni redémarrage n’a été réalisé pendant la préparation de cette version; le score de santé n’est pas une probabilité de panne calibrée.
 
 ### v3.0.0 — 2026-09-27
 
@@ -134,9 +162,16 @@ Cette version majeure ajoute au vérificateur de disques une interface Web persi
 
 ## Historique des commits
 
-Historique complet de la branche principale : `git log main --stat`. `HEAD` désigne ce commit de passation.
+Historique complet de la branche principale: `git log main --stat`. L’entrée `HEAD` désigne ce commit de passation.
 
+- 2026-09-28 | intended | `chore(release): prepare v4.0.0` | this commit
+- 2026-09-28 | `ebf6e39` | `docs(handoff): record NAS browser verification` | `git show ebf6e39`
+- 2026-09-28 | `0b5f053` | `docs(handoff): record NAS installer and security verification` | `git show 0b5f053`
+- 2026-09-28 | `cd7d69b` | `fix(deploy): verify authenticated service with CSRF header` | `git show cd7d69b`
+- 2026-09-28 | `bf14ed5` | `feat(web): align project layout and security settings` | `git show bf14ed5`
 - 2026-09-28 | `35f24e5` | `docs(handoff): record NAS Web update verification` | `git show 35f24e5`
+- 2026-09-28 | `a6086ff` | `feat(web): unify history and add per-disk standby` | `git show a6086ff`
+- 2026-09-28 | `f5f5dc7` | `docs(handoff): record SSD assessment deployment` | `git show f5f5dc7`
 - 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
 - 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
 - 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`

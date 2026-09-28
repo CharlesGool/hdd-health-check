@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La rama `main` actual contiene el código principal v3.0.0 y la interfaz Web local opcional. La etiqueta de código fuente v3.0.0 está disponible en GitHub; no se crea un GitHub Release. La evaluación completa en HDD reales sigue sin verificarse.
+Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La versión `v4.0.0` incluye el comprobador y la interfaz Web local opcional, con código fuente y un archivo Web Debian precompilado en GitHub. El servicio Web se comprobó en un NAS Debian con inventario real de discos y ajustes de seguridad autenticados, pero siguen sin verificarse una evaluación completa en HDD reales y la recuperación tras reiniciar el equipo.
 
 Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
 
@@ -28,17 +28,17 @@ Las horas de encendido son información de uso y por sí solas no restan puntos 
 
 ## Introducción
 
-El menú interactivo o la CLI por lotes seleccionan unidades, realizan una evaluación rápida de SMART, montajes y registros del kernel, y presentan una puntuación heurística de 0 a 100 y un nivel de riesgo. Otros módulos ofrecen autopruebas SMART cortas y largas, medición de velocidad de lectura por muestreo, exploración reanudable de la latencia de lectura de todo el disco con una nueva comprobación dirigida y opcional mediante `badblocks`, ejecución de `badblocks` de solo lectura en todo el disco y pruebas de lectura de la interfaz tras una reparación. La evaluación completa ejecuta las comprobaciones rápida, corta, larga, de velocidad y de superficie; no incluye el módulo independiente de `badblocks` para todo el disco ni el de interfaz. Los resultados pueden reutilizarse, compararse con el historial de contadores SMART y reunirse en un informe. Véanse los [problemas conocidos](LOG.md) y los [objetivos](DESIGN.md).
+El menú interactivo o la CLI por lotes seleccionan unidades, realizan una evaluación rápida de SMART, montajes y registros del kernel, y presentan una puntuación heurística de 0 a 100 y un nivel de riesgo. Otros módulos ofrecen autopruebas SMART cortas y largas, medición de velocidad de lectura por muestreo, exploración reanudable de la latencia de lectura de todo el disco con una nueva comprobación dirigida y opcional mediante `badblocks`, ejecución de `badblocks` de solo lectura en todo el disco y pruebas de lectura de la interfaz tras una reparación. En HDD, la evaluación completa ejecuta las comprobaciones rápida, corta, larga, de velocidad y de superficie; en SSD ejecuta las comprobaciones rápida, corta, larga y una exploración integral de solo lectura sin muestreo de velocidad; no incluye el módulo independiente de `badblocks` para todo el disco ni el de interfaz. Los resultados pueden reutilizarse, compararse con el historial de contadores SMART y reunirse en un informe. Véanse los [problemas conocidos](LOG.md) y los [objetivos](DESIGN.md).
 
 **«Solo lectura» se refiere a los datos del disco de destino, no al equipo anfitrión.** El programa escribe registros, ajustes, progreso e historial en el equipo anfitrión; puede activar SMART, iniciar autopruebas internas de la unidad, leer dispositivos enteros bajo carga sostenida, instalar paquetes previa confirmación e iniciar unidades transitorias de systemd. No sustituye a las copias de seguridad. No se implementa ninguna exploración de superficie con escritura destructiva, borrado ni escritura en el sistema de archivos.
 
-La evaluación completa repite SMART/ATA/CRC tras las lecturas prolongadas. Solo muestra una puntuación global de 0 a 100 si las pruebas rápida, corta, larga, de velocidad y de superficie terminada son del mismo lote, están completas y vigentes. Los resultados reutilizados, interrumpidos, caducados o antiguos siguen visibles como históricos, con clasificación parcial/desconocida; consultar informes no actualiza la base de comparación. Tras reparar la interfaz, verifíquela por separado y repita la evaluación completa para obtener una puntuación nueva; resolverla no borra errores anteriores. Un primer total de errores ATA tiene causa desconocida y conserva un descuento de 5 puntos por riesgo no resuelto en revisiones sucesivas, incluso después de la evaluación completa. Un aumento resta 20 puntos; un contador estable no es un error nuevo ni prueba que el riesgo se haya resuelto. La verificación de interfaz por sí sola no atribuye los errores ATA antiguos a una reparación. Las lecturas lentas aisladas aconsejan repetir la prueba de rendimiento, no prueban sectores defectuosos; los errores confirmados de superficie siguen restando 40 puntos. Haga copias de seguridad antes de probar un disco sospechoso.
+La evaluación completa repite SMART/ATA/CRC tras las lecturas prolongadas. Solo muestra una puntuación global de 0 a 100 si las pruebas rápida, corta, larga y de superficie terminada, además del muestreo de velocidad para HDD, son del mismo lote, están completas y vigentes. Los resultados reutilizados, interrumpidos, caducados o antiguos siguen visibles como históricos, con clasificación parcial/desconocida; consultar informes no actualiza la base de comparación. Tras reparar la interfaz, verifíquela por separado y repita la evaluación completa para obtener una puntuación nueva; resolverla no borra errores anteriores. Un primer total de errores ATA tiene causa desconocida y conserva un descuento de 5 puntos por riesgo no resuelto en revisiones sucesivas, incluso después de la evaluación completa. Un aumento resta 20 puntos; un contador estable no es un error nuevo ni prueba que el riesgo se haya resuelto. La verificación de interfaz por sí sola no atribuye los errores ATA antiguos a una reparación. Las lecturas lentas aisladas aconsejan repetir la prueba de rendimiento, no prueban sectores defectuosos; los errores confirmados de superficie siguen restando 40 puntos. Haga copias de seguridad antes de probar un disco sospechoso.
 
 ## Requisitos
 
 - Mínimos: root, Bash 4.3+, utilidades de dispositivos de bloques de Linux (`lsblk`, `blockdev`), `smartctl` (`smartmontools`), `dd` (`coreutils`) y `flock`; la plataforma prevista es Debian/Ubuntu. En otras distribuciones se muestra una advertencia; la instalación automática de dependencias utiliza `apt-get`.
 - Recomendados: `badblocks` (`e2fsprogs`) para comprobaciones de superficie; systemd con `systemd-run` para tareas desacopladas. Si faltan paquetes, puede ofrecerse su instalación interactiva mediante `apt-get update`/instalación (o confirmarse automáticamente con `-y`). Compruebe las dependencias antes de una ejecución desatendida. No se incluye código de terceros con versiones fijadas ni se necesita un archivo de bloqueo de dependencias.
-- Para evaluar la salud real se necesitan un HDD físico y acceso SMART. Se pueden incluir SSD/NVMe explícitamente, pero la puntuación orientada a HDD no constituye una evaluación calibrada de SSD/NVMe.
+- Para evaluar la salud real se necesitan un HDD físico y acceso SMART. Se pueden incluir SSD/NVMe explícitamente. Una evaluación SSD completa y limpia obtiene 100 puntos, pero la puntuación no es una probabilidad calibrada de fallo.
 
 ## Instalación
 
@@ -49,10 +49,10 @@ Desde una copia de trabajo de confianza, ejecute `sudo bash ./hdd-health-check.s
 ### Instalación normal
 
 
-La siguiente copia utiliza la rama de código fuente actual. El comando de la raíz del repositorio es solo un punto de entrada; su implementación está en `src/checker/`.
+La siguiente copia utiliza la etiqueta de versión `v4.0.0`. El comando de la raíz del repositorio es un punto de entrada ligero; su implementación está en `src/checker/`.
 
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -60,12 +60,12 @@ sudo bash ./hdd-health-check.sh --help
 
 Revise e instale usted mismo los paquetes necesarios del sistema operativo antes de explorar para evitar la solicitud de instalación del script. Para actualizar una copia de trabajo existente, haga primero una copia de seguridad de los registros del equipo anfitrión que quiera conservar y de `${HDD_STATE_DIR:-/var/lib/hdd-health}`; sustituya el script por el de una copia de trabajo revisada, conserve ese directorio de estado para el historial y la reanudación, y después consulte `--help` y ejecute las comprobaciones elegidas. El análisis del estado de v2.2 solo acepta campos de datos conocidos; un estado anterior de v2.2 que no se ajuste a ellos puede rechazarse. Para volver a una versión anterior hay que restaurar el script anterior **y la copia de seguridad correspondiente de su estado**; no dé por hecho que el estado más reciente sea compatible hacia atrás. No se garantiza la migración del estado ni el comportamiento de la CLI de v1.
 
-### Interfaz Web desde el código fuente actual
+### Interfaz Web desde la etiqueta v4.0.0
 
-El código fuente actual no incluye los archivos generados de `dist/web` en el control de versiones. En un equipo Debian con systemd, instale Node.js 20.19+ o 22.12+ y npm, compile la interfaz y ejecute el instalador:
+La etiqueta de código fuente no incluye los archivos generados de `dist/web` en el control de versiones. En un equipo Debian con systemd, instale Node.js 20.19+ o 22.12+ y npm, compile la interfaz y ejecute el instalador. GitHub Release también ofrece un archivo Web precompilado para instalarla sin Node.js en el NAS:
 
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
 npm run build
@@ -114,4 +114,4 @@ MIT (SPDX: MIT); consulte [LICENSE](../../LICENSE).
 
 ## Evaluación y controles actuales de SSD
 
-La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, autopruebas corta y larga y una lectura completa del disco. Omite el muestreo de velocidad; las lecturas lentas por sí solas no restan puntos de salud. Un lote completo sin anomalías obtiene 100 puntos; los hallazgos SMART o errores reales de lectura pueden reducir esta puntuación heurística. Si la selección incluye SSD, la interfaz solo ofrece comprobación rápida, autopruebas corta y larga, lectura completa y evaluación completa. Al pulsar la capacidad o los datos escritos se alternan unidades decimales y binarias. En los detalles SMART de un HDD en reposo hay un botón para activar solo ese disco.
+La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, autopruebas corta y larga y una lectura completa del disco. Omite el muestreo de velocidad; las lecturas lentas por sí solas no restan puntos de salud. Un lote completo sin anomalías obtiene 100 puntos; los hallazgos SMART o errores reales de lectura pueden reducir esta puntuación heurística. Los controles por lotes muestran la unión de las comprobaciones admitidas por los discos seleccionados; los módulos exclusivos de HDD omiten los SSD seleccionados. Al pulsar la capacidad o los datos escritos se alternan unidades decimales y binarias. En los detalles SMART de un HDD en reposo hay un botón para activar solo ese disco.

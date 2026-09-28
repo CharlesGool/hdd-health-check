@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况.当前 `main` 包含 v3.0.0 核心代码和可选的本地 Web UI.GitHub 提供 `v3.0.0` 源码标签,但没有创建 GitHub Release.Web 服务已在有真实磁盘清单的 Debian NAS 上检查;真实 HDD 的完整评估仍未得到验证.
+这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况.`v4.0.0` 版本包含检查器和可选的本地 Web UI;GitHub 提供源码及预构建的 Debian Web 安装包.Web 服务已在 Debian NAS 上使用真实磁盘清单和经过身份验证的 Security Settings 完成检查,但真实 HDD 的完整评估及主机重启后的服务恢复仍未验证.
 
 ## 多语言
 
@@ -45,9 +45,10 @@ metadata:
 
 ### 常规安装
 
-以下检出当前源码分支.仓库根目录的命令只是简短入口,实现位于 `src/checker/`.
+以下检出 `v4.0.0` 发布标签.仓库根目录的命令只是简短入口,实现位于 `src/checker/`.
+
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -55,12 +56,12 @@ sudo bash ./hdd-health-check.sh --help
 
 扫描前请自行核查并安装所需系统软件包,以免触发脚本的安装提示.升级现有检出目录时,先备份需要保留的主机日志和 `${HDD_STATE_DIR:-/var/lib/hdd-health}`;从经审查的检出目录替换脚本,保留该状态目录以便使用历史记录/续扫,随后查看 `--help` 并执行所选检查.v2.2 仅解析已知的状态数据字段;不符合格式的旧 v2.2 状态可能被拒绝.回滚时需同时恢复旧脚本**及与之匹配的状态备份**;不要假定新版状态向后兼容.不承诺兼容 v1 CLI 行为或迁移 v1 状态.
 
-### 从当前源码安装 Web UI
+### 从 v4.0.0 标签安装 Web UI
 
-当前源码不跟踪 `dist/web` 中生成的资源.在 Debian systemd 主机安装 Node.js 20.19+ 或 22.12+ 及 npm,构建界面,然后运行安装器:
+源码标签不跟踪 `dist/web` 中生成的资源.在 Debian systemd 主机安装 Node.js 20.19+ 或 22.12+ 及 npm,构建界面,然后运行安装器.GitHub Release 另提供预构建的 Web 安装包,在 NAS 上安装时无需 Node.js.
 
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
 npm run build

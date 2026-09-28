@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Design
 
-This document describes the `v3.0.0` behavior, constraints and host-side state. This documentation describes `v3.0.0`. The `v3.0.0` source tag is the major-version boundary; no GitHub Release is created. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
+This document describes the `v4.0.0` behavior, constraints and host-side state. The `v4.0.0` tag marks the current major-version boundary. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has synthetic tests and Web verification on a Debian NAS, but no controlled complete assessment on real HDDs.
 
 ## Multi-language
 

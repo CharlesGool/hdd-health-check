@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. Current `main` contains the v3.0.0 core code and the optional local Web UI. The `v3.0.0` source tag is available on GitHub; no GitHub Release is created. The Web service has been checked on a Debian NAS with real disk inventory, but a complete assessment on real HDDs remains unverified.
+This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. The `v4.0.0` release includes the checker and optional local Web UI, with source and a prebuilt Debian Web archive on GitHub. The Web service has been checked on a Debian NAS with real disk inventory and authenticated Security Settings, but a complete assessment on real HDDs and recovery after a host reboot remain unverified.
 
 ## Multi-language
 
@@ -46,10 +46,10 @@ From a trusted checkout, run `sudo bash ./hdd-health-check.sh --help` to inspect
 
 ### Normal Install
 
-The following checkout uses the current source branch. The repository-root command remains a thin entry point; its implementation is in `src/checker/`.
+The following checkout uses the `v4.0.0` release tag. The repository-root command remains a thin entry point; its implementation is in `src/checker/`.
 
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -57,12 +57,12 @@ sudo bash ./hdd-health-check.sh --help
 
 Review and install the required OS packages yourself before scanning to avoid the script's package-install prompt. To upgrade an existing checkout, back up any desired host logs and `${HDD_STATE_DIR:-/var/lib/hdd-health}` first; replace the script from a reviewed checkout, keep that state directory for history/resume, then review `--help` and run the chosen checks. v2.2 state parsing accepts only known data fields; nonconforming prior v2.2 state may be rejected. A rollback requires restoring the previous script **and its matching state backup**; do not assume newer state is backwards compatible. No v1 CLI behavior or state migration is promised.
 
-### Web UI from current source
+### Web UI from the v4.0.0 tag
 
-The current source does not track generated assets in `dist/web`. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm, build the UI, then run the installer:
+The source tag does not track generated assets in `dist/web`. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm, build the UI, then run the installer. The GitHub Release also provides a prebuilt Web archive for installation without Node.js on the NAS.
 
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
 npm run build

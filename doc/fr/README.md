@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-Cet outil Bash exécuté avec les droits root évalue la santé des HDD sous Debian/Ubuntu avec les données SMART et des contrôles en lecture seule. La branche `main` actuelle contient le code principal v3.0.0 et l’interface Web locale facultative. Le tag source v3.0.0 est disponible sur GitHub ; aucun GitHub Release n’est créé. Une évaluation complète sur de vrais HDD reste à vérifier.
+Cet outil Bash exécuté avec les droits root évalue la santé des HDD sous Debian/Ubuntu avec les données SMART et des contrôles en lecture seule. La version `v4.0.0` comprend le vérificateur et l’interface Web locale facultative, avec le code source et une archive Web Debian précompilée sur GitHub. Le service Web a été vérifié sur un NAS Debian avec un inventaire réel des disques et des paramètres de sécurité authentifiés, mais une évaluation complète sur de vrais HDD et la reprise après redémarrage de l’hôte restent à vérifier.
 
 La durée de fonctionnement est une donnée d’usage et ne réduit pas seule le score de santé. Une propriété ATA proche du seuil ne déclenche une alerte que si le compteur brut d’erreurs est non nul. Les anciens résultats sans cette preuve restent en attente de vérification sans déduction. Les cartes de surveillance affichent la cause enregistrée.
 
@@ -49,10 +49,10 @@ Depuis une copie de travail fiable, lancez `sudo bash ./hdd-health-check.sh --he
 ### Installation normale
 
 
-Le checkout ci-dessous utilise la branche source actuelle. La commande à la racine du dépôt reste un simple point d’entrée; son implémentation se trouve dans `src/checker/`.
+Le checkout ci-dessous utilise le tag de version `v4.0.0`. La commande à la racine du dépôt reste un simple point d’entrée; son implémentation se trouve dans `src/checker/`.
 
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -60,12 +60,12 @@ sudo bash ./hdd-health-check.sh --help
 
 Vérifiez et installez vous-même les paquets système requis avant toute analyse afin d'éviter la demande d'installation du script. Pour mettre à niveau une copie existante, sauvegardez d'abord les journaux de l'hôte souhaités ainsi que `${HDD_STATE_DIR:-/var/lib/hdd-health}` ; remplacez le script à partir d'une copie vérifiée, conservez ce répertoire d'état pour l'historique et la reprise, puis consultez `--help` et exécutez les contrôles choisis. L'analyse des données d'état v2.2 n'accepte que les champs connus ; des données d'état v2.2 antérieures non conformes peuvent être rejetées. Pour revenir en arrière, il faut restaurer le script précédent **et sa sauvegarde d'état correspondante** ; ne présumez pas qu'un état plus récent est rétrocompatible. Aucune compatibilité avec l'interface en ligne de commande v1 ni migration d'état v1 n'est garantie.
 
-### Interface Web depuis le code source actuel
+### Interface Web depuis le tag v4.0.0
 
-Le code source actuel ne suit pas les fichiers générés de `dist/web`. Sur un hôte Debian avec systemd, installez Node.js 20.19+ ou 22.12+ et npm, construisez l’interface, puis lancez l’installateur :
+Le tag source ne suit pas les fichiers générés de `dist/web`. Sur un hôte Debian avec systemd, installez Node.js 20.19+ ou 22.12+ et npm, construisez l’interface, puis lancez l’installateur. GitHub Release propose aussi une archive Web précompilée pour une installation sans Node.js sur le NAS:
 
 ```bash
-git clone https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
 npm run build
@@ -114,4 +114,4 @@ MIT (SPDX: MIT) ; voir [LICENSE](../../LICENSE).
 
 ## Évaluation et commandes SSD actuelles
 
-Une évaluation complète SSD/NVMe exécute le contrôle SMART rapide, les autotests court et long, puis une lecture intégrale du disque. Elle omet l’échantillonnage de vitesse ; les lectures lentes seules ne retirent aucun point de santé. Un lot complet sans anomalie obtient 100 points ; les constats SMART ou les erreurs de lecture réelles peuvent réduire ce score indicatif. Si la sélection comprend un SSD, l’interface ne propose que le contrôle rapide, les autotests court et long, la lecture intégrale et l’évaluation complète. Un clic sur les valeurs de capacité ou de données écrites bascule entre unités décimales et binaires. Les détails SMART d’un HDD en veille proposent un bouton pour réveiller uniquement ce disque.
+Une évaluation complète SSD/NVMe exécute le contrôle SMART rapide, les autotests court et long, puis une lecture intégrale du disque. Elle omet l’échantillonnage de vitesse ; les lectures lentes seules ne retirent aucun point de santé. Un lot complet sans anomalie obtient 100 points ; les constats SMART ou les erreurs de lecture réelles peuvent réduire ce score indicatif. Les commandes groupées présentent l’ensemble des contrôles pris en charge par les disques sélectionnés; les modules réservés aux HDD ignorent les SSD sélectionnés. Un clic sur les valeurs de capacité ou de données écrites bascule entre unités décimales et binaires. Les détails SMART d’un HDD en veille proposent un bouton pour réveiller uniquement ce disque.

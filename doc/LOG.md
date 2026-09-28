@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Log
 
-This record preserves accepted historical decisions, known limitations and release history. This documentation describes `v3.0.0`. The `v3.0.0` source tag is the major-version boundary; no GitHub Release is created. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has only isolated mock validation, not real-HDD validation.
+This record preserves accepted historical decisions, known limitations and release history. The current major-version release is `v4.0.0`. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has synthetic tests and Web verification on a Debian NAS, but no controlled complete assessment on real HDDs.
 
 ## Multi-language
 
@@ -58,7 +58,7 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 
 2026-09-28. Branch `feat/standards-alignment`; the reviewed standards-alignment change is committed locally. No temporary project rules were found.
 
-- NAS installer follow-up: the first NAS run of `test-bf14ed5` started the new service, but its health probe received HTTP 403 because it omitted the required `X-HDD-CSRF` header. The installer then reported failure without rolling back because its `die` path bypassed the rollback trap. The service remained active, and the previous application was preserved at `/root/apps/hdd-health-check.backup-20260928-154040-2138388`. Commit `cd7d69b` adds the header and calls rollback for explicit errors after installation starts. A fresh installation of `test-cd7d69b` then passed the installer health check. The service is active and enabled on `0.0.0.0:8765`; `/root/apps/hdd-health-check.backup-20260928-154248-2141162` and the matching unit backup hold the preceding files. The Web password matched that backup, and `/var/lib/hdd-health` and `/var/log/disk-health` remained in place.
+- NAS installer follow-up: the first NAS run of `test-bf14ed5` started the new service, but its health probe received HTTP 403 because it omitted the required `X-HDD-CSRF` header. The installer then reported failure without rolling back because its `die` path bypassed the rollback trap. The service remained active and the prior application remained available. Commit `cd7d69b` adds the header and calls rollback for explicit errors after installation starts. A fresh installation of `test-cd7d69b` then passed the installer health check. The service is active and enabled on `0.0.0.0:8765`; the installer preserved the previous application and unit backups. The Web password matched the previous backup, and `/var/lib/hdd-health` and `/var/log/disk-health` remained in place.
 
 - Completed: reorganized the source into `src/checker/` and `src/web/`, moved generated Web output to `dist/web/`, retained the root CLI compatibility entry point, updated installer and test paths, and standardized locale directory names and document navigation. Source installs still copy into the existing Debian service layout. The UI now offers eight accent presets and light/dark modes in ordinary Settings, persists them independently, and uses a real Changelog link in top navigation.
 - Security: added a dedicated Security Settings page with a server-enforced five-minute administrator-password verification window. Verification rotates the session; an IP-only session cannot read or change the allowlist or password. Password change requests only the new password and confirmation during that window and invalidates all sessions. IP admission has an enable switch, accepts only exact RFC 1918 IPv4 or ULA IPv6 addresses, rejects disallowed legacy entries, uses the connection peer rather than client-supplied forwarding headers, and checks the original Host/Origin and a same-origin request header for mutations.
@@ -67,7 +67,9 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 - Checks: Vue type check and production build passed. All shell and Python Web tests passed, including IP admission, permission expiry, session rotation, password change, serial reveal and masking. The theme checker passed all eight accents in both modes. Multilingual, document format (zero errors, eight warnings), local-link and project structure checks passed after browser artifacts were moved out of the source root. Shell syntax, Python compilation and `git diff --check` passed. Local Chromium showed the Security Settings page and responsive dark-mode appearance settings at 390 px with no horizontal overflow; direct Changelog navigation rendered the v3.0.0 section first. The isolated browser harness returned expected 503 responses for disk status because it has no checker process. The final review also changed source-archive builds to use a `test-archive-<package version>` marker instead of a bare release version.
 - NAS verification: the installed `/api/build` matched the `test-cd7d69b` artifact. Password login, rejection of unauthenticated Security Settings, administrator verification, session rotation, protected allowlist read and serial masking in a 13-disk snapshot passed. The LAN Security page and favicon returned HTTP 200; an unauthenticated LAN request to the ordinary and protected APIs returned 401. An authenticated Chromium session opened Security Settings and showed the saved IP controls and password-change form; at 390 px, document scroll width equaled the viewport width. The browser session was closed and its local temporary password file removed. No disk scan, password change or reboot was run. The installed test build is not a formal release.
 - Remaining: observe service recovery after a real reboot when convenient. A controlled full assessment on real HDDs also remains unverified. The root compatibility entry point is recorded with its pre-move baseline under Limitations. The local branch is not published.
-- Next action: decide whether to publish the branch or prepare a release; schedule a reboot and controlled HDD assessment separately.
+- Release preparation: `v4.0.0` is the next formal version. The Changelog covers the post-`v3.0.0` commits. The release commit, tag, GitHub Release, snapshot and Notion sync remain pending. The previously installed NAS build remains `test-cd7d69b` until a separate deployment.
+- Translation recovery: the current seven core-document translations lag English-only Handoff and Commit History updates, so `check-doc-difference.py` has no structurally synchronized baseline for this release. The affected documents are being resynchronized in full against the current English source under the documented recovery rule; all seven languages and protected navigation remain required.
+- Next action: complete translations and release checks, then publish `v4.0.0` from `main`; schedule a reboot and controlled HDD assessment separately.
 
 ## Historical Source Baselines
 
@@ -101,6 +103,30 @@ This source baseline includes the previously untagged v2.2 integration: persiste
 The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Root execution, package installation and systemd behavior have not been independently confirmed.
 
 ## Changelog
+
+### v4.0.0 — 2026-09-28
+
+This major version updates the local Web controller, its security model and source layout. The authenticated test build was checked on a Debian NAS with 13 enumerated disks. A complete assessment on real HDDs and service recovery after a host reboot remain unverified.
+
+#### Added
+
+- Full SSD/NVMe assessments now run quick SMART checks, short and long self-tests, and a full read-only scan without HDD speed sampling. A completed clean batch scores 100 under the existing heuristic; slow reads alone do not deduct points, while actual read errors and SMART findings still can. Mixed-disk batch controls offer the union of supported checks and skip ineligible SSDs for HDD-only modules.
+- Task history records completed, stopped and failed Web runs separately from the latest per-disk check result and SMART counter trends. Disk detail can request standby for an eligible SATA HDD or wake one sleeping HDD at a time.
+- Settings now offers eight accent colors and light/dark modes. The version beside the project name links to Changelog, and the runtime `/api/build` reports the same embedded build identifier. Disk serials stay masked in normal responses and are retrieved only after an authenticated reveal action.
+
+#### Changed
+
+- Security Settings has a separate route with a server-enforced five-minute administrator-password verification window. Verification rotates the session; changing the password during that window requires the new value and confirmation and invalidates all sessions. Password-free IP admission now has an enable switch and accepts only exact RFC 1918 IPv4 or unique-local IPv6 addresses. IP admission cannot read or change security settings. State-changing requests require a same-origin header, and client-supplied forwarding headers do not establish the peer address.
+- Source files now live under `src/checker/` and `src/web/`, with generated frontend files in `dist/web/`; the root CLI entry point and installed NAS layout remain compatible. Documentation locales use BCP-47 directory names. The disk overview reflows with available viewport width, and the dashboard keeps its four functions on dedicated pages.
+
+#### Fixed
+
+- Keep task status responsive during all-disk self-tests, show distinct SMART short and long results, and retain separate historical task receipts. Correct NVMe temperature display bands and avoid health deductions for temperature alone or SSD speed variation. Clean checks with partial assessment coverage no longer return a warning solely for that partial coverage.
+- The Debian installer now includes the required request header in its authenticated health probe and rolls back when an explicit installation error occurs after the file swap starts.
+
+#### Validation
+
+- Shell and Python tests, Vue type checking and production build, document and structure checks, and local browser checks passed. The NAS test deployment passed authenticated API and Security Settings browser checks, including serial masking and a 390 px layout without horizontal overflow. No disk scan, password change or reboot was performed as part of this release preparation; the health score is not a calibrated failure probability.
 
 ### v3.0.0 — 2026-09-27
 
@@ -140,7 +166,8 @@ This major version adds the authenticated persistent Web UI and Debian installer
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-28 | intended | `docs(handoff): record NAS browser verification` | this commit
+- 2026-09-28 | intended | `chore(release): prepare v4.0.0` | this commit
+- 2026-09-28 | `ebf6e39` | `docs(handoff): record NAS browser verification` | `git show ebf6e39`
 - 2026-09-28 | `0b5f053` | `docs(handoff): record NAS installer and security verification` | `git show 0b5f053`
 - 2026-09-28 | `cd7d69b` | `fix(deploy): verify authenticated service with CSRF header` | `git show cd7d69b`
 - 2026-09-28 | `bf14ed5` | `feat(web): align project layout and security settings` | `git show bf14ed5`
