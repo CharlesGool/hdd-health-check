@@ -263,8 +263,12 @@ function positionDetailTab() {
   const track = detailTabTrack.value
   const selectedTab = track?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
   if (!track || !selectedTab) return
-  track.style.setProperty('--detail-tab-x', `${selectedTab.offsetLeft}px`)
-  track.style.setProperty('--detail-tab-width', String(selectedTab.offsetWidth))
+  const trackBounds = track.getBoundingClientRect()
+  if (!trackBounds.width) return
+  const tabBounds = selectedTab.getBoundingClientRect()
+  const layoutScale = parseFloat(getComputedStyle(track).width) / trackBounds.width
+  track.style.setProperty('--detail-tab-x', `${(tabBounds.left - trackBounds.left) * layoutScale}px`)
+  track.style.setProperty('--detail-tab-width', String(tabBounds.width * layoutScale))
   track.classList.add('is-ready')
 }
 watch([detailTab, lang, detailTabTrack], async () => {
