@@ -37,6 +37,9 @@ with patch.object(app.subprocess, 'run', return_value=SimpleNamespace(stdout=jso
 assert app.smart_written_bytes({'nvme_smart_health_information_log': {'data_units_written': 1000}}) == (512000000, 'nvme')
 assert app.smart_written_bytes({'ata_device_statistics': {'pages': [{'table': [{'name': 'Logical Sectors Written', 'value': 4096}]}]}, 'logical_block_size': 4096}) == (16777216, 'ata-statistics')
 assert app.smart_written_bytes({'ata_smart_attributes': {'table': [{'id': 241, 'raw': {'value': 1000000}}]}}) == (None, '')
+assert app.smart_io_bytes({'nvme_smart_health_information_log': {'data_units_read': 1000}}, 'read') == (512000000, 'nvme')
+assert app.smart_io_bytes({'ata_device_statistics': {'pages': [{'table': [{'name': 'Logical Sectors Read', 'value': 4096}]}]}, 'logical_block_size': 4096}, 'read') == (16777216, 'ata-statistics')
+assert app.smart_io_bytes({'ata_smart_attributes': {'table': [{'id': 242, 'raw': {'value': 1000000}}]}}, 'read') == (None, '')
 rows = [{'name': 'sda', 'type': 'disk', 'children': [{'name': 'sda1', 'fsused': '1000', 'uuid': 'A', 'mountpoints': ['/data']}]},
         {'name': 'sdb', 'type': 'disk', 'children': [{'name': 'sdb1', 'fsused': '1000', 'uuid': 'A', 'mountpoints': ['/data']},
                                                  {'name': 'sdb2', 'fsused': '500', 'uuid': 'B', 'mountpoints': [None]}]}]

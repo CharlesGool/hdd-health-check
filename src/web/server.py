@@ -281,11 +281,13 @@ def zpool_allocated(disk_names):
     return total if matched else None
 
 
-def smart_written_bytes(raw):
-    """Return host writes only when the counter's unit is established."""
+def smart_io_bytes(raw, direction):
+    """Return host I/O only when the counter's unit is established."""
+    if direction not in ("read", "written"):
+        return None, ""
     nvme = raw.get("nvme_smart_health_information_log")
     if isinstance(nvme, dict):
-        units = nvme.get("data_units_written")
+        units = nvme.get("data_units_" + direction)
         if isinstance(units, int) and not isinstance(units, bool) and units >= 0:
             return units * 512000, "nvme"
     stats = raw.get("ata_device_statistics")
@@ -297,12 +299,16 @@ def smart_written_bytes(raw):
         if not isinstance(page, dict):
             continue
         for item in page.get("table", []) if isinstance(page.get("table"), list) else []:
-            if isinstance(item, dict) and item.get("name") == "Logical Sectors Written":
+            if isinstance(item, dict) and item.get("name") == ("Logical Sectors Read" if direction == "read" else "Logical Sectors Written"):
                 value = item.get("value")
                 flags = item.get("flags")
                 if isinstance(value, int) and not isinstance(value, bool) and value >= 0 and (not isinstance(flags, dict) or flags.get("valid") is not False):
                     return value * sector_size, "ata-statistics"
     return None, ""
+
+
+def smart_written_bytes(raw):
+    return smart_io_bytes(raw, "written")
 
 
 def masked_serial(value):
@@ -412,7 +418,8 @@ def smart_details(disk):
     form_factor = raw.get("form_factor")
     form_factor = form_factor.get("name", "") if isinstance(form_factor, dict) else ""
     temperature = smart_temperature(raw)
-    written_bytes, written_source = smart_written_bytes(raw)
+    written_bytes, written_source = smart_io_bytes(raw, "written")
+    read_bytes, read_source = smart_io_bytes(raw, "read")
     return {"available": bool(attributes or passed is not None), "error": error if not attributes and passed is None else "",
             "model": str(raw.get("model_name") or disk.get("model") or ""),
             "serial": masked_serial(raw.get("serial_number")) or str(disk.get("serial") or ""),
@@ -421,7 +428,8 @@ def smart_details(disk):
             "temperature": temperature, "temperatureState": "sleeping" if sleeping else "available" if temperature is not None else "unavailable",
             **nvme_temperature_thresholds(raw), "formFactor": str(form_factor)[:80],
             "powerOnHours": power_on.get("hours"), "writtenBytes": written_bytes,
-            "writtenSource": written_source, "attributes": attributes, "link": link}
+            "writtenSource": written_source, "readBytes": read_bytes, "readSource": read_source,
+            "attributes": attributes, "link": link}
 
 
 def script(*args, timeout=30):

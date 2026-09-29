@@ -318,5 +318,32 @@ body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sa
 .detail-tabs button[aria-selected="true"] { color: var(--primary); border-color: var(--primary); }
 .sensitive-value { min-height: 44px; min-width: 118px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--secondary); }
 .sensitive-value:is(:hover,:focus-visible), .sensitive-value[aria-pressed="true"] { border-color: var(--primary); background: var(--accent); }
+.security-challenge { max-width: none; width: 100%; }
+.security-challenge .settings-body { max-width: 560px; }
+:root { scrollbar-gutter: stable; }
+.disk-detail-page { width: 100%; }
+.disk-detail-content { overflow: hidden; width: 100%; }
+.disk-page-header { display: flex; align-items: flex-start; gap: 20px; padding: 28px 32px 24px; border-bottom: 1px solid var(--border); }
+.disk-page-header h1 { margin: 6px 0; font-size: clamp(24px,4cqw,32px); overflow-wrap: anywhere; }
+.disk-page-header p { margin: 0; color: var(--muted-foreground); font-size: 14px; }
+.disk-detail-content .detail-tabs { padding-inline: 32px; }
+.disk-detail-content .drawer-body { padding: 28px 32px 40px; }
+.disk-detail-content .smart-facts { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.disk-detail-content .score-panel { max-width: 640px; }
+.disk-detail-content .table-scroll { overflow-x: auto; }
+.disk-detail-content table { font-size: 13px; }
+.disk-detail-content .smart-status { max-width: none; }
+.smart-legend { margin: 10px 0 18px; color: var(--muted-foreground); font-size: 13px; }
+.smart-attribute-help { display: inline-flex; align-items: center; gap: 7px; padding: 4px 2px; border: 0; border-bottom: 1px dashed var(--muted-foreground); background: transparent; color: var(--foreground); text-align: start; white-space: normal; }
+.smart-attribute-help span { color: var(--primary); font-size: 14px; }
+.smart-attribute-help:hover { color: var(--primary); border-color: var(--primary); }
+.smart-facts > div:has(.serial-copy-button) { position: relative; }
+.serial-copy-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-inline-start: 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--primary); vertical-align: middle; }
+.serial-copy-button:hover { background: var(--accent); }
+.disk-cards .disk-detail-button { color: var(--primary); font-weight: 700; text-decoration: none; }
+.disk-cards .disk-detail-button:hover { text-decoration: underline; }
+@media (max-width:760px) { .disk-detail-content .smart-facts { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width:600px) { .disk-cards .disk-card-end { display: flex; } .disk-page-header, .disk-detail-content .drawer-body { padding-inline: 18px; } .disk-detail-content .detail-tabs { padding-inline: 18px; } }
+@media (max-width:440px) { .disk-detail-content .smart-facts { grid-template-columns: 1fr; } }
 .confirm-dialog { border-radius: 16px; padding: 28px; }
 @media (max-width:600px) { .detail-tabs { gap: 4px; padding-inline: 18px; } }
