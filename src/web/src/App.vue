@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import MarkdownIt from 'markdown-it'
 import UiSelect from './UiSelect.vue'
 import PasswordField from './PasswordField.vue'
-import { installResizeMotion, pageMotionEnabled, refreshResizeBaseline, routeUrl, setPageMotion, stopRouteMotion, transitionRoute } from './uiMotion'
+import { installResizeMotion, refreshResizeBaseline, routeUrl } from './uiMotion'
 import { Activity, ArrowLeft, ArrowRight, Check, CircleHelp, Clock3, Copy, HardDrive, History, Play, RefreshCw, Settings2, ShieldAlert, Square, X, LogOut, LockKeyhole } from '@lucide/vue'
 
 type Module = { name: string; timestamp: number; status: string; summary: string; deduction: number; issues: string; current: boolean }
@@ -120,7 +120,6 @@ const loginBusy = ref(false)
 type Page = 'disks' | 'attention' | 'tasks' | 'schedule' | 'settings' | 'security' | 'changelog'
 function pageFromPath(): Page { const segment = window.location.pathname.split('/')[1]; return (['attention','tasks','schedule','settings','security','changelog'].includes(segment) ? segment : 'disks') as Page }
 const currentPage = ref<Page>(pageFromPath())
-const motionEnabled = ref(pageMotionEnabled())
 const settingsSection = ref<'general' | 'appearance' | 'power' | 'security'>('general')
 const securitySection = ref<'password' | 'ip'>('password')
 const faviconNames: Record<Page, string> = { disks: 'favicon.svg', attention: 'favicon-attention.svg', tasks: 'favicon-tasks.svg', schedule: 'favicon-schedule.svg', settings: 'favicon-settings.svg', security: 'favicon-security.svg', changelog: 'favicon-changelog.svg' }
@@ -400,12 +399,11 @@ async function login(ip = false) {
 async function logout() {
   try { await api('/api/auth/logout', {}) }
   catch (e) { showMessage(e instanceof Error ? e.message : t('error')); return }
-  stopRouteMotion()
   auth.value = { authenticated: false, method: null, ipAllowed: auth.value?.ipAllowed || false, canManageAccess: false }
   snapshot.value = null; selected.value = null; password.value = ''; preferencesLoaded.value = false
   visitWakeRequested = false; allowedIps.value = []; accessEnabled.value = false
   currentPage.value = 'disks'
-  window.history.replaceState({ hddIndex: ++routeIndex }, '', routeUrl('/disks'))
+  window.history.replaceState({}, '', routeUrl('/disks'))
 }
 async function requestWakeOnVisit() {
   try { await api('/api/disks/wake-on-visit', {}) }
@@ -470,10 +468,6 @@ async function changePassword() {
   } catch (e) { if (e instanceof Error && e.message.includes('Verify the administrator password') && auth.value) auth.value.canManageAccess = false; passwordChangeError.value = e instanceof Error ? e.message : t('error') }
   finally { passwordChangeBusy.value = false }
 }
-type Arrival = { from: Page; sourceId?: string }
-let routeIndex = Number(window.history.state?.hddIndex) || 0
-let arrival: Arrival | null = window.history.state?.hddArrival || null
-window.history.replaceState({ ...window.history.state, hddIndex: routeIndex }, '', location.href)
 function applyPage(page: Page) {
   detailRequest++; serialShown.value = false; revealedSerial.value = ''; serialCopied.value = false; hideSmartTip()
   if (page !== 'security') { allowedIps.value = []; accessEnabled.value = false; securityPassword.value = '' }
@@ -481,9 +475,6 @@ function applyPage(page: Page) {
   if (page === 'settings') settingsSection.value = (['general', 'appearance', 'power', 'security'].includes(location.hash.slice(10)) ? location.hash.slice(10) : 'general') as typeof settingsSection.value
   if (page === 'security') securitySection.value = (['password', 'ip'].includes(location.hash.slice(10)) ? location.hash.slice(10) : 'password') as typeof securitySection.value
   if (page === 'security') void loadAccess()
-}
-function backSource(page: Page): string {
-  return ({ attention: 'dashboard-attention', tasks: 'dashboard-tasks', schedule: 'dashboard-schedule', security: 'settings-security', settings: 'header-settings', changelog: 'header-changelog', disks: 'header-home' } as Record<Page, string>)[page]
 }
 async function updatePage(page: Page) {
   applyPage(page)
@@ -494,16 +485,11 @@ async function updatePage(page: Page) {
   const heading = document.querySelector<HTMLElement>('main h1')
   if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }) }
 }
-async function go(page: Page, event?: MouseEvent, back = false) {
+async function go(page: Page, _event?: MouseEvent, _back = false) {
   if (page === currentPage.value && !selected.value) return
-  const from = currentPage.value
-  const leavingDiskForList = !!selected.value && (page === 'disks' || page === currentPage.value)
-  const source = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null
-  const sourceId = source?.dataset.motionId
-  const nextArrival: Arrival = { from, sourceId }
-  window.history.pushState({ hddIndex: ++routeIndex, hddArrival: nextArrival }, '', routeUrl(`/${page}`))
-  arrival = nextArrival
-  await transitionRoute(async () => updatePage(page), leavingDiskForList ? { detailReturn: true } : back ? { returnTo: backSource(from) } : { source })
+  window.history.pushState({}, '', routeUrl(`/${page}`))
+  await updatePage(page)
+  refreshResizeBaseline()
 }
 function navLink(event: MouseEvent, page: Page) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -519,16 +505,13 @@ function selectSecuritySection(section: 'password' | 'ip') {
   window.history.replaceState(window.history.state, '', `${location.pathname}${location.search}#security-${section}`)
   document.getElementById(`security-${section}`)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' })
 }
-function togglePageMotion() { motionEnabled.value = !motionEnabled.value; setPageMotion(motionEnabled.value) }
 async function closeDisk() {
-  const name = selected.value
-  if (!name) return
+  if (!selected.value) return
   if (window.history.state?.hddDetailFrom) { window.history.back(); return }
-  window.history.pushState({ hddIndex: ++routeIndex }, '', routeUrl(`/${currentPage.value}`))
-  await transitionRoute(async () => {
-    detailRequest++; serialShown.value = false; revealedSerial.value = ''; serialCopied.value = false; hideSmartTip(); selected.value = null; justWokenDisk.value = null
-    await nextTick(); scrollTo({ top: 0, behavior: 'instant' })
-  }, { detailReturn: true })
+  window.history.pushState({}, '', routeUrl(`/${currentPage.value}`))
+  detailRequest++; serialShown.value = false; revealedSerial.value = ''; serialCopied.value = false; hideSmartTip(); selected.value = null; justWokenDisk.value = null
+  await nextTick(); scrollTo({ top: 0, behavior: 'instant' })
+  refreshResizeBaseline()
 }
 async function refresh() {
   if (previewMode || refreshPending) return
@@ -546,20 +529,12 @@ async function refresh() {
     ])
   } finally { refreshPending = false }
 }
-async function openDisk(name: string, navigate = true, event?: MouseEvent) {
+async function openDisk(name: string, navigate = true, _event?: MouseEvent) {
   const request = ++detailRequest
-  const source = event?.currentTarget instanceof HTMLElement ? event.currentTarget.closest<HTMLElement>('.disk-card') : null
-  if (navigate) {
-    const nextArrival: Arrival = { from: currentPage.value, sourceId: `disk-${name}` }
-    window.history.pushState({ hddIndex: ++routeIndex, hddArrival: nextArrival, hddDetailFrom: currentPage.value }, '', routeUrl(`/${currentPage.value}/${name}`))
-    arrival = nextArrival
-  }
-  const update = async () => {
-    selected.value = name; serialShown.value = false; revealedSerial.value = ''; serialCopied.value = false; hideSmartTip(); smart.value = null; detailTab.value = 'smart'; smartLoading.value = true; powerTimeExpanded.value = false; moduleChoice.value = 'quick'; justWokenDisk.value = null; expandedModule.value = null
-    await nextTick(); scrollTo({ top: 0, behavior: 'instant' })
-  }
-  if (navigate) await transitionRoute(update, { source })
-  else await update()
+  if (navigate) window.history.pushState({ hddDetailFrom: currentPage.value }, '', routeUrl(`/${currentPage.value}/${name}`))
+  selected.value = name; serialShown.value = false; revealedSerial.value = ''; serialCopied.value = false; hideSmartTip(); smart.value = null; detailTab.value = 'smart'; smartLoading.value = true; powerTimeExpanded.value = false; moduleChoice.value = 'quick'; justWokenDisk.value = null; expandedModule.value = null
+  await nextTick(); scrollTo({ top: 0, behavior: 'instant' })
+  refreshResizeBaseline()
   void fetchSmart(name, request)
 }
 async function fetchSmart(name: string, request: number) {
@@ -655,47 +630,34 @@ async function onPopState(event?: PopStateEvent) {
   const page = pageFromPath()
   if (event && page !== 'changelog' && !previewMode) {
     try { const state = await api<Auth>('/api/auth'); auth.value = state; if (!state.authenticated) throw new Error('expired') }
-    catch { stopRouteMotion(); auth.value = { authenticated: false, method: null, ipAllowed: false, canManageAccess: false }; applyPage('disks'); window.history.replaceState({ hddIndex: ++routeIndex }, '', routeUrl('/disks')); return }
+    catch { auth.value = { authenticated: false, method: null, ipAllowed: false, canManageAccess: false }; applyPage('disks'); window.history.replaceState({}, '', routeUrl('/disks')); return }
   }
-  const nextIndex = Number(window.history.state?.hddIndex)
-  const previousArrival = arrival
-  const nextArrival: Arrival | null = window.history.state?.hddArrival || null
-  const reverse = !!event && Number.isFinite(nextIndex) && nextIndex < routeIndex
-  const source = !reverse && nextArrival?.sourceId ? document.querySelector<HTMLElement>(`[data-motion-id="${CSS.escape(nextArrival.sourceId)}"]`) : null
-  const returnTo = reverse ? previousArrival?.sourceId : undefined
-  if (Number.isFinite(nextIndex)) routeIndex = nextIndex
   const diskMatch = window.location.pathname.match(/^\/(?:disks|attention)\/([A-Za-z0-9_-]+)$/)
   if (diskMatch && snapshot.value?.disks.some(d => d.name === diskMatch[1])) {
-    const name = diskMatch[1]
     if (page !== currentPage.value) applyPage(page)
-    if (event && auth.value?.authenticated) await transitionRoute(async () => openDisk(name, false), reverse ? { detailReturn: true } : { source })
-    else await openDisk(name, false)
-    arrival = nextArrival; refreshResizeBaseline(); return
+    await openDisk(diskMatch[1], false)
+    return
   }
   if (diskMatch && snapshot.value && !snapshot.value.disks.some(d => d.name === diskMatch[1]))
     window.history.replaceState(window.history.state, '', routeUrl(`/${page}`))
-  const oldDisk = selected.value
-  const update = async () => updatePage(page)
-  if (event && auth.value?.authenticated) await transitionRoute(update, oldDisk ? { detailReturn: true } : reverse ? { returnTo, reverseSlide: !returnTo } : { source })
-  else await update()
-  arrival = nextArrival
+  await updatePage(page)
   refreshResizeBaseline()
 }
-onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeout(themeTimer); if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer); if (messageTimer) clearTimeout(messageTimer); tabResizeObserver?.disconnect(); window.removeEventListener('popstate', onPopState); removeResizeMotion?.(); stopRouteMotion(); confirmResolve?.(false) })
+onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeout(themeTimer); if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer); if (messageTimer) clearTimeout(messageTimer); tabResizeObserver?.disconnect(); window.removeEventListener('popstate', onPopState); removeResizeMotion?.(); confirmResolve?.(false) })
 </script>
 
 <template>
   <div class="app-shell">
     <header class="topbar site-header" :class="{ 'app-login-header': auth && !auth.authenticated && currentPage!=='changelog' }">
       <div class="brand-group">
-        <a class="brand" :class="{ 'app-login-brand': auth && !auth.authenticated }" data-motion-id="header-brand" href="/disks" @click="navLink($event, 'disks')"><span class="brand-icon" :class="{ 'app-login-brand-logo': auth && !auth.authenticated }"><HardDrive :size="22" /></span><span><strong>HDD Health</strong><small>{{ t('localMonitor') }}</small></span></a>
-        <a v-if="auth?.authenticated || (auth && currentPage==='changelog')" class="version brand-version" data-motion-id="header-version" href="/changelog" @click="navLink($event, 'changelog')">{{ buildVersion }}</a>
+        <a class="brand" :class="{ 'app-login-brand': auth && !auth.authenticated }" href="/disks" @click="navLink($event, 'disks')"><span class="brand-icon" :class="{ 'app-login-brand-logo': auth && !auth.authenticated }"><HardDrive :size="22" /></span><span><strong>HDD Health</strong><small>{{ t('localMonitor') }}</small></span></a>
+        <a v-if="auth?.authenticated || (auth && currentPage==='changelog')" class="version brand-version" href="/changelog" @click="navLink($event, 'changelog')">{{ buildVersion }}</a>
       </div>
       <nav v-if="auth?.authenticated" class="main-nav header-nav" :aria-label="t('navigation')">
-        <a href="/disks" data-motion-id="header-home" :class="{active:currentPage==='disks'}" :aria-current="currentPage==='disks' ? 'page' : undefined" @click="navLink($event, 'disks')">{{ t('home') }}</a>
-        <a href="/changelog" data-motion-id="header-changelog" :class="{active:currentPage==='changelog'}" :aria-current="currentPage==='changelog' ? 'page' : undefined" @click="navLink($event, 'changelog')">{{ t('changelog') }}</a>
-        <a href="/settings" data-motion-id="header-settings" :class="{active:['settings','security'].includes(currentPage)}" :aria-current="['settings','security'].includes(currentPage) ? 'page' : undefined" @click="navLink($event, 'settings')">{{ t('settingsPage') }}</a>
-        <button v-if="!previewMode" type="button" data-motion-id="header-logout" @click="logout"><LogOut :size="16" aria-hidden="true" />{{ t('logout') }}</button>
+        <a href="/disks" :class="{active:currentPage==='disks'}" :aria-current="currentPage==='disks' ? 'page' : undefined" @click="navLink($event, 'disks')">{{ t('home') }}</a>
+        <a href="/changelog" :class="{active:currentPage==='changelog'}" :aria-current="currentPage==='changelog' ? 'page' : undefined" @click="navLink($event, 'changelog')">{{ t('changelog') }}</a>
+        <a href="/settings" :class="{active:['settings','security'].includes(currentPage)}" :aria-current="['settings','security'].includes(currentPage) ? 'page' : undefined" @click="navLink($event, 'settings')">{{ t('settingsPage') }}</a>
+        <button v-if="!previewMode" type="button" @click="logout"><LogOut :size="16" aria-hidden="true" />{{ t('logout') }}</button>
       </nav>
       <nav v-else-if="auth && currentPage==='changelog'" class="main-nav header-nav" :aria-label="t('navigation')"><a href="/changelog" class="active" aria-current="page">{{ t('changelog') }}</a><a href="/disks" @click="navLink($event, 'disks')">{{ t('login') }}</a></nav>
     </header>
@@ -709,15 +671,15 @@ onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeou
       <div v-if="error" class="alert"><ShieldAlert :size="18" /><span>{{ error }}</span><button class="text-button" @click="refresh">{{ t('retry') }}</button></div>
       <div v-if="currentPage!=='disks'" class="breadcrumbs"><a href="/disks" @click="navLink($event, 'disks')">{{ t('home') }}</a><span>/</span><span>{{ currentPage==='security' ? t('securitySettings') : currentPage==='attention' ? t('attention') : currentPage==='tasks' ? t('running') : currentPage==='schedule' ? t('schedule') : currentPage==='changelog' ? t('changelog') : t('settingsPage') }}</span></div>
       <div v-if="currentPage!=='disks'" class="page-actions">
-        <button class="button back-button" type="button" data-motion-id="page-back" @click="go(currentPage==='security' ? 'settings' : 'disks', $event, true)"><ArrowLeft :size="16" aria-hidden="true" />{{ t(currentPage==='security' ? 'backSettings' : 'backDashboard') }}</button>
+        <button class="button back-button" type="button" @click="go(currentPage==='security' ? 'settings' : 'disks', $event, true)"><ArrowLeft :size="16" aria-hidden="true" />{{ t(currentPage==='security' ? 'backSettings' : 'backDashboard') }}</button>
         <button v-if="currentPage==='attention' || currentPage==='tasks' || currentPage==='schedule'" class="button page-refresh" type="button" :disabled="previewMode" @click="refresh"><RefreshCw :size="16" aria-hidden="true" />{{ t('refresh') }}</button>
       </div>
       <template v-if="currentPage!=='settings' && currentPage!=='security' && currentPage!=='changelog'">
         <div class="page-heading"><div><div class="eyebrow"><Activity :size="14" /> {{ currentPage==='disks' ? t('systemOverview') : t('operations') }}</div><h1>{{ currentPage==='disks' ? t('overview') : currentPage==='attention' ? t('attention') : currentPage==='tasks' ? t('running') : t('schedule') }}</h1><p>{{ currentPage==='disks' ? t('subtitle') : currentPage==='attention' ? t('viewAttention') : currentPage==='tasks' ? t('task') : t('automation') }}</p></div><div class="heading-actions"><span v-if="!previewMode" class="live-pill"><span class="live-dot"></span>{{ t('local') }}</span><button v-if="currentPage==='disks'" class="button page-refresh" type="button" :disabled="previewMode" @click="refresh"><RefreshCw :size="16" aria-hidden="true" />{{ t('refresh') }}</button></div></div>
-        <div v-if="currentPage==='disks'" class="stats-grid dashboard-grid"><button class="stat-card stat-action dashboard-card" type="button" data-motion-id="dashboard-disks" @click="showDisks"><div class="stat-label dashboard-card-copy"><HardDrive :size="18" />{{ t('disks') }}</div><strong>{{ snapshot?.disks.length ?? '—' }}</strong><span>{{ t('all') }}</span></button><button class="stat-card stat-action dashboard-card" type="button" data-motion-id="dashboard-attention" @click="showAttention"><div class="stat-label dashboard-card-copy"><ShieldAlert :size="18" />{{ t('attention') }}</div><strong>{{ attentionCount }}</strong><span>{{ t('viewAttention') }}</span></button><button class="stat-card stat-action dashboard-card" type="button" data-motion-id="dashboard-tasks" @click="showTasks"><div class="stat-label dashboard-card-copy"><Activity :size="18" />{{ t('running') }}</div><strong class="stat-word">{{ status.running ? t('runningState') : status.job ? jobStateText(status.job) : '—' }}</strong><span>{{ status.job ? `${status.job.targets.split(' ').filter(Boolean).length} ${t('disks')}` : t('noRunning') }}</span></button><button class="stat-card stat-action dashboard-card" type="button" data-motion-id="dashboard-schedule" @click="go('schedule', $event)"><div class="stat-label dashboard-card-copy"><Clock3 :size="18" />{{ t('schedule') }}</div><strong class="stat-word">{{ schedule.enabled ? `${schedule.hours}h` : '—' }}</strong><span>{{ schedule.enabled ? t('enabled') : t('noCheck') }}</span></button></div>
+        <div v-if="currentPage==='disks'" class="stats-grid dashboard-grid"><button class="stat-card stat-action dashboard-card" type="button" @click="showDisks"><div class="stat-label dashboard-card-copy"><HardDrive :size="18" />{{ t('disks') }}</div><strong>{{ snapshot?.disks.length ?? '—' }}</strong><span>{{ t('all') }}</span></button><button class="stat-card stat-action dashboard-card" type="button" @click="showAttention"><div class="stat-label dashboard-card-copy"><ShieldAlert :size="18" />{{ t('attention') }}</div><strong>{{ attentionCount }}</strong><span>{{ t('viewAttention') }}</span></button><button class="stat-card stat-action dashboard-card" type="button" @click="showTasks"><div class="stat-label dashboard-card-copy"><Activity :size="18" />{{ t('running') }}</div><strong class="stat-word">{{ status.running ? t('runningState') : status.job ? jobStateText(status.job) : '—' }}</strong><span>{{ status.job ? `${status.job.targets.split(' ').filter(Boolean).length} ${t('disks')}` : t('noRunning') }}</span></button><button class="stat-card stat-action dashboard-card" type="button" @click="go('schedule', $event)"><div class="stat-label dashboard-card-copy"><Clock3 :size="18" />{{ t('schedule') }}</div><strong class="stat-word">{{ schedule.enabled ? `${schedule.hours}h` : '—' }}</strong><span>{{ schedule.enabled ? t('enabled') : t('noCheck') }}</span></button></div>
         <section v-if="currentPage==='disks'" class="panel storage-summary"><div><small>{{ t('physicalCapacity') }}</small><button class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(snapshot?.storage?.totalBytes) }}</button></div><div><small>{{ t('mountedUsed') }}</small><button class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(snapshot?.storage?.usedBytes) }}</button></div><p>{{ t('storageNote') }}</p></section>
         <section v-if="currentPage==='disks'" class="panel assessment-panel"><div><div class="eyebrow">{{ t('assessmentEyebrow') }}</div><h2>{{ t('assessmentTitle') }}</h2><p class="muted">{{ t('assessmentDescription') }}</p></div><div class="assessment-controls"><div class="assessment-field"><label for="assessment-scope">{{ t('assessmentScope') }}</label><UiSelect id="assessment-scope" :model-value="assessmentScope" :options="scopeSelectOptions" :aria-label="t('assessmentScope')" :disabled="assessmentBusy || status.running || previewMode" @update:model-value="selectScope" /></div><div class="assessment-field"><label for="assessment-module">{{ t('assessmentModule') }}</label><UiSelect id="assessment-module" v-model="assessmentModule" :options="assessmentSelectOptions" :aria-label="t('assessmentModule')" :disabled="assessmentBusy || status.running || previewMode" /></div><span class="assessment-count">{{ t('assessmentCount') }}: {{ assessmentDisks.length }}</span><button class="button primary" :disabled="assessmentBusy || status.running || !assessmentEligible.length || previewMode" @click="assess"><Play :size="15" />{{ assessmentBusy ? t('assessmentStarting') : t('assessmentStart') }}</button></div><p class="assessment-note">{{ assessmentNote }}</p></section>
-        <section v-if="currentPage==='disks' || currentPage==='attention'" id="disk-list" class="panel disk-list"><div class="panel-heading"><div><div class="eyebrow">{{ t('drives') }}</div><h2>{{ currentPage==='attention' ? t('attention') : t('all') }}</h2></div><div class="list-actions"><button v-if="currentPage==='attention'" class="text-button" type="button" @click="go('disks')">{{ t('showAllDisks') }}</button><span class="count">{{ visibleDisks.length }}</span></div></div><div v-if="loading" class="empty">{{ t('refresh') }}…</div><div v-else-if="!visibleDisks.length" class="empty">{{ currentPage==='attention' ? t('noAttention') : previewMode ? t('previewOnly') : t('empty') }}</div><div class="disk-cards"><div v-for="disk in visibleDisks" :key="disk.name" class="disk-card" :data-motion-id="`disk-${disk.name}`"><div class="disk-icon"><HardDrive :size="24" /></div><div class="disk-card-main"><div class="disk-card-title"><strong>{{ disk.model || `/dev/${disk.name}` }}</strong><span class="badge" :class="condition(disk)">{{ conditionLabel(disk) }}</span></div><div class="disk-card-fields"><span><small>{{ t('capacity') }}</small><button class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(disk.bytes, disk.size) }}</button></span><span><small>{{ t('diskType') }}</small>{{ diskTypeText(disk) }}</span><span><small>{{ t('devicePath') }}</small>/dev/{{ disk.name }}</span><span><small>{{ t('temp') }}</small><strong :class="temperatureClass(disk, disk.temperature)">{{ temperatureText(disk.temperature, disk.temperatureState) }}</strong></span><span><small>{{ t('interface') }}</small>{{ linkText(disk.link, disk.transport) }}</span><span><small>{{ t('serial') }}</small>{{ disk.serial || '—' }}</span><span><small>{{ t('last') }}</small>{{ date(latest(disk)) }}</span></div><div v-if="currentPage==='attention' && attentionModules(disk).length" class="disk-card-reasons"><strong>{{ t('attentionReasons') }}</strong><ul><li v-for="item in attentionModules(disk)" :key="item.name">{{ moduleLabel(item.name) }}: {{ moduleSummary(item) }} <small>({{ item.current ? t('fresh') : t('stale') }})</small></li></ul></div></div><div class="disk-card-end"><span>{{ t('healthStatus') }}</span><strong :class="condition(disk)">{{ disk.score===null ? `${coverageText(disk.coverage)} / ${t('unknownScore')}` : gradeText(disk) }}</strong><a class="disk-detail-button" :href="routeUrl(`/${currentPage}/${disk.name}`)" @click="diskLink($event, disk.name)">{{ t('details') }} →</a></div></div></div></section>
+        <section v-if="currentPage==='disks' || currentPage==='attention'" id="disk-list" class="panel disk-list"><div class="panel-heading"><div><div class="eyebrow">{{ t('drives') }}</div><h2>{{ currentPage==='attention' ? t('attention') : t('all') }}</h2></div><div class="list-actions"><button v-if="currentPage==='attention'" class="text-button" type="button" @click="go('disks')">{{ t('showAllDisks') }}</button><span class="count">{{ visibleDisks.length }}</span></div></div><div v-if="loading" class="empty">{{ t('refresh') }}…</div><div v-else-if="!visibleDisks.length" class="empty">{{ currentPage==='attention' ? t('noAttention') : previewMode ? t('previewOnly') : t('empty') }}</div><div class="disk-cards"><div v-for="disk in visibleDisks" :key="disk.name" class="disk-card"><div class="disk-icon"><HardDrive :size="24" /></div><div class="disk-card-main"><div class="disk-card-title"><strong>{{ disk.model || `/dev/${disk.name}` }}</strong><span class="badge" :class="condition(disk)">{{ conditionLabel(disk) }}</span></div><div class="disk-card-fields"><span><small>{{ t('capacity') }}</small><button class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(disk.bytes, disk.size) }}</button></span><span><small>{{ t('diskType') }}</small>{{ diskTypeText(disk) }}</span><span><small>{{ t('devicePath') }}</small>/dev/{{ disk.name }}</span><span><small>{{ t('temp') }}</small><strong :class="temperatureClass(disk, disk.temperature)">{{ temperatureText(disk.temperature, disk.temperatureState) }}</strong></span><span><small>{{ t('interface') }}</small>{{ linkText(disk.link, disk.transport) }}</span><span><small>{{ t('serial') }}</small>{{ disk.serial || '—' }}</span><span><small>{{ t('last') }}</small>{{ date(latest(disk)) }}</span></div><div v-if="currentPage==='attention' && attentionModules(disk).length" class="disk-card-reasons"><strong>{{ t('attentionReasons') }}</strong><ul><li v-for="item in attentionModules(disk)" :key="item.name">{{ moduleLabel(item.name) }}: {{ moduleSummary(item) }} <small>({{ item.current ? t('fresh') : t('stale') }})</small></li></ul></div></div><div class="disk-card-end"><span>{{ t('healthStatus') }}</span><strong :class="condition(disk)">{{ disk.score===null ? `${coverageText(disk.coverage)} / ${t('unknownScore')}` : gradeText(disk) }}</strong><a class="disk-detail-button" :href="routeUrl(`/${currentPage}/${disk.name}`)" @click="diskLink($event, disk.name)">{{ t('details') }} →</a></div></div></div></section>
         <section v-if="currentPage==='tasks'" id="task-panel" class="panel task-panel task-overview"><div class="panel-heading"><div><div class="eyebrow">{{ t('operations') }}</div><h2>{{ t('task') }}</h2></div><Activity :size="19" /></div><div v-if="status.job" class="job-summary"><span class="badge" :class="status.job.state === 'failed' || status.job.state === 'unconfirmed' ? 'bad' : status.job.exitCode > 0 ? 'warn' : 'good'">{{ status.running ? t('runningState') : jobStateText(status.job) }}</span><strong>{{ moduleLabel(status.job.module) }} · {{ status.job.targets.split(' ').filter(Boolean).map(name => `/dev/${name}`).join(', ') }}</strong><small>{{ date(status.job.finished || status.job.started) }}</small></div><p class="task-natural" role="status">{{ taskSummary }}</p><div v-if="taskRawLog" class="task-log-controls"><button class="button" type="button" :aria-expanded="taskDetailsOpen" @click="taskDetailsOpen=!taskDetailsOpen">{{ taskDetailsOpen ? t('hideDetailedLog') : t('showDetailedLog') }}</button></div><pre v-if="taskDetailsOpen && taskRawLog" class="task-output">{{ taskRawLog }}</pre><button v-if="status.running" class="button danger" :disabled="busy" @click="stop"><Square :size="15" />{{ t('stop') }}</button></section>
         <section v-if="currentPage==='tasks'" class="panel task-history"><div class="panel-heading"><div><div class="eyebrow">{{ t('operations') }}</div><h2>{{ t('taskHistory') }}</h2></div><History :size="19" /></div><div v-if="!allHistory.length" class="empty">{{ t('noTaskHistory') }}</div><div v-for="event in allHistory" :key="event.type==='job' ? event.job.id : `${event.sample.disk}-${event.sample.index}`" class="past-job"><template v-if="event.type==='job'"><div class="past-job-head"><span class="badge" :class="event.job.state==='failed' ? 'bad' : event.job.state==='stopped' || event.job.exitCode > 0 ? 'warn' : 'good'">{{ jobStateText({ ...event.job, output: '' }) }}</span><strong>{{ moduleLabel(event.job.module) }} · {{ event.job.targets.split(' ').filter(Boolean).length }} {{ t('disks') }}</strong><small>{{ date(event.job.finished) }}</small></div><p>{{ event.job.targets.split(' ').filter(Boolean).map(name => `/dev/${name}`).join(', ') }}</p><button class="button" type="button" :aria-expanded="pastJobOpen===event.job.id" @click="togglePastJob(event.job.id)">{{ pastJobOpen===event.job.id ? t('hideDetailedLog') : t('showDetailedLog') }}</button><pre v-if="pastJobOpen===event.job.id" class="task-output">{{ pastJobLog || t('refresh') + '…' }}</pre><button class="button history-delete" type="button" @click="deleteJob(event.job.id)">{{ t('deleteHistory') }}</button></template><template v-else><div class="past-job-head"><span class="badge good">SMART</span><strong>/dev/{{ event.sample.disk }} · {{ t('smartSample') }}</strong><small>{{ date(event.sample.values[0]) }}</small></div><p>{{ t('realloc') }}: {{ event.sample.values[2] }} · {{ t('pending') }}: {{ event.sample.values[3] }} · {{ t('uncorrect') }}: {{ event.sample.values[4] }} · {{ t('crc') }}: {{ event.sample.values[6] }} · {{ t('temp') }}: {{ event.sample.values[7] }}°</p><button class="button history-delete" type="button" @click="deleteSample(event.sample)">{{ t('deleteHistory') }}</button></template></div></section>
         <section v-if="currentPage==='schedule'" class="panel schedule-panel"><div class="panel-heading"><div><div class="eyebrow">{{ t('automation') }}</div><h2>{{ t('schedule') }}</h2></div><Settings2 :size="19" /></div><label class="switch-line"><input v-model="schedule.enabled" type="checkbox" :disabled="previewMode" @change="editingSchedule = true" /><span>{{ t('enabled') }}</span></label><label class="field-label" for="hours">{{ t('interval') }}</label><div class="input-wrap"><input id="hours" v-model.number="schedule.hours" type="number" min="6" max="168" :disabled="previewMode" @input="editingSchedule = true" /><span>{{ t('hours') }}</span></div><p v-if="schedule.error" class="schedule-error" role="alert">{{ schedule.error }}</p><button class="button primary" :disabled="busy || previewMode" @click="saveSchedule">{{ t('save') }}</button></section>
@@ -743,9 +705,9 @@ onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeou
           <nav class="section-nav" :aria-label="t('settingsPage')"><button type="button" :class="{active:settingsSection==='general'}" :aria-current="settingsSection==='general' ? 'location' : undefined" @click="selectSection('general')">{{ t('general') }}</button><button type="button" :class="{active:settingsSection==='appearance'}" :aria-current="settingsSection==='appearance' ? 'location' : undefined" @click="selectSection('appearance')">{{ t('appearance') }}</button><button type="button" :class="{active:settingsSection==='power'}" :aria-current="settingsSection==='power' ? 'location' : undefined" @click="selectSection('power')">{{ t('diskPolicy') }}</button><button type="button" :class="{active:settingsSection==='security'}" :aria-current="settingsSection==='security' ? 'location' : undefined" @click="selectSection('security')">{{ t('security') }}</button></nav>
           <div class="settings-content">
             <section id="settings-general" class="panel settings-card"><div class="panel-heading"><div><div class="eyebrow">{{ t('general') }}</div><h2>{{ t('language') }}</h2><p>{{ t('languageDescription') }}</p></div></div><div class="settings-body"><label for="lang">{{ t('language') }}</label><UiSelect id="lang" :model-value="lang" :options="languageOptions" :aria-label="t('language')" @update:model-value="selectLanguage" /></div></section>
-            <section id="settings-appearance" class="panel settings-card"><div class="panel-heading"><div><div class="eyebrow">{{ t('appearance') }}</div><h2>{{ t('appearance') }}</h2><p>{{ t('appearanceDescription') }}</p></div></div><div class="settings-body"><span class="settings-label">{{ t('appearanceMode') }}</span><div class="appearance-options" role="group" :aria-label="t('appearanceMode')"><button v-for="item in (['light', 'dark'] as const)" :key="item" class="appearance-button" type="button" :aria-pressed="appearanceMode===item" @click="setAppearanceMode(item)">{{ t(item==='light' ? 'modeLight' : 'modeDark') }}</button></div><span class="settings-label">{{ t('theme') }}</span><div class="theme-options"><button v-for="item in themes" :key="item" class="theme-button" type="button" :class="{ selected: theme === item }" :aria-pressed="theme === item" @click="setTheme(item)"><span class="theme-swatch" :class="item"></span>{{ themeLabel(item) }}</button></div><div class="motion-setting"><div><div class="motion-title"><strong id="page-motion-title">{{ t('pageMotion') }}</strong><span class="beta-pill">{{ t('beta') }}</span></div><p id="page-motion-help">{{ t('pageMotionHelp') }}</p></div><div class="motion-choice"><span>{{ t(motionEnabled ? 'on' : 'off') }}</span><button class="motion-switch" type="button" role="switch" :aria-checked="motionEnabled" aria-labelledby="page-motion-title" aria-describedby="page-motion-help" @click="togglePageMotion"><span aria-hidden="true"></span></button></div></div></div></section>
+            <section id="settings-appearance" class="panel settings-card"><div class="panel-heading"><div><div class="eyebrow">{{ t('appearance') }}</div><h2>{{ t('appearance') }}</h2><p>{{ t('appearanceDescription') }}</p></div></div><div class="settings-body"><span class="settings-label">{{ t('appearanceMode') }}</span><div class="appearance-options" role="group" :aria-label="t('appearanceMode')"><button v-for="item in (['light', 'dark'] as const)" :key="item" class="appearance-button" type="button" :aria-pressed="appearanceMode===item" @click="setAppearanceMode(item)">{{ t(item==='light' ? 'modeLight' : 'modeDark') }}</button></div><span class="settings-label">{{ t('theme') }}</span><div class="theme-options"><button v-for="item in themes" :key="item" class="theme-button" type="button" :class="{ selected: theme === item }" :aria-pressed="theme === item" @click="setTheme(item)"><span class="theme-swatch" :class="item"></span>{{ themeLabel(item) }}</button></div></div></section>
             <section id="settings-power" class="panel settings-card power-card"><div class="panel-heading"><div><div class="eyebrow">{{ t('preferences') }}</div><h2>{{ t('diskPowerPolicy') }}</h2></div><HardDrive :size="19" /></div><div class="settings-body"><p class="muted">{{ t('diskPowerPolicyDescription') }}</p><fieldset class="power-options" :disabled="!preferencesLoaded || preferencesBusy || previewMode"><label><input v-model="wakeSleepingOnVisit" type="radio" :value="false" /><span><strong>{{ t('keepSleeping') }}</strong><small>{{ t('keepSleepingDescription') }}</small></span></label><label><input v-model="wakeSleepingOnVisit" type="radio" :value="true" /><span><strong>{{ t('wakeOnVisit') }}</strong><small>{{ t('wakeOnVisitDescription') }}</small></span></label></fieldset><p v-if="preferencesError" class="login-error" role="alert">{{ preferencesError }}</p><button class="button primary" type="button" :disabled="!preferencesLoaded || preferencesBusy || previewMode || wakeSleepingOnVisit===savedWakeSleepingOnVisit" @click="savePreferences">{{ t('savePowerPolicy') }}</button></div></section>
-            <section id="settings-security" class="panel settings-card"><div class="panel-heading"><div><div class="eyebrow">{{ t('security') }}</div><h2>{{ t('securitySettings') }}</h2></div><LockKeyhole :size="19" /></div><div class="settings-body"><p class="muted">{{ t('securitySettingsDescription') }}</p><button class="button security-enter" type="button" data-motion-id="settings-security" @click="go('security', $event)">{{ t('enterSecurity') }} <ArrowRight :size="16" aria-hidden="true" /></button></div></section>
+            <section id="settings-security" class="panel settings-card"><div class="panel-heading"><div><div class="eyebrow">{{ t('security') }}</div><h2>{{ t('securitySettings') }}</h2></div><LockKeyhole :size="19" /></div><div class="settings-body"><p class="muted">{{ t('securitySettingsDescription') }}</p><button class="button security-enter" type="button" @click="go('security', $event)">{{ t('enterSecurity') }} <ArrowRight :size="16" aria-hidden="true" /></button></div></section>
           </div>
         </div>
       </template>

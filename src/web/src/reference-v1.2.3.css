@@ -1,4 +1,4 @@
-:root { --route-motion-duration: 320ms; --route-motion-easing: cubic-bezier(.24, 0, .26, 1); --route-background-blur: 6px; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color-scheme: light; min-height: 100%; background: var(--background); }
+:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color-scheme: light; min-height: 100%; background: var(--background); }
 :root.dark { color-scheme: dark; }
 :root.layout-resizing { overflow-x: clip; }
 :root.layout-resizing body { min-height: var(--frozen-viewport-height); }
@@ -15,39 +15,6 @@ button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .6; }
 :focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
 [hidden] { display: none !important; }
-@keyframes page-slide-in { from { transform: translateX(100%); } }
-@keyframes viewport-grow {
-  from { transform: translate(var(--route-x), var(--route-y)) scale(var(--route-scale-x), var(--route-scale-y)); clip-path: inset(0 round 16px); }
-  to { transform: none; clip-path: inset(0 round 0); }
-}
-@keyframes page-reveal { from { opacity: .04; } 8% { opacity: .4; } 20%, to { opacity: 1; } }
-@keyframes page-depart { from { opacity: 1; } 20%, to { opacity: 0; } }
-@keyframes background-blur { from { filter: blur(0); } 20%, to { filter: blur(var(--route-background-blur)); } }
-@keyframes cover-grow { from { transform: translate(var(--route-x), var(--route-y)) scale(1); } to { transform: translate(0, 0) scale(var(--route-cover-scale-x), var(--route-cover-scale-y)); } }
-@keyframes cover-fade-out { from { opacity: 1; } 8% { opacity: .7; } 20%, to { opacity: 0; } }
-::view-transition-old(root) { animation: none; }
-::view-transition-new(root) { animation: var(--route-motion-duration) cubic-bezier(.4,0,.2,1) both page-slide-in; }
-.page-slide-reverse::view-transition-new(root) { animation: none; }
-.page-slide-reverse::view-transition-old(root) { z-index: 2; animation: var(--route-motion-duration) cubic-bezier(.4,0,.2,1) reverse both page-slide-in; }
-.viewport-enter::view-transition-old(root) { z-index: 1; animation: var(--route-motion-duration) linear both page-depart, var(--route-motion-duration) var(--route-motion-easing) both background-blur; }
-.viewport-enter::view-transition-new(root) { z-index: 2; background: var(--background); transform-origin: top left; animation: var(--route-motion-duration) var(--route-motion-easing) both viewport-grow, var(--route-motion-duration) linear both page-reveal; mix-blend-mode: normal; }
-.viewport-exit::view-transition-new(root) { z-index: 1; animation: var(--route-motion-duration) var(--route-motion-easing) reverse both background-blur; }
-.viewport-exit::view-transition-old(root) { z-index: 2; background: var(--background); transform-origin: top left; animation: var(--route-motion-duration) var(--route-motion-easing) reverse both viewport-grow, var(--route-motion-duration) linear reverse both page-reveal; mix-blend-mode: normal; }
-.route-cover { position: fixed; z-index: 9999; pointer-events: none; margin: 0; max-width: none; border-radius: 16px; view-transition-name: route-cover; }
-::view-transition-group(route-cover) { z-index: 3; transform-origin: top left; }
-::view-transition-old(route-cover) { animation: none; opacity: 0; }
-.viewport-enter::view-transition-group(route-cover) { animation: var(--route-motion-duration) var(--route-motion-easing) both cover-grow; }
-.viewport-exit::view-transition-group(route-cover) { animation: var(--route-motion-duration) var(--route-motion-easing) reverse both cover-grow; }
-.viewport-enter::view-transition-new(route-cover) { animation: var(--route-motion-duration) linear both cover-fade-out; }
-.viewport-exit::view-transition-new(route-cover) { animation: var(--route-motion-duration) linear reverse both cover-fade-out; }
-.route-press { filter: blur(1px); transform: scale(.98); transition: filter 70ms ease, transform 70ms ease !important; }
-:root[data-page-motion="off"]::view-transition-old(*),
-:root[data-page-motion="off"]::view-transition-new(*),
-:root[data-page-motion="off"]::view-transition-group(*) { animation: none !important; }
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(*), ::view-transition-new(*), ::view-transition-group(*) { animation-duration: 0.01ms !important; }
-}
-
 .site-header { background: var(--card); border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
 .brand { text-decoration: none; color: var(--foreground); min-width: 0; max-width: 100%; flex: 0 1 auto; }
 .brand-logo { color: var(--primary); }

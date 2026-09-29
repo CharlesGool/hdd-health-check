@@ -58,6 +58,12 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 
 ## Handoff
 
+2026-09-29. Branch `main`; page transitions have been removed from source. No temporary project rules were found.
+
+- Removed the View Transition route engine, page-motion preference and Appearance switch, route-only CSS and source identifiers. Page links, disk-detail entry and return, login, sign-out, and browser history now change views without route animation; protected history still checks server authentication. Retained resize, theme, tab-underline, toast, and local feedback motion. Updated the active design record and all eight Web locale candidate notes; historical release entries remain historical.
+- Checks: an isolated `npm run build` passed Vue type checking and production bundling. Chromium preview removed a legacy `page-motion=on` query, opened Settings and Security, returned through Back and Forward, retained dark mode, showed no page-motion switch or route animations, and recorded zero console errors. Project structure, 40 multilingual documents and locale-key parity passed; three English documents passed format checking with zero errors and five existing warnings, and local links passed with zero errors. `git diff --check` passed. Disk-detail navigation with live disk data and real mobile browsers were not exercised.
+- Deployment: the NAS at `172.22.31.10:8765` served its current `v4.1.0` `version.json` and HTTP 200 at `/`. Direct root SSH reported `Permission denied (publickey,password)`, so the running service was not updated. Its existing state, password, and backups were not accessed or changed. No disk scan, password change, or reboot was run. Next action: deploy a test-marked build through an authorized NAS access path, then verify the running UI and service while retaining the previous artifact for rollback.
+
 2026-09-29. Branch `main`; formal `v4.1.0` was published from `09e6fa5` and deployed to the Debian NAS. No temporary project rules were found.
 
 - NAS installer follow-up: the first NAS run of `test-bf14ed5` started the new service, but its health probe received HTTP 403 because it omitted the required `X-HDD-CSRF` header. The installer then reported failure without rolling back because its `die` path bypassed the rollback trap. The service remained active and the prior application remained available. Commit `cd7d69b` adds the header and calls rollback for explicit errors after installation starts. A fresh installation of `test-cd7d69b` then passed the installer health check. The service is active and enabled on `0.0.0.0:8765`; the installer preserved the previous application and unit backups. The Web password matched the previous backup, and `/var/lib/hdd-health` and `/var/log/disk-health` remained in place.
@@ -224,7 +230,8 @@ This major version adds the authenticated persistent Web UI and Debian installer
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-29 | intended | `docs(handoff): clarify v4.1.0 release ref status` | this commit
+- 2026-09-29 | intended | `fix(web): remove page transition animation` | this commit
+- 2026-09-29 | `7d4871d` | `docs(handoff): clarify v4.1.0 release ref status` | `git show 7d4871d`
 - 2026-09-29 | `59313bb` | `docs(handoff): record v4.1.0 publication and deployment` | `git show 59313bb`
 - 2026-09-29 | `09e6fa5` | `chore(release): prepare v4.1.0` | `git show 09e6fa5`
 - 2026-09-29 | `1fd8ad3` | `docs(handoff): record underline fix deployment` | `git show 1fd8ad3`
