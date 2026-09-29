@@ -257,9 +257,16 @@
   "on": "Activé",
   "off": "Désactivé",
   "ipLoginUnavailable": "L’accès par IP n’est pas disponible pour cette adresse. Connectez-vous avec le mot de passe Web, puis gérez les IP privées dans Paramètres → Sécurité.",
-  "candidateIntro": "Cette version de test harmonise les pages selon les dernières règles Web.",
+  "candidateIntro": "Cette version de test aligne toutes les pages Web sur AI-Configs Web UI reference v1.2.3.",
   "candidateNavigation": "L’en-tête commun affiche Accueil, Historique des modifications, Paramètres et Déconnexion dans cet ordre. Chaque page a un retour et les paramètres disposent d’une navigation adaptée par section.",
   "candidateMotion": "Les transitions de page et le redimensionnement suivent la référence visuelle commune. Les transitions peuvent être désactivées dans Apparence.",
   "candidateAccess": "L’accès par IP apparaît toujours sur la page de connexion ; le serveur vérifie l’adresse réelle. Chaque page possède sa propre icône d’onglet.",
-  "candidateLogin": "Les améliorations de connexion apportées après la version précédente harmonisent l’en-tête et la carte, placent la version et la langue dans son pied et ajoutent une commande afficher/masquer indépendante à chaque champ de mot de passe. Les visiteurs peuvent lire l’historique avant de se connecter."
+  "candidateLogin": "Les améliorations de connexion apportées après la version précédente harmonisent l’en-tête et la carte, placent la version et la langue dans son pied et ajoutent une commande afficher/masquer indépendante à chaque champ de mot de passe. Les visiteurs peuvent lire l’historique avant de se connecter.",
+  "show": "Afficher",
+  "hide": "Masquer",
+  "languageDescription": "Choisissez la langue de l’interface.",
+  "appearanceDescription": "Choisissez le mode clair ou sombre et la couleur du thème.",
+  "testBuild": "Version de test",
+  "formalVersion": "Version officielle",
+  "changelogDescription": "Consultez les changements de chaque version."
 }

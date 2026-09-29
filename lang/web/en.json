@@ -257,9 +257,16 @@
   "on": "On",
   "off": "Off",
   "ipLoginUnavailable": "IP access is unavailable for this address. Sign in with the Web password, then manage private IP access in Settings → Security.",
-  "candidateIntro": "Test build with the latest Web design alignment.",
+  "candidateIntro": "This test build aligns every Web page with AI-Configs Web UI reference v1.2.3.",
   "candidateNavigation": "The same application header now keeps Home, Changelog, Settings and Sign out in order, with page-level Back controls and responsive Settings navigation.",
   "candidateMotion": "Page transitions and resize motion follow the shared visual reference. Page transitions can be switched off in Appearance settings.",
   "candidateAccess": "The login page always offers IP access; the server checks the actual address before granting access. Each page has its own matching browser-tab icon.",
-  "candidateLogin": "Earlier post-release login updates align the header and card layout, place version and language controls in the login footer, and add independent password show/hide controls. Visitors can read Changelog before signing in."
+  "candidateLogin": "Earlier post-release login updates align the header and card layout, place version and language controls in the login footer, and add independent password show/hide controls. Visitors can read Changelog before signing in.",
+  "show": "Show",
+  "hide": "Hide",
+  "languageDescription": "Choose the language used by the interface.",
+  "appearanceDescription": "Choose a light or dark mode and an accent color.",
+  "testBuild": "Test build",
+  "formalVersion": "Formal release",
+  "changelogDescription": "Review changes in each version."
 }

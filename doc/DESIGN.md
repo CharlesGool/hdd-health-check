@@ -43,6 +43,26 @@ For solid-state drives, speed-sample dips and average-speed changes between runs
 
 Every authenticated route shares a header with the linked project name and build version, followed by Home, Changelog, Settings and Sign out. Function entries remain on the Dashboard; Back controls return function pages and Changelog to the Dashboard and Security Settings to ordinary Settings. Ordinary Settings groups General, Appearance, disk behavior and Security behind a responsive section navigator; protected Security Settings similarly groups password and IP controls. The Security navigator only moves to the entry card, while a separate action opens the protected route. Each page selects a distinct favicon in the shared project frame. Optional Beta page transitions use source-control geometry for opening and returning, track browser history, and can be disabled in Appearance settings. A user choice persists in URL, browser storage and cookie; iOS and Android default to off. Responsive resize motion and reduced-motion handling are separate from that switch.
 
+## Web UI reference v1.2.3 migration
+
+The Web design layer follows the tagged AI-Configs `webui-reference/v1.2.3` example. `src/web/src/reference-v1.2.3.css` is the reference stylesheet; `src/web/src/style.css` maps its shared layout and control states to this application's Vue components. The semantic light/dark tokens and eight accent presets in `theme.css` already match the reference. The application retains its own routes, disk data, API calls, and server-enforced permissions.
+
+| Project view | Reference view | Shared design and required difference |
+| --- | --- | --- |
+| Guest login at `/disks` | Login | Same 72 px header, 480 px card, field/action sizes, password reveal state and footer. The real IP-login action reports the server's decision. |
+| `/disks` | Dashboard | Same page width, heading rhythm and four entry cards. Counts, storage capacity, assessment form and disk list use live health data and have no reference sample equivalent. The disk entry scrolls to the list because that list is on the dashboard. |
+| `/attention` | Device function page | Same breadcrumb, Back control, function heading and card styling. Warning reasons and empty state depend on the snapshot. |
+| `/tasks` | Network function page | Same function-page frame and card anatomy. Running jobs, logs, stop and history controls reflect actual task state rather than sample connection data. |
+| `/schedule` | Device-settings function page | Same function-page frame, controls and card spacing. Interval bounds and save state follow the existing schedule API. |
+| `/settings` | Settings | Same two-column section navigation, 40 px section icons, cards, language picker, appearance choices, accent swatches and motion switch. The additional Disk behavior section preserves the existing drive wake preference. |
+| `/security` | Security Settings | Same section navigation, fields and states. The real five-minute administrator verification and IP-only restrictions require an entry challenge that the static reference cannot enforce. Password and IP mutations continue to use the protected APIs. |
+| `/changelog` | Changelog | Same heading, breadcrumb and card frame. The content is the localized project release history, with the exact test-build entry when applicable. |
+| `/disks/:id` detail drawer and confirmation dialog | Controls showcase | Tabs, private-value reveal, buttons, focus and disabled states follow the reference controls. A disk detail remains a drawer over its list so the selected disk and previous scroll position are preserved; the reference has no disk-detail route. |
+
+Reference route transitions use a 320 ms View Transition with source-control expansion, background blur, return contraction and a horizontal page slide where there is no source control. The application keeps its existing browser-history and resize-motion coordination and uses the reference keyframes and easing. Appearance changes animate palette properties for 360 ms. Reduced-motion preference removes the transition; on mobile the optional page-motion switch defaults off. Browser support and compositor timing can alter the exact animation frames, so the stable start and end layouts are the cross-browser contract.
+
+The reference includes static sample data and a demonstration-only Security dialog. This project uses live disk and task state, read-only static-preview limitations, authenticated serial reveal and server-side access checks. Those content and permission differences are intentional. The reference does not model storage aggregation, full assessments, SMART attributes, task logs, schedule persistence, or a disk drawer, so their structure is aligned to its cards and controls rather than replaced with sample content.
+
 ## Design Constraints
 
 - Root access and physical SMART passthrough are needed for useful diagnosis. USB/RAID bridge detection is heuristic; failed passthrough is reported, not inferred healthy. SAS scoring is distinct and less exercised than ATA scoring. Temperature and thresholds depend on vendor data.

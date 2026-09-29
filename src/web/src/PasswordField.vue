@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Eye, EyeOff } from '@lucide/vue'
 
 defineProps<{
   id: string
@@ -8,6 +7,8 @@ defineProps<{
   autocomplete: string
   showLabel: string
   hideLabel: string
+  showText: string
+  hideText: string
   required?: boolean
   minlength?: number
   maxlength?: number
@@ -42,8 +43,7 @@ function toggle() {
       @pointerdown.prevent
       @click="toggle"
     >
-      <EyeOff v-if="shown" :size="18" aria-hidden="true" />
-      <Eye v-else :size="18" aria-hidden="true" />
+      {{ shown ? hideText : showText }}
     </button>
   </div>
 </template>

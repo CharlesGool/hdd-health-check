@@ -57,7 +57,9 @@ function makeCover(element: HTMLElement) {
   cover = element.cloneNode(true) as HTMLElement
   cover.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'))
   cover.removeAttribute('id')
+  cover.classList.remove('route-press')
   cover.classList.add('route-cover')
+  cover.inert = true
   cover.setAttribute('aria-hidden', 'true')
   Object.assign(cover.style, { left: `${bounds.left}px`, top: `${bounds.top}px`, width: `${bounds.width}px`, height: `${bounds.height}px` })
   document.body.append(cover)

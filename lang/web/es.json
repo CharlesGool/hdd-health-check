@@ -257,9 +257,16 @@
   "on": "Activado",
   "off": "Desactivado",
   "ipLoginUnavailable": "El acceso por IP no está disponible para esta dirección. Inicie sesión con la contraseña Web y administre las IP privadas en Ajustes → Seguridad.",
-  "candidateIntro": "Esta versión de prueba unifica las páginas según las normas Web más recientes.",
+  "candidateIntro": "Esta versión de prueba alinea todas las páginas web con AI-Configs Web UI reference v1.2.3.",
   "candidateNavigation": "La cabecera común ordena Inicio, Historial de cambios, Ajustes y Cerrar sesión. Las páginas tienen un control Volver y Ajustes usa navegación adaptable por secciones.",
   "candidateMotion": "Las transiciones de página y el cambio de tamaño siguen la referencia visual compartida. Las transiciones se pueden desactivar en Apariencia.",
   "candidateAccess": "El acceso por IP siempre aparece en el inicio de sesión; el servidor comprueba la dirección real. Cada página tiene su propio icono de pestaña.",
-  "candidateLogin": "Las mejoras de inicio de sesión posteriores a la versión anterior unifican el tamaño de la cabecera y la tarjeta, colocan la versión y el idioma al pie de la tarjeta y añaden controles independientes para mostrar u ocultar cada contraseña. Los visitantes pueden leer el historial antes de entrar."
+  "candidateLogin": "Las mejoras de inicio de sesión posteriores a la versión anterior unifican el tamaño de la cabecera y la tarjeta, colocan la versión y el idioma al pie de la tarjeta y añaden controles independientes para mostrar u ocultar cada contraseña. Los visitantes pueden leer el historial antes de entrar.",
+  "show": "Mostrar",
+  "hide": "Ocultar",
+  "languageDescription": "Elige el idioma de la interfaz.",
+  "appearanceDescription": "Elige el modo claro u oscuro y el color del tema.",
+  "testBuild": "Versión de prueba",
+  "formalVersion": "Versión oficial",
+  "changelogDescription": "Consulta los cambios de cada versión."
 }
