@@ -59,6 +59,11 @@ const editingSchedule = ref(false)
 const loading = ref(true)
 const error = ref('')
 const message = ref('')
+let messageTimer: ReturnType<typeof setTimeout> | undefined
+watch(message, value => {
+  if (messageTimer) clearTimeout(messageTimer)
+  messageTimer = value ? setTimeout(() => { message.value = ''; messageTimer = undefined }, 4200) : undefined
+})
 type Confirmation = { title: string; detail?: string; targets?: string[]; action: string }
 const confirmation = ref<Confirmation | null>(null)
 const confirmCancelButton = ref<HTMLButtonElement | null>(null)
@@ -464,12 +469,13 @@ async function updatePage(page: Page) {
 async function go(page: Page, event?: MouseEvent, back = false) {
   if (page === currentPage.value && !selected.value) return
   const from = currentPage.value
+  const leavingDiskForList = !!selected.value && (page === 'disks' || page === currentPage.value)
   const source = event?.currentTarget instanceof HTMLElement ? event.currentTarget : null
   const sourceId = source?.dataset.motionId
   const nextArrival: Arrival = { from, sourceId }
   window.history.pushState({ hddIndex: ++routeIndex, hddArrival: nextArrival }, '', routeUrl(`/${page}`))
   arrival = nextArrival
-  await transitionRoute(async () => updatePage(page), back ? { returnTo: backSource(from) } : { source })
+  await transitionRoute(async () => updatePage(page), leavingDiskForList ? { detailReturn: true } : back ? { returnTo: backSource(from) } : { source })
 }
 function navLink(event: MouseEvent, page: Page) {
   if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
@@ -494,7 +500,7 @@ async function closeDisk() {
   await transitionRoute(async () => {
     detailRequest++; serialShown.value = false; revealedSerial.value = ''; serialCopied.value = false; hideSmartTip(); selected.value = null; justWokenDisk.value = null
     await nextTick(); scrollTo({ top: 0, behavior: 'instant' })
-  }, { reverseSlide: true })
+  }, { detailReturn: true })
 }
 async function refresh() {
   if (previewMode || refreshPending) return
@@ -634,7 +640,7 @@ async function onPopState(event?: PopStateEvent) {
   if (diskMatch && snapshot.value?.disks.some(d => d.name === diskMatch[1])) {
     const name = diskMatch[1]
     if (page !== currentPage.value) applyPage(page)
-    if (event && auth.value?.authenticated) await transitionRoute(async () => openDisk(name, false), reverse ? { returnTo, reverseSlide: !returnTo } : { source })
+    if (event && auth.value?.authenticated) await transitionRoute(async () => openDisk(name, false), reverse ? { detailReturn: true } : { source })
     else await openDisk(name, false)
     arrival = nextArrival; refreshResizeBaseline(); return
   }
@@ -642,12 +648,12 @@ async function onPopState(event?: PopStateEvent) {
     window.history.replaceState(window.history.state, '', routeUrl(`/${page}`))
   const oldDisk = selected.value
   const update = async () => updatePage(page)
-  if (event && auth.value?.authenticated) await transitionRoute(update, oldDisk ? { reverseSlide: true } : reverse ? { returnTo, reverseSlide: !returnTo } : { source })
+  if (event && auth.value?.authenticated) await transitionRoute(update, oldDisk ? { detailReturn: true } : reverse ? { returnTo, reverseSlide: !returnTo } : { source })
   else await update()
   arrival = nextArrival
   refreshResizeBaseline()
 }
-onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeout(themeTimer); if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer); window.removeEventListener('popstate', onPopState); removeResizeMotion?.(); stopRouteMotion(); confirmResolve?.(false) })
+onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeout(themeTimer); if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer); if (messageTimer) clearTimeout(messageTimer); window.removeEventListener('popstate', onPopState); removeResizeMotion?.(); stopRouteMotion(); confirmResolve?.(false) })
 </script>
 
 <template>

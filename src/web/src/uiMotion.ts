@@ -1,6 +1,6 @@
 type ViewTransitionHandle = { ready: Promise<void>; finished: Promise<void>; skipTransition: () => void }
 type ViewTransitionDocument = Document & { startViewTransition?: (update: () => Promise<void>) => ViewTransitionHandle }
-type RouteMotion = { source?: HTMLElement | null; returnTo?: string; reverseSlide?: boolean }
+type RouteMotion = { source?: HTMLElement | null; returnTo?: string; reverseSlide?: boolean; detailReturn?: boolean }
 
 const root = document.documentElement
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
@@ -30,7 +30,7 @@ let pressTimer: ReturnType<typeof setTimeout> | undefined
 let pressResolve: (() => void) | null = null
 let routeGeneration = 0
 let originBounds: DOMRect | null = null
-const classes = ['viewport-enter', 'viewport-exit', 'page-slide', 'page-slide-reverse']
+const classes = ['viewport-enter', 'viewport-exit', 'page-slide', 'page-slide-reverse', 'detail-return']
 const vars = ['--route-x', '--route-y', '--route-scale-x', '--route-scale-y', '--route-cover-scale-x', '--route-cover-scale-y']
 
 function clearPressed() { if (pressTimer) clearTimeout(pressTimer); pressTimer = undefined; pressResolve?.(); pressResolve = null; pressed?.classList.remove('route-press'); pressed = null }
@@ -107,7 +107,7 @@ export async function transitionRoute(update: () => Promise<void>, motion: Route
   const generation = routeGeneration
   const viewDocument = document as ViewTransitionDocument
   if (!enabled || reducedMotion.matches || !viewDocument.startViewTransition) { await update(); refreshResizeBaseline(); return }
-  const source = visible(motion.source || null) ? motion.source! : null
+  const source = !motion.detailReturn && visible(motion.source || null) ? motion.source! : null
   if (source) {
     pressed = source
     source.classList.add('route-press')
@@ -115,8 +115,8 @@ export async function transitionRoute(update: () => Promise<void>, motion: Route
     if (generation !== routeGeneration) return
     if (!enabled) { clearPressed(); await update(); refreshResizeBaseline(); return }
   }
-  const returning = !source && !!motion.returnTo
-  root.classList.add(source ? 'viewport-enter' : returning ? 'viewport-exit' : motion.reverseSlide ? 'page-slide-reverse' : 'page-slide')
+  const returning = !motion.detailReturn && !source && !!motion.returnTo
+  root.classList.add(motion.detailReturn ? 'detail-return' : source ? 'viewport-enter' : returning ? 'viewport-exit' : motion.reverseSlide ? 'page-slide-reverse' : 'page-slide')
   if (source) makeCover(source)
   if (source || returning) makeMarker()
   const transition = viewDocument.startViewTransition(async () => {
