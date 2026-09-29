@@ -291,5 +291,7 @@
   "smartGenericHelp": "廠商自訂屬性；請比較趨勢並查閱裝置文件。",
   "backToList": "返回磁碟清單",
   "candidateDiskDetail": "磁碟詳情改為完整頁面；序號可按需顯示及複製。",
-  "candidateSmart": "SMART 屬性可在滑鼠停留或鍵盤聚焦時顯示說明，支援的固態硬碟顯示主機讀寫總量。"
+  "candidateSmart": "SMART 屬性可在滑鼠停留或鍵盤聚焦時顯示說明，支援的固態硬碟顯示主機讀寫總量。",
+  "smartBusyHelp": "控制器處理讀寫操作的忙碌時間；回報單位依裝置而定。",
+  "smartTemperatureDurationHelp": "高於溫度警告或嚴重閾值的累計時間；持續超限需留意。"
 }

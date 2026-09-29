@@ -230,10 +230,12 @@ const nvmeExplanations: Record<string, string> = {
   available_spare: 'smartSpareHelp', available_spare_threshold: 'smartSpareHelp',
   percentage_used: 'smartWearHelp', data_units_read: 'smartReadHelp',
   data_units_written: 'smartWrittenHelp', host_read_commands: 'smartReadHelp',
-  host_write_commands: 'smartWrittenHelp', controller_busy_time: 'smartPowerHelp',
+  host_write_commands: 'smartWrittenHelp', host_reads: 'smartReadHelp',
+  host_writes: 'smartWrittenHelp', controller_busy_time: 'smartBusyHelp',
   power_cycles: 'smartPowerHelp', power_on_hours: 'smartPowerHelp',
   unsafe_shutdowns: 'smartShutdownHelp', media_errors: 'smartErrorsHelp',
-  num_err_log_entries: 'smartErrorsHelp'
+  num_err_log_entries: 'smartErrorsHelp', warning_temp_time: 'smartTemperatureDurationHelp',
+  critical_comp_time: 'smartTemperatureDurationHelp'
 }
 function smartExplanation(item: SmartAttribute) {
   const key = String(item.key).toLowerCase()
