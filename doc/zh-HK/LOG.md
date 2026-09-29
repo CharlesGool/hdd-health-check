@@ -101,7 +101,7 @@ metadata:
 - NAS 部署 `test-bd438c4`:從乾淨提交 `bd438c4` 構建,`version.json` 中使用相同標識.傳輸包匹配 SHA-256 `65d10b167552c232be481edd2f60e3359dd5b5d6a03121960229923ec0e211da`;檢查器,Python 服務及服務單元的哈希與此前安裝一致.安裝器將舊應用保留在 `/root/apps/hdd-health-check.backup-20260929-134240-3654021`,並保留匹配的服務單元備份.Web 密碼校驗和未變,權限為 600;`/var/lib/hdd-health` 權限仍為 700,`/var/log/disk-health` 可用.服務在 `0.0.0.0:8765` 活動且已啓用.認證後的 `/api/build` 返回 `test-bd438c4`,`/api/snapshot` 列出 13 塊磁碟,`/api/status` 沒有運行中的任務,退出後 `/api/build` 返回 401.局域網 GET `/disks/sda`,favicon 及 `version.json` 成功;服務端本機 `/changelog` 請求返回 200.實時 Chromium 在 `/disks/sda` 顯示新版本,桌面及 390 px,125% CSS 縮放下兩條標籤底線均與選中按鈕等寬.臨時 NAS 部署檔案和瀏覽器會話已刪除.未執行磁碟掃描,密碼修改或重啓.
 - 剩餘工作:用户報告的磁碟詳情返回動畫問題暫緩.真實移動瀏覽器中的動畫,真實主機重啓後的恢復以及真實 HDD 上受控的完整評估仍未驗證.根目錄兼容入口及其遷移前基線已記入 Limitations.
 - 發佈準備:用户批准為當前已部署變更發佈正式版本.`v4.1.0` 涵蓋 `v4.0.0` 之後的提交:登入及 Changelog 存取,與參考設計對齊的 Web 頁面,磁碟詳情和 SMART 指導,服務狀態權限,標籤及反饋修復.已知的返回動畫問題按要求暫緩.此前的 `v4.0.0` 標籤和 Release 保持不變;未發現項目臨時規則.
-- 正式發佈:`main` 和帶註釋的 `v4.1.0` 標籤均指向 `09e6fa5`.GitHub Release 為公開且已發佈的正式版,不是預發佈版;其預構建 Web 安裝包大小為 6,952,186 字節,SHA-256 為 `cf4e94597552c84f36140c1890eb62b379421599ae2a8e0f929ce24c65880a98`,並附有 `SHA256SUMS`.乾淨的標籤構建嵌入 `v4.1.0`;Chromium 檢查顯示相同版本,正式 Changelog 位於 `v4.0.0` 之前,沒有測試候選條目.全部 Shell 和 Python 測試,Vue 類型檢查,生產構建,多語言,項目結構,針對性文檔及本機連結檢查均通過.文檔檢查器仍有五個既有警告.已導出 `../snapshots/v4.1.0` 源碼快照,並將完整 Changelog 同步到 Notion 的 `My Projects` 下經核實的 `hdd-health-check` 子頁面.
+- 正式發佈:發佈時,`main` 和帶註釋的 `v4.1.0` 標籤均指向 `09e6fa5`.GitHub Release 為公開且已發佈的正式版,不是預發佈版;其預構建 Web 安裝包大小為 6,952,186 字節,SHA-256 為 `cf4e94597552c84f36140c1890eb62b379421599ae2a8e0f929ce24c65880a98`,並附有 `SHA256SUMS`.乾淨的標籤構建嵌入 `v4.1.0`;Chromium 檢查顯示相同版本,正式 Changelog 位於 `v4.0.0` 之前,沒有測試候選條目.全部 Shell 和 Python 測試,Vue 類型檢查,生產構建,多語言,項目結構,針對性文檔及本機連結檢查均通過.文檔檢查器仍有五個既有警告.已導出 `../snapshots/v4.1.0` 源碼快照,並將完整 Changelog 同步到 Notion 的 `My Projects` 下經核實的 `hdd-health-check` 子頁面.
 - 正式 NAS 部署:傳輸包通過 SHA-256 校驗,安裝器將運行中的 `test-bd438c4` 服務升級為 `v4.1.0`.已保留 `/root/apps/hdd-health-check.backup-20260929-142539-3689967` 和匹配的服務單元備份.Web 密碼校驗和未變,檔案權限仍為 600;`/var/lib/hdd-health` 權限仍為 700,`/var/log/disk-health` 仍可用.服務在 `0.0.0.0:8765` 活動且已啓用.密碼認證後的 `/api/build` 返回 `v4.1.0`,`/api/snapshot` 列出 13 塊磁碟,退出後 `/api/build` 恢復 401.局域網 GET 磁碟詳情,Changelog,版本元數據和 SVG favicon 均返回 200.實時 Chromium 打開 `/disks/sda`,顯示 `v4.1.0`,並測得 SMART 和 Checks 底線與選中按鈕等寬;在 390 px 和 125% CSS 縮放下,重新排布後的寬度誤差小於 0.001 px,偏移誤差小於 0.15 px.實時 Changelog 顯示正式版本及暫緩處理的動畫問題.臨時瀏覽器,密碼及部署檔案已刪除.未執行磁碟掃描,密碼修改或重啓.
 - 剩餘工作:用户報告的磁碟詳情返回動畫問題仍暫緩處理.真實 HDD 上受控的完整評估,真實移動瀏覽器動畫及主機重啓後的服務恢復仍未驗證.
 - 下一步:用户提出要求後修復暫緩處理的返回動畫,再在實際目標瀏覽器中驗證並更新 Handoff.另外,在可中斷主機運行的時間安排受控 HDD 評估和重啓恢復檢查.
@@ -223,7 +223,8 @@ metadata:
 
 主分支完整歷史: `git log main --stat`.`HEAD` 條目標示本次交接提交.
 
-- 2026-09-29 | intended | `docs(handoff): record v4.1.0 publication and deployment` | this commit
+- 2026-09-29 | intended | `docs(handoff): clarify v4.1.0 release ref status` | this commit
+- 2026-09-29 | `59313bb` | `docs(handoff): record v4.1.0 publication and deployment` | `git show 59313bb`
 - 2026-09-29 | `09e6fa5` | `chore(release): prepare v4.1.0` | `git show 09e6fa5`
 - 2026-09-29 | `1fd8ad3` | `docs(handoff): record underline fix deployment` | `git show 1fd8ad3`
 - 2026-09-29 | `bd438c4` | `fix(web): match detail underline to selected tab` | `git show bd438c4`
