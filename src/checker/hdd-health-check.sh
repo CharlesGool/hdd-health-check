@@ -37,7 +37,7 @@
 set -o pipefail
 shopt -s extglob
 
-SCRIPT_VERSION="3.0.0"
+SCRIPT_VERSION="4.1.0"
 SCRIPT_NAME="$(basename "$0")"
 SELF="$(readlink -f "$0")"
 ORIG_ARGS=("$@")

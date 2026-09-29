@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-تقيّم أداة Bash هذه، التي تعمل بصلاحية root، صحة أقراص HDD على Debian/Ubuntu باستخدام بيانات SMART وفحوص الأقراص للقراءة فقط. يتضمن إصدار `v4.0.0` الفاحص وواجهة Web محلية اختيارية، مع المصدر وأرشيف Debian Web مبني مسبقًا على GitHub. فُحصت خدمة Web على NAS يعمل بنظام Debian مع قائمة أقراص فعلية وإعدادات Security Settings موثقة، لكن التقييم الكامل المضبوط على HDD حقيقي والتعافي بعد إعادة تشغيل المضيف لم يُتحقق منهما بعد.
+تقيّم أداة Bash هذه، التي تعمل بصلاحية root، صحة أقراص HDD على Debian/Ubuntu باستخدام بيانات SMART وفحوص الأقراص للقراءة فقط. يتضمن إصدار `v4.1.0` الفاحص وواجهة Web محلية اختيارية، مع المصدر وأرشيف Debian Web مبني مسبقًا على GitHub. فُحصت خدمة Web على NAS يعمل بنظام Debian مع قائمة أقراص فعلية وإعدادات Security Settings موثقة، لكن التقييم الكامل المضبوط على HDD حقيقي والتعافي بعد إعادة تشغيل المضيف لم يُتحقق منهما بعد.
 
 ## تعدد اللغات
 
@@ -46,10 +46,10 @@ metadata:
 
 ### التثبيت العادي
 
-تستخدم نسخة المصدر التالية وسم الإصدار `v4.0.0`. الأمر الموجود في جذر المستودع نقطة دخول بسيطة؛ أما التنفيذ ففي `src/checker/`.
+تستخدم نسخة المصدر التالية وسم الإصدار `v4.1.0`. الأمر الموجود في جذر المستودع نقطة دخول بسيطة؛ أما التنفيذ ففي `src/checker/`.
 
 ```bash
-git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -57,12 +57,12 @@ sudo bash ./hdd-health-check.sh --help
 
 راجع حزم نظام التشغيل المطلوبة وثبّتها بنفسك قبل المسح لتجنّب مطالبة النص البرمجي بتثبيتها. لترقية نسخة موجودة، انسخ احتياطيًا أولًا أي سجلات مضيف تريد الاحتفاظ بها و`${HDD_STATE_DIR:-/var/lib/hdd-health}`؛ ثم استبدل النص البرمجي بنسخة من مصدر راجعته، واحتفظ بدليل الحالة لاستبقاء السجل وإمكانية الاستئناف، ثم راجع `--help` وشغّل الفحوص المختارة. لا يقبل تحليل الحالة في v2.2 إلا حقول البيانات المعروفة؛ وقد يرفض بيانات حالة سابقة من v2.2 لا تطابق التنسيق. يتطلب الرجوع إلى إصدار سابق استعادة النص البرمجي السابق **ونسخته الاحتياطية المطابقة من الحالة**؛ لا تفترض توافق الحالة الأحدث مع الإصدارات السابقة. لا يوجد وعد بدعم سلوك CLI الخاص بـ v1 أو بترحيل حالته.
 
-### واجهة Web من وسم v4.0.0
+### واجهة Web من وسم v4.1.0
 
 لا يتتبع وسم المصدر الملفات المبنية في `dist/web`. على مضيف Debian يدعم systemd, ثبّت Node.js 20.19+ أو 22.12+ وnpm, ثم ابنِ الواجهة وشغّل المثبّت:
 
 ```bash
-git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
 npm run build

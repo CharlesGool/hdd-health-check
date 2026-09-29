@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Log
 
-This record preserves accepted historical decisions, known limitations and release history. The current major-version release is `v4.0.0`. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has synthetic tests and Web verification on a Debian NAS, but no controlled complete assessment on real HDDs.
+This record preserves accepted historical decisions, known limitations and release history. The current release is `v4.1.0`. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has synthetic tests and Web verification on a Debian NAS, but no controlled complete assessment on real HDDs.
 
 ## Multi-language
 
@@ -58,7 +58,7 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 
 ## Handoff
 
-2026-09-29. Branch `main`; the `v4.0.0` release is published. No temporary project rules were found.
+2026-09-29. Branch `main`; `v4.1.0` is being prepared from the verified `test-bd438c4` deployment. No temporary project rules were found.
 
 - NAS installer follow-up: the first NAS run of `test-bf14ed5` started the new service, but its health probe received HTTP 403 because it omitted the required `X-HDD-CSRF` header. The installer then reported failure without rolling back because its `die` path bypassed the rollback trap. The service remained active and the prior application remained available. Commit `cd7d69b` adds the header and calls rollback for explicit errors after installation starts. A fresh installation of `test-cd7d69b` then passed the installer health check. The service is active and enabled on `0.0.0.0:8765`; the installer preserved the previous application and unit backups. The Web password matched the previous backup, and `/var/lib/hdd-health` and `/var/log/disk-health` remained in place.
 
@@ -100,7 +100,8 @@ Update boundary: retain the root dispatcher until a separately communicated CLI 
 - Tab underline follow-up: replaced one-pixel transform scaling with direct measured width and measured the selected button to fractional precision. Local Chromium checks matched the underline to both tab buttons at 390 px, 100% and 200% CSS zoom, in Simplified Chinese, English and Arabic. Vue type checking and production build passed in an isolated build tree; multilingual, project structure, focused document and local-link checks passed with four existing document warnings. The return-from-detail animation remains an open user-reported issue and was not changed; no temporary project rules were found.
 - NAS deployment of `test-bd438c4`: built from clean commit `bd438c4`, with the same identifier in `version.json`. The transferred archive matched SHA-256 `65d10b167552c232be481edd2f60e3359dd5b5d6a03121960229923ec0e211da`; checker, Python server and service-unit hashes matched the previous installation. The installer preserved the prior app at `/root/apps/hdd-health-check.backup-20260929-134240-3654021` and its matching unit backup. The Web password checksum stayed unchanged and its mode is 600; `/var/lib/hdd-health` remains mode 700 and `/var/log/disk-health` is available. The service is active and enabled on `0.0.0.0:8765`. Authenticated `/api/build` returned `test-bd438c4`, `/api/snapshot` listed 13 disks, `/api/status` reported no running task, and logout restored 401 for `/api/build`. LAN GET requests for `/disks/sda`, the favicon and `version.json` succeeded; the server's local `/changelog` request returned 200. Live Chromium on `/disks/sda` showed the new version and measured both tab underlines equal to their selected buttons at desktop and 390 px with 125% CSS zoom. Temporary NAS deployment files and the browser session were removed. No disk scan, password change or reboot was performed.
 - Remaining: the user-reported return-from-detail animation issue is deferred. Real mobile-browser motion, recovery after a real reboot and a controlled full assessment on real HDDs remain unverified. The root compatibility entry point is recorded with its pre-move baseline under Limitations.
-- Next action: address the return animation only if the user resumes it; otherwise verify reboot recovery and real mobile behavior when those checks are available. The published `v4.0.0` tag and release remain unchanged.
+- Release preparation: the user approved a formal version of the currently deployed changes. `v4.1.0` covers the commits since `v4.0.0`: login and Changelog access, reference-aligned Web pages, disk detail and SMART guidance, service-state permissions, and tab and feedback fixes. The known return animation issue remains deferred by request. The previous `v4.0.0` tag and release stay unchanged; no temporary project rules were found.
+- Next action: synchronize the eight-language release content, run the final build and functional checks, then publish `v4.1.0` with its branch, tag, GitHub Release, archive, snapshot, Notion Changelog and NAS deployment. Confirm each independently and update this Handoff with their actual results.
 
 ## Historical Source Baselines
 
@@ -134,6 +135,29 @@ This source baseline includes the previously untagged v2.2 integration: persiste
 The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Root execution, package installation and systemd behavior have not been independently confirmed.
 
 ## Changelog
+
+### v4.1.0 — 2026-09-29
+
+This release updates the Web interface and disk details. The previous test build was checked on a Debian NAS with 13 enumerated disks; the formal build is checked separately before publication.
+
+#### Added
+
+- Disk cards open full detail pages with breadcrumbs, Back navigation, per-disk checks, SMART attributes and explanations. Serial values remain masked until an authenticated reveal; copying is available only after reveal. SSD/NVMe details show host reads and writes when the device supplies counters with known units.
+- The Web interface follows the shared visual reference for the login, Dashboard, function pages, Settings, Security and Changelog. It adds responsive layouts, localized controls, icons and optional page and resize motion.
+
+#### Changed
+
+- The Changelog can open from the login screen before authentication and shows the matching build version. Disk-detail controls use a measured tab indicator, and repeated copy feedback restarts its dismissal timer.
+- The NAS service unit keeps `/var/lib/hdd-health` at mode 700 after restart. The installer continues to preserve the prior application, unit and Web password on updates.
+
+#### Fixed
+
+- Correct the active SMART and Checks underline width and position at narrow widths and tested zoom levels, including RTL. Refine disk-detail feedback, SMART counter explanations and interrupted route-motion cleanup.
+
+#### Known issues and validation
+
+- The animation when returning from disk detail has a user-reported issue and remains deferred. A complete assessment on real HDDs, real mobile-browser motion and service recovery after a host reboot remain unverified. The health score remains a heuristic, not a calibrated failure probability.
+- Vue type checking, production build, project and translation checks, and local Chromium layout checks passed for the test build. The NAS test deployment passed authenticated version and disk-list API checks and browser checks of both tab underlines; no disk scan, password change or reboot was performed.
 
 ### v4.0.0 — 2026-09-28
 
@@ -197,7 +221,8 @@ This major version adds the authenticated persistent Web UI and Debian installer
 
 Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
 
-- 2026-09-29 | intended | `docs(handoff): record underline fix deployment` | this commit
+- 2026-09-29 | intended | `chore(release): prepare v4.1.0` | this commit
+- 2026-09-29 | `1fd8ad3` | `docs(handoff): record underline fix deployment` | `git show 1fd8ad3`
 - 2026-09-29 | `bd438c4` | `fix(web): match detail underline to selected tab` | `git show bd438c4`
 - 2026-09-29 | `d44f624` | `docs(handoff): record deferred tab underline issue` | `git show d44f624`
 - 2026-09-29 | `029e634` | `docs(handoff): record motion test deployment` | `git show 029e634`

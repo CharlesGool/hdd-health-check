@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-यह root के रूप में चलने वाला Bash टूल SMART डेटा और केवल-पठन डिस्क जाँचों से Debian/Ubuntu पर HDD की स्थिति का आकलन करता है। `v4.0.0` रिलीज़ में जाँचकर्ता और वैकल्पिक स्थानीय Web UI शामिल हैं; स्रोत और पहले से बना Debian Web संग्रह GitHub पर उपलब्ध हैं। Debian NAS पर वास्तविक डिस्क सूची और प्रमाणित Security Settings के साथ Web सेवा जाँची गई है, लेकिन वास्तविक HDD पर नियंत्रित पूर्ण आकलन और होस्ट रीबूट के बाद सेवा की वापसी अभी सत्यापित नहीं हैं।
+यह root के रूप में चलने वाला Bash टूल SMART डेटा और केवल-पठन डिस्क जाँचों से Debian/Ubuntu पर HDD की स्थिति का आकलन करता है। `v4.1.0` रिलीज़ में जाँचकर्ता और वैकल्पिक स्थानीय Web UI शामिल हैं; स्रोत और पहले से बना Debian Web संग्रह GitHub पर उपलब्ध हैं। Debian NAS पर वास्तविक डिस्क सूची और प्रमाणित Security Settings के साथ Web सेवा जाँची गई है, लेकिन वास्तविक HDD पर नियंत्रित पूर्ण आकलन और होस्ट रीबूट के बाद सेवा की वापसी अभी सत्यापित नहीं हैं।
 
 ## बहुभाषी
 
@@ -47,10 +47,10 @@ metadata:
 ### सामान्य इंस्टॉलेशन
 
 
-नीचे दिया गया checkout रिलीज़ टैग `v4.0.0` उपयोग करता है। रिपॉज़िटरी रूट का आदेश केवल प्रवेश बिंदु है; उसका कार्यान्वयन `src/checker/` में है।
+नीचे दिया गया checkout रिलीज़ टैग `v4.1.0` उपयोग करता है। रिपॉज़िटरी रूट का आदेश केवल प्रवेश बिंदु है; उसका कार्यान्वयन `src/checker/` में है।
 
 ```bash
-git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -58,12 +58,12 @@ sudo bash ./hdd-health-check.sh --help
 
 स्कैन करने से पहले आवश्यक OS पैकेज स्वयं जाँचकर इंस्टॉल करें, ताकि स्क्रिप्ट का पैकेज-इंस्टॉलेशन संकेत न आए। मौजूदा checkout को अपग्रेड करते समय पहले वे होस्ट लॉग और `${HDD_STATE_DIR:-/var/lib/hdd-health}` बैकअप करें जिन्हें रखना है; समीक्षा किए गए checkout से स्क्रिप्ट बदलें, इतिहास/दोबारा शुरू करने के लिए वह स्थिति डायरेक्टरी बनाए रखें, फिर `--help` देखें और चुनी हुई जाँचें चलाएँ। v2.2 स्थिति पार्सिंग केवल ज्ञात डेटा फ़ील्ड स्वीकार करती है; पुराने v2.2 का असंगत स्थिति डेटा अस्वीकार किया जा सकता है। पुराने संस्करण पर लौटने के लिए पिछली स्क्रिप्ट **और उसके अनुरूप स्थिति बैकअप** को पुनर्स्थापित करना होगा; यह न मानें कि नई स्थिति पुराने संस्करण के साथ संगत होगी। v1 CLI व्यवहार या स्थिति माइग्रेशन का कोई वादा नहीं है।
 
-### v4.0.0 टैग से Web UI
+### v4.1.0 टैग से Web UI
 
 स्रोत टैग में निर्मित `dist/web` संसाधन ट्रैक नहीं होते। Debian systemd होस्ट पर Node.js 20.19+ या 22.12+ और npm स्थापित करें, UI बनाएँ, फिर इंस्टॉलर चलाएँ। GitHub Release में पहले से बना Web संग्रह भी है, जिसे NAS पर Node.js के बिना इंस्टॉल किया जा सकता है।
 
 ```bash
-git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
 npm run build

@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check — Design
 
-This document describes current `main` behavior after the `v4.0.0` release; that tag remains the most recent formal version. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has synthetic tests and Web verification on a Debian NAS, but no controlled complete assessment on real HDDs.
+This document describes the `v4.1.0` behavior. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has synthetic tests and Web verification on a Debian NAS, but no controlled complete assessment on real HDDs.
 
 ## Multi-language
 

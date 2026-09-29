@@ -104,7 +104,7 @@ const changelogHtml = computed(() => {
   const heading = [...source.matchAll(/^## (.+)\s*$/gm)].find(item => item[1].trim() === changelogHeadings[lang.value])
   const tail = heading && heading.index !== undefined ? source.slice(heading.index + heading[0].length) : source
   const next = tail.search(/^## /m)
-  const releaseStart = tail.indexOf('### v4.0.0')
+  const releaseStart = tail.search(/^### v\d+\.\d+\.\d+\b/m)
   const formal = releaseStart >= 0 ? tail.slice(releaseStart, next < 0 ? undefined : next) : next < 0 ? tail : tail.slice(0, next)
   const candidate = buildVersion.includes('test') ? `### ${buildVersion}\n\n${t('candidateIntro')}\n\n- ${t('candidateLogin')}\n- ${t('candidateNavigation')}\n- ${t('candidateMotion')}\n- ${t('candidateAccess')}\n- ${t('candidateDiskDetail')}\n- ${t('candidateSmart')}\n\n` : ''
   return markdown.render(candidate + formal)

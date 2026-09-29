@@ -8,7 +8,7 @@ metadata:
 
 # hdd-health-check
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La versión `v4.0.0` incluye el comprobador y la interfaz Web local opcional, con código fuente y un archivo Web Debian precompilado en GitHub. El servicio Web se comprobó en un NAS Debian con inventario real de discos y ajustes de seguridad autenticados, pero siguen sin verificarse una evaluación completa en HDD reales y la recuperación tras reiniciar el equipo.
+Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La versión `v4.1.0` incluye el comprobador y la interfaz Web local opcional, con código fuente y un archivo Web Debian precompilado en GitHub. El servicio Web se comprobó en un NAS Debian con inventario real de discos y ajustes de seguridad autenticados, pero siguen sin verificarse una evaluación completa en HDD reales y la recuperación tras reiniciar el equipo.
 
 Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
 
@@ -49,10 +49,10 @@ Desde una copia de trabajo de confianza, ejecute `sudo bash ./hdd-health-check.s
 ### Instalación normal
 
 
-La siguiente copia utiliza la etiqueta de versión `v4.0.0`. El comando de la raíz del repositorio es un punto de entrada ligero; su implementación está en `src/checker/`.
+La siguiente copia utiliza la etiqueta de versión `v4.1.0`. El comando de la raíz del repositorio es un punto de entrada ligero; su implementación está en `src/checker/`.
 
 ```bash
-git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
@@ -60,12 +60,12 @@ sudo bash ./hdd-health-check.sh --help
 
 Revise e instale usted mismo los paquetes necesarios del sistema operativo antes de explorar para evitar la solicitud de instalación del script. Para actualizar una copia de trabajo existente, haga primero una copia de seguridad de los registros del equipo anfitrión que quiera conservar y de `${HDD_STATE_DIR:-/var/lib/hdd-health}`; sustituya el script por el de una copia de trabajo revisada, conserve ese directorio de estado para el historial y la reanudación, y después consulte `--help` y ejecute las comprobaciones elegidas. El análisis del estado de v2.2 solo acepta campos de datos conocidos; un estado anterior de v2.2 que no se ajuste a ellos puede rechazarse. Para volver a una versión anterior hay que restaurar el script anterior **y la copia de seguridad correspondiente de su estado**; no dé por hecho que el estado más reciente sea compatible hacia atrás. No se garantiza la migración del estado ni el comportamiento de la CLI de v1.
 
-### Interfaz Web desde la etiqueta v4.0.0
+### Interfaz Web desde la etiqueta v4.1.0
 
 La etiqueta de código fuente no incluye los archivos generados de `dist/web` en el control de versiones. En un equipo Debian con systemd, instale Node.js 20.19+ o 22.12+ y npm, compile la interfaz y ejecute el instalador. GitHub Release también ofrece un archivo Web precompilado para instalarla sin Node.js en el NAS:
 
 ```bash
-git clone --branch v4.0.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
+git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
 npm run build
