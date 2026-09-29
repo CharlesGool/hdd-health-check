@@ -207,7 +207,7 @@ function onResize() {
   cancelAnimationFrame(resizeFrame)
   resizeFrame = requestAnimationFrame(() => {
     if (matchMedia('(pointer: coarse)').matches && innerWidth === lastWidth && !frozen) { lastLayout = captureLayout(); lastHeight = innerHeight; lastOrigin = screenOrigin(); return }
-    activeTransition?.skipTransition()
+    if (activeTransition) stopRouteMotion()
     if (reducedMotion.matches) { unfreeze(); refreshResizeBaseline(); return }
     if (!frozen) {
       if (clipTimer) clearTimeout(clipTimer)

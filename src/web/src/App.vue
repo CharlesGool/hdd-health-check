@@ -59,11 +59,15 @@ const editingSchedule = ref(false)
 const loading = ref(true)
 const error = ref('')
 const message = ref('')
+const messageSequence = ref(0)
 let messageTimer: ReturnType<typeof setTimeout> | undefined
-watch(message, value => {
+function showMessage(value: string) {
   if (messageTimer) clearTimeout(messageTimer)
-  messageTimer = value ? setTimeout(() => { message.value = ''; messageTimer = undefined }, 4200) : undefined
-})
+  message.value = value
+  messageSequence.value++
+  messageTimer = value ? setTimeout(() => { message.value = ''; messageTimer = undefined }, 3000) : undefined
+}
+function closeMessage() { if (messageTimer) clearTimeout(messageTimer); messageTimer = undefined; message.value = '' }
 type Confirmation = { title: string; detail?: string; targets?: string[]; action: string }
 const confirmation = ref<Confirmation | null>(null)
 const confirmCancelButton = ref<HTMLButtonElement | null>(null)
@@ -206,7 +210,7 @@ async function toggleSerial() {
   try {
     const result = await api<{ serial: string }>(`/api/disks/${name}/serial`)
     if (selected.value === name && detailTab.value === 'smart') { revealedSerial.value = result.serial; serialShown.value = true }
-  } catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+  } catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
 }
 async function copySerial() {
   if (!serialShown.value || !revealedSerial.value) return
@@ -221,12 +225,12 @@ async function copySerial() {
       field.remove()
       if (!copied) throw new Error('copy failed')
     }
-    message.value = t('serialCopied')
+    showMessage(t('serialCopied'))
     serialCopied.value = true
     if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer)
     copyFeedbackTimer = setTimeout(() => { serialCopied.value = false; copyFeedbackTimer = undefined }, 2200)
   }
-  catch { message.value = t('copyFailed') }
+  catch { showMessage(t('copyFailed')) }
 }
 type SmartAttribute = Smart['attributes'][number]
 const ataExplanations: Record<number, string> = {
@@ -253,6 +257,26 @@ function smartExplanation(item: SmartAttribute) {
   return t(topic || 'smartGenericHelp')
 }
 const smartTip = ref<{ text: string; left: number; top: number; above: boolean } | null>(null)
+const detailTabTrack = ref<HTMLElement | null>(null)
+let tabResizeObserver: ResizeObserver | undefined
+function positionDetailTab() {
+  const track = detailTabTrack.value
+  const selectedTab = track?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
+  if (!track || !selectedTab) return
+  track.style.setProperty('--detail-tab-x', `${selectedTab.offsetLeft}px`)
+  track.style.setProperty('--detail-tab-width', String(selectedTab.offsetWidth))
+  track.classList.add('is-ready')
+}
+watch([detailTab, lang, detailTabTrack], async () => {
+  tabResizeObserver?.disconnect()
+  await nextTick()
+  const track = detailTabTrack.value
+  if (!track) return
+  positionDetailTab()
+  tabResizeObserver = new ResizeObserver(positionDetailTab)
+  tabResizeObserver.observe(track)
+  track.querySelectorAll('[role="tab"]').forEach(tab => tabResizeObserver?.observe(tab))
+}, { flush: 'post' })
 function showSmartTip(event: Event, item: SmartAttribute) {
   const anchor = event.currentTarget as HTMLElement
   const bounds = anchor.getBoundingClientRect()
@@ -371,7 +395,7 @@ async function login(ip = false) {
 }
 async function logout() {
   try { await api('/api/auth/logout', {}) }
-  catch (e) { message.value = e instanceof Error ? e.message : t('error'); return }
+  catch (e) { showMessage(e instanceof Error ? e.message : t('error')); return }
   stopRouteMotion()
   auth.value = { authenticated: false, method: null, ipAllowed: auth.value?.ipAllowed || false, canManageAccess: false }
   snapshot.value = null; selected.value = null; password.value = ''; preferencesLoaded.value = false
@@ -403,7 +427,7 @@ async function savePreferences() {
     const previous = savedWakeSleepingOnVisit.value
     const result = await api<{wakeSleepingOnVisit:boolean}>('/api/preferences', { wakeSleepingOnVisit: wakeSleepingOnVisit.value })
     savedWakeSleepingOnVisit.value = result.wakeSleepingOnVisit
-    message.value = t('save') + ' ✓'
+    showMessage(t('save') + ' ✓')
     if (result.wakeSleepingOnVisit && !previous) { visitWakeRequested = true; void requestWakeOnVisit() }
   } catch (e) { preferencesError.value = e instanceof Error ? e.message : t('error') }
   finally { preferencesBusy.value = false }
@@ -425,7 +449,7 @@ async function verifySecurity() {
 }
 async function saveAccess(ips: string[], enabled = accessEnabled.value) {
   accessError.value = ''
-  try { const result = await api<{ips:string[];enabled:boolean}>('/api/access', { ips, enabled }); allowedIps.value = result.ips; accessEnabled.value = result.enabled; newIp.value = ''; message.value = t('save') + ' ✓' }
+  try { const result = await api<{ips:string[];enabled:boolean}>('/api/access', { ips, enabled }); allowedIps.value = result.ips; accessEnabled.value = result.enabled; newIp.value = ''; showMessage(t('save') + ' ✓') }
   catch (e) { if (e instanceof Error && e.message.includes('Verify the administrator password') && auth.value) { auth.value.canManageAccess = false; allowedIps.value = []; accessEnabled.value = false }; accessError.value = e instanceof Error ? e.message : t('error') }
 }
 async function changePassword() {
@@ -553,8 +577,8 @@ async function wakeDisk(name: string) {
     await refresh()
     if (selected.value === name) smart.value = await api<Smart>(`/api/disks/${name}/smart`)
     justWokenDisk.value = name
-    message.value = t('wakeDiskDone')
-  } catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+    showMessage(t('wakeDiskDone'))
+  } catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
   finally { wakeDiskBusy.value = false }
 }
 async function sleepDisk(name: string) {
@@ -565,26 +589,26 @@ async function sleepDisk(name: string) {
     await api(`/api/disks/${name}/sleep`, {})
     justWokenDisk.value = null
     if (smart.value) smart.value = { ...smart.value, passed: null, temperatureState: 'sleeping', temperature: null, powerOnHours: null, attributes: [] }
-    message.value = t('sleepDiskDone')
-  } catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+    showMessage(t('sleepDiskDone'))
+  } catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
   finally { sleepDiskBusy.value = false }
 }
 async function deleteJob(id: string) {
   if (!await askConfirmation({ title: t('deleteHistory'), detail: t('deleteJobConfirm'), action: t('deleteHistory') })) return
   try { await api(`/api/jobs/history/${id}`, undefined, 'DELETE'); pastJobOpen.value = null; await refresh() }
-  catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+  catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
 }
 async function deleteSample(sample: SmartSample) {
   if (!await askConfirmation({ title: t('deleteHistory'), detail: t('deleteSampleConfirm'), action: t('deleteHistory') })) return
   try { await api(`/api/history/samples/${sample.disk}/${sample.index}`, undefined, 'DELETE'); await refresh() }
-  catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+  catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
 }
 async function launch() {
   if (!activeDisk.value || busy.value) return
   if (moduleChoice.value !== 'quick' && !await askConfirmation({ title: t('confirmStart'), detail: moduleLabel(moduleChoice.value), targets: [`/dev/${activeDisk.value.name}`], action: t('launch') })) return
-  busy.value = true; message.value = ''
+  busy.value = true; closeMessage()
   try { await api('/api/jobs', { disk: activeDisk.value.name, module: moduleChoice.value }); await refresh() }
-  catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+  catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
   finally { busy.value = false }
 }
 async function assess() {
@@ -592,22 +616,22 @@ async function assess() {
   const names = assessmentEligible.value.map(d => `/dev/${d.name}`)
   if (!names.length) return
   if (!await askConfirmation({ title: t('assessmentConfirm'), detail: `${moduleLabel(assessmentModule.value)} · ${assessmentNote.value}`, targets: names, action: t('assessmentStart') })) return
-  assessmentBusy.value = true; message.value = ''
-  try { const result = await api<{message:string;disks:string[]}>('/api/jobs/assess', { scope: assessmentScope.value, module: assessmentModule.value }); message.value = `${t('assessmentStarted')}: ${moduleLabel(assessmentModule.value)} · ${result.disks.length}`; await refresh() }
-  catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+  assessmentBusy.value = true; closeMessage()
+  try { const result = await api<{message:string;disks:string[]}>('/api/jobs/assess', { scope: assessmentScope.value, module: assessmentModule.value }); showMessage(`${t('assessmentStarted')}: ${moduleLabel(assessmentModule.value)} · ${result.disks.length}`); await refresh() }
+  catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
   finally { assessmentBusy.value = false }
 }
 async function stop() {
   if (!await askConfirmation({ title: t('confirmStop'), action: t('stop') })) return
   busy.value = true
   try { await api('/api/jobs/stop', {}); await refresh() }
-  catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+  catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
   finally { busy.value = false }
 }
 async function saveSchedule() {
-  busy.value = true; message.value = ''
-  try { schedule.value = await api<Schedule>('/api/schedule', { enabled: schedule.value.enabled, hours: Number(schedule.value.hours) }); editingSchedule.value = false; message.value = t('save') + ' ✓' }
-  catch (e) { message.value = e instanceof Error ? e.message : t('error') }
+  busy.value = true; closeMessage()
+  try { schedule.value = await api<Schedule>('/api/schedule', { enabled: schedule.value.enabled, hours: Number(schedule.value.hours) }); editingSchedule.value = false; showMessage(t('save') + ' ✓') }
+  catch (e) { showMessage(e instanceof Error ? e.message : t('error')) }
   finally { busy.value = false }
 }
 let themeTimer: ReturnType<typeof setTimeout> | undefined
@@ -653,7 +677,7 @@ async function onPopState(event?: PopStateEvent) {
   arrival = nextArrival
   refreshResizeBaseline()
 }
-onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeout(themeTimer); if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer); if (messageTimer) clearTimeout(messageTimer); window.removeEventListener('popstate', onPopState); removeResizeMotion?.(); stopRouteMotion(); confirmResolve?.(false) })
+onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeout(themeTimer); if (copyFeedbackTimer) clearTimeout(copyFeedbackTimer); if (messageTimer) clearTimeout(messageTimer); tabResizeObserver?.disconnect(); window.removeEventListener('popstate', onPopState); removeResizeMotion?.(); stopRouteMotion(); confirmResolve?.(false) })
 </script>
 
 <template>
@@ -675,7 +699,7 @@ onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeou
     <main v-else-if="!auth.authenticated && currentPage==='changelog'" class="container content-main"><div class="breadcrumbs"><a href="/disks" @click="navLink($event, 'disks')">{{ t('home') }}</a><span>/</span><span>{{ t('changelog') }}</span></div><div class="page-actions"><a class="button back-button" href="/disks" @click="navLink($event, 'disks')"><ArrowLeft :size="16" aria-hidden="true" />{{ t('login') }}</a></div><div class="page-heading"><div><div class="eyebrow">{{ t('releaseNotes') }}</div><h1>{{ t('changelog') }}</h1><p>{{ t('changelogDescription') }}</p></div></div><div class="changelog-list"><article v-for="(entry, index) in changelogCards" :key="index" class="settings-card changelog-card"><span class="status-pill">{{ t(entry.candidate ? 'testBuild' : 'formalVersion') }}</span><div class="markdown-body" v-html="entry.html"></div></article></div></main>
     <main v-else-if="!auth.authenticated" class="app-login-main"><form class="panel login-card app-login-card" @submit.prevent="login()"><div class="login-symbol"><LockKeyhole :size="25" /></div><div class="eyebrow">HDD HEALTH</div><h1>{{ t('loginTitle') }}</h1><p class="lead">{{ t('loginDescription') }}</p><label for="login-password">{{ t('password') }}</label><PasswordField id="login-password" v-model="password" autocomplete="current-password" :show-label="t('showPassword')" :hide-label="t('hidePassword')" :show-text="t('show')" :hide-text="t('hide')" required /><p v-if="loginError" class="login-error" role="alert">{{ loginError }}</p><button class="button primary app-login-action" :disabled="loginBusy" type="submit">{{ t('login') }}</button><button class="button app-login-action" type="button" :disabled="loginBusy" @click="login(true)">{{ t('ipLogin') }}</button><div class="app-login-footer login-footer"><a class="app-login-version" href="/changelog" @click="navLink($event, 'changelog')">{{ buildVersion }}</a><div class="app-login-language"><label for="login-language">{{ t('language') }}</label><UiSelect id="login-language" :model-value="lang" :options="languageOptions" :aria-label="t('language')" @update:model-value="selectLanguage" /></div></div></form></main>
     <main v-else class="container content-main">
-    <div v-if="activeDisk" class="disk-detail-page"><div class="breadcrumbs"><a href="/disks" @click="navLink($event, 'disks')">{{ t('home') }}</a><span>/</span><span>{{ t('driveDetail') }}</span></div><div class="page-actions"><button class="button back-button" type="button" @click="closeDisk"><ArrowLeft :size="16" aria-hidden="true" />{{ t('backToList') }}</button></div><section class="disk-detail-content panel"><div class="disk-page-header"><div><div class="eyebrow">{{ t('driveDetail') }}</div><h1>{{ activeDisk.model || `/dev/${activeDisk.name}` }}</h1><p>/dev/{{ activeDisk.name }} · <button class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(activeDisk.bytes, activeDisk.size) }}</button> · {{ activeDisk.transport }}</p></div></div><div class="detail-tabs" role="tablist"><div class="detail-tab-track" :class="{'checks-active':detailTab==='checks'}"><button role="tab" :aria-selected="detailTab==='smart'" :class="{active:detailTab==='smart'}" @click="detailTab='smart'">{{ t('smartInfo') }}</button><button role="tab" :aria-selected="detailTab==='checks'" :class="{active:detailTab==='checks'}" @click="serialShown=false; revealedSerial=''; serialCopied=false; hideSmartTip(); detailTab='checks'">{{ t('checks') }}</button></div></div><div v-if="detailTab==='smart'" class="drawer-body"><div v-if="smartLoading" class="empty">{{ t('refresh') }}…</div><template v-else-if="smart"><div class="smart-status"><span>{{ t('healthStatus') }}</span><strong :class="smart.passed===true?'good':smart.passed===false?'bad':'na'">{{ smart.passed===true ? t('smartPassed') : smart.passed===false ? t('smartFailed') : smart.temperatureState==='sleeping' ? t('sleeping') : t('smartUnknown') }}</strong><div v-if="activeDisk.rotation==='1' && activeDisk.transport?.toLowerCase()==='sata'" class="power-actions"><button v-if="smart.temperatureState==='sleeping' || activeDisk.temperatureState==='sleeping' || justWokenDisk===activeDisk.name" class="disk-wake-button" type="button" :disabled="wakeDiskBusy || justWokenDisk===activeDisk.name || previewMode" @click="wakeDisk(activeDisk.name)">{{ justWokenDisk===activeDisk.name ? t('wakeDiskDone') : wakeDiskBusy ? t('wakingDisk') : t('wakeDisk') }}</button><button v-else class="disk-wake-button" type="button" :disabled="sleepDiskBusy || status.running || previewMode" @click="sleepDisk(activeDisk.name)">{{ sleepDiskBusy ? t('sleepingDisk') : t('sleepDisk') }}</button></div></div><p v-if="smart.temperatureState==='sleeping'" class="subtle-note">{{ t('sleepingSmartNote') }}</p><p v-else-if="smart.error && !smart.available" class="subtle-note">{{ smart.error }}</p><div class="smart-facts"><div><small>{{ t('model') }}</small><strong>{{ smart.model || activeDisk.model || '—' }}</strong></div><div><small>{{ t('serial') }}</small><template v-if="smart.serial || activeDisk.serial"><button class="sensitive-value" type="button" :aria-label="t(serialShown ? 'hideSerial' : 'showSerial')" :aria-pressed="serialShown" @click="toggleSerial">{{ serialShown ? revealedSerial : (smart.serial || activeDisk.serial) }}</button><button v-if="serialShown && revealedSerial" class="serial-copy-button" :class="{copied:serialCopied}" type="button" :aria-label="t(serialCopied ? 'serialCopied' : 'copySerial')" :title="t(serialCopied ? 'serialCopied' : 'copySerial')" @click="copySerial"><Check v-if="serialCopied" :size="18" :stroke-width="3" aria-hidden="true" /><Copy v-else :size="17" aria-hidden="true" /></button></template><strong v-else>—</strong></div><div><small>{{ t('diskType') }}</small><strong>{{ diskTypeText(activeDisk) }}</strong></div><div v-if="smart.formFactor"><small>{{ t('formFactor') }}</small><strong>{{ smart.formFactor }}</strong></div><div><small>{{ t('currentLink') }}</small><strong>{{ linkText(smart.link || activeDisk.link, smart.protocol || activeDisk.transport) }}</strong></div><div v-if="maxLinkText(smart.link || activeDisk.link)"><small>{{ t('maxLink') }}</small><strong>{{ maxLinkText(smart.link || activeDisk.link) }}</strong></div><div><small>{{ t('temp') }}</small><strong :class="temperatureClass(activeDisk, smart.temperature)">{{ temperatureText(smart.temperature, smart.temperatureState) }}</strong></div><div v-if="activeDisk.rotation==='0'"><small>{{ t('hostReads') }}</small><button v-if="smart.readBytes!=null" class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(smart.readBytes) }}</button><strong v-else>—</strong><small v-if="smart.readBytes==null">{{ t('readsUnavailable') }}</small></div><div v-if="activeDisk.rotation==='0'"><small>{{ t('hostWrites') }}</small><button v-if="smart.writtenBytes!=null" class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(smart.writtenBytes) }}</button><strong v-else>—</strong><small v-if="smart.writtenBytes==null">{{ t('writesUnavailable') }}</small></div><div><small>{{ t('powerOnHours') }}</small><button v-if="smart.powerOnHours!=null" class="time-toggle" type="button" :title="t('togglePowerTime')" :aria-label="t('togglePowerTime')" :aria-pressed="powerTimeExpanded" @click="powerTimeExpanded=!powerTimeExpanded">{{ powerTime(smart.powerOnHours) }}</button><strong v-else>{{ smart.temperatureState==='sleeping' ? t('sleeping') : '—' }}</strong></div></div><div class="section-head"><h3>{{ t('smartAttributes') }}</h3></div><p class="smart-legend">{{ t('smartTableHelp') }}</p><div v-if="!smart.attributes.length" class="empty compact">{{ smart.temperatureState==='sleeping' ? t('sleepingSmartNote') : t('smartUnavailable') }}</div><div v-else class="table-scroll"><table><thead><tr><th>{{ t('attribute') }}</th><th>{{ t('value') }}</th><th>{{ t('normalized') }}</th><th>{{ t('threshold') }}</th></tr></thead><tbody><tr v-for="(item,index) in smart.attributes" :key="item.key+index"><td class="attr-name"><span class="smart-attribute-name">{{ item.key }}</span><button type="button" class="smart-attribute-help" :aria-label="`${item.key}: ${smartExplanation(item)}`" @pointerenter="showSmartTip($event,item)" @pointerleave="hideSmartTip" @focus="showSmartTip($event,item)" @blur="hideSmartTip" @click="showSmartTip($event,item)" @keydown.esc="hideSmartTip"><CircleHelp :size="17" aria-hidden="true" /></button></td><td class="smart-raw-value">{{ item.value }}</td><td>{{ item.normalized ?? '—' }}</td><td>{{ item.threshold ?? '—' }}</td></tr></tbody></table></div></template></div><div v-else class="drawer-body"><div class="score-panel"><div><small>{{ t('current') }}</small><strong>{{ activeDisk.score === null ? '—' : activeDisk.score }}</strong><span>{{ gradeText(activeDisk) }}</span></div><div><small>{{ t('status') }}</small><span class="badge large" :class="condition(activeDisk)">{{ conditionLabel(activeDisk) }}</span><span>{{ coverageText(activeDisk.coverage) }}</span></div></div><p class="subtle-note">{{ t('scoreNote') }}</p><div v-if="attentionModules(activeDisk).length > 0" class="attention-detail"><strong>{{ t('attentionReasons') }}</strong><ul><li v-for="item in attentionModules(activeDisk)" :key="item.name">{{ moduleLabel(item.name) }}: {{ moduleSummary(item) }} <small>({{ item.current ? t('fresh') : t('stale') }})</small></li></ul></div><div class="section-head"><h3>{{ t('checks') }}</h3><History :size="17" /></div><div v-if="!activeDisk.modules.length" class="empty compact">{{ t('noCheck') }}</div><div v-for="item in activeDisk.modules" :key="item.name" class="module-row module-detail"><button type="button" class="module-expand" :aria-expanded="expandedModule===item.name" @click="expandedModule=expandedModule===item.name ? null : item.name"><strong>{{ moduleLabel(item.name) }}</strong><small>{{ date(item.timestamp) }} · {{ item.current ? t('fresh') : t('stale') }}</small><p>{{ moduleSummary(item) }}</p><small>{{ t('viewDetails') }} {{ expandedModule===item.name ? '⌃' : '⌄' }}</small></button><span class="badge" :class="item.status">{{ label(item.status) }}</span><div v-if="expandedModule===item.name" class="module-expanded"><p><strong>{{ t('status') }}:</strong> {{ label(item.status) }}</p><p><strong>{{ t('date') }}:</strong> {{ date(item.timestamp) }}</p><p><strong>{{ t('deduction') }}:</strong> {{ item.deduction }}</p><p><strong>{{ t('summary') }}:</strong> {{ item.summary || t('noDetail') }}</p><p><strong>{{ t('attentionReasons') }}:</strong> {{ item.issues || t('noDetail') }}</p></div></div><div class="section-head"><h3>{{ t('launch') }}</h3><Play :size="17" /></div><p class="subtle-note">{{ t('scanNote') }}</p><div class="launch-row"><UiSelect v-model="moduleChoice" :options="diskSelectOptions" :aria-label="t('checkType')" :disabled="busy || status.running" /><button class="button primary" :disabled="busy || status.running" @click="launch"><Play :size="15" />{{ t('launch') }}</button></div><div class="section-head"><h3>{{ t('history') }}</h3><History :size="17" /></div><div v-if="!diskHistory.length" class="empty compact">{{ t('noHistory') }}</div><div v-else class="table-scroll"><table><thead><tr><th>{{ t('date') }}</th><th>{{ t('realloc') }}</th><th>{{ t('pending') }}</th><th>{{ t('uncorrect') }}</th><th>{{ t('crc') }}</th><th>{{ t('temp') }}</th><th></th></tr></thead><tbody><tr v-for="row in diskHistory" :key="row.index"><td>{{ date(row.values[0]) }}</td><td>{{ row.values[2] }}</td><td>{{ row.values[3] }}</td><td>{{ row.values[4] }}</td><td>{{ row.values[6] }}</td><td>{{ row.values[7] }}°</td><td><button class="history-delete" type="button" @click="deleteSample(row)">{{ t('deleteHistory') }}</button></td></tr></tbody></table></div></div></section></div>
+    <div v-if="activeDisk" class="disk-detail-page"><div class="breadcrumbs"><a href="/disks" @click="navLink($event, 'disks')">{{ t('home') }}</a><span>/</span><span>{{ t('driveDetail') }}</span></div><div class="page-actions"><button class="button back-button" type="button" @click="closeDisk"><ArrowLeft :size="16" aria-hidden="true" />{{ t('backToList') }}</button></div><section class="disk-detail-content panel"><div class="disk-page-header"><div><div class="eyebrow">{{ t('driveDetail') }}</div><h1>{{ activeDisk.model || `/dev/${activeDisk.name}` }}</h1><p>/dev/{{ activeDisk.name }} · <button class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(activeDisk.bytes, activeDisk.size) }}</button> · {{ activeDisk.transport }}</p></div></div><div class="detail-tabs" role="tablist"><div ref="detailTabTrack" class="detail-tab-track"><button role="tab" :aria-selected="detailTab==='smart'" :class="{active:detailTab==='smart'}" @click="detailTab='smart'">{{ t('smartInfo') }}</button><button role="tab" :aria-selected="detailTab==='checks'" :class="{active:detailTab==='checks'}" @click="serialShown=false; revealedSerial=''; serialCopied=false; hideSmartTip(); detailTab='checks'">{{ t('checks') }}</button></div></div><div v-if="detailTab==='smart'" class="drawer-body"><div v-if="smartLoading" class="empty">{{ t('refresh') }}…</div><template v-else-if="smart"><div class="smart-status"><span>{{ t('healthStatus') }}</span><strong :class="smart.passed===true?'good':smart.passed===false?'bad':'na'">{{ smart.passed===true ? t('smartPassed') : smart.passed===false ? t('smartFailed') : smart.temperatureState==='sleeping' ? t('sleeping') : t('smartUnknown') }}</strong><div v-if="activeDisk.rotation==='1' && activeDisk.transport?.toLowerCase()==='sata'" class="power-actions"><button v-if="smart.temperatureState==='sleeping' || activeDisk.temperatureState==='sleeping' || justWokenDisk===activeDisk.name" class="disk-wake-button" type="button" :disabled="wakeDiskBusy || justWokenDisk===activeDisk.name || previewMode" @click="wakeDisk(activeDisk.name)">{{ justWokenDisk===activeDisk.name ? t('wakeDiskDone') : wakeDiskBusy ? t('wakingDisk') : t('wakeDisk') }}</button><button v-else class="disk-wake-button" type="button" :disabled="sleepDiskBusy || status.running || previewMode" @click="sleepDisk(activeDisk.name)">{{ sleepDiskBusy ? t('sleepingDisk') : t('sleepDisk') }}</button></div></div><p v-if="smart.temperatureState==='sleeping'" class="subtle-note">{{ t('sleepingSmartNote') }}</p><p v-else-if="smart.error && !smart.available" class="subtle-note">{{ smart.error }}</p><div class="smart-facts"><div><small>{{ t('model') }}</small><strong>{{ smart.model || activeDisk.model || '—' }}</strong></div><div><small>{{ t('serial') }}</small><template v-if="smart.serial || activeDisk.serial"><button class="sensitive-value" type="button" :aria-label="t(serialShown ? 'hideSerial' : 'showSerial')" :aria-pressed="serialShown" @click="toggleSerial">{{ serialShown ? revealedSerial : (smart.serial || activeDisk.serial) }}</button><button v-if="serialShown && revealedSerial" class="serial-copy-button" :class="{copied:serialCopied}" type="button" :aria-label="t(serialCopied ? 'serialCopied' : 'copySerial')" :title="t(serialCopied ? 'serialCopied' : 'copySerial')" @click="copySerial"><Check v-if="serialCopied" :size="18" :stroke-width="3" aria-hidden="true" /><Copy v-else :size="17" aria-hidden="true" /></button></template><strong v-else>—</strong></div><div><small>{{ t('diskType') }}</small><strong>{{ diskTypeText(activeDisk) }}</strong></div><div v-if="smart.formFactor"><small>{{ t('formFactor') }}</small><strong>{{ smart.formFactor }}</strong></div><div><small>{{ t('currentLink') }}</small><strong>{{ linkText(smart.link || activeDisk.link, smart.protocol || activeDisk.transport) }}</strong></div><div v-if="maxLinkText(smart.link || activeDisk.link)"><small>{{ t('maxLink') }}</small><strong>{{ maxLinkText(smart.link || activeDisk.link) }}</strong></div><div><small>{{ t('temp') }}</small><strong :class="temperatureClass(activeDisk, smart.temperature)">{{ temperatureText(smart.temperature, smart.temperatureState) }}</strong></div><div v-if="activeDisk.rotation==='0'"><small>{{ t('hostReads') }}</small><button v-if="smart.readBytes!=null" class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(smart.readBytes) }}</button><strong v-else>—</strong><small v-if="smart.readBytes==null">{{ t('readsUnavailable') }}</small></div><div v-if="activeDisk.rotation==='0'"><small>{{ t('hostWrites') }}</small><button v-if="smart.writtenBytes!=null" class="capacity-toggle" type="button" :title="t('toggleCapacity')" :aria-label="t('toggleCapacity')" @click="toggleCapacity">{{ capacityText(smart.writtenBytes) }}</button><strong v-else>—</strong><small v-if="smart.writtenBytes==null">{{ t('writesUnavailable') }}</small></div><div><small>{{ t('powerOnHours') }}</small><button v-if="smart.powerOnHours!=null" class="time-toggle" type="button" :title="t('togglePowerTime')" :aria-label="t('togglePowerTime')" :aria-pressed="powerTimeExpanded" @click="powerTimeExpanded=!powerTimeExpanded">{{ powerTime(smart.powerOnHours) }}</button><strong v-else>{{ smart.temperatureState==='sleeping' ? t('sleeping') : '—' }}</strong></div></div><div class="section-head"><h3>{{ t('smartAttributes') }}</h3></div><p class="smart-legend">{{ t('smartTableHelp') }}</p><div v-if="!smart.attributes.length" class="empty compact">{{ smart.temperatureState==='sleeping' ? t('sleepingSmartNote') : t('smartUnavailable') }}</div><div v-else class="table-scroll"><table><thead><tr><th>{{ t('attribute') }}</th><th>{{ t('value') }}</th><th>{{ t('normalized') }}</th><th>{{ t('threshold') }}</th></tr></thead><tbody><tr v-for="(item,index) in smart.attributes" :key="item.key+index"><td class="attr-name"><span class="smart-attribute-name">{{ item.key }}</span><button type="button" class="smart-attribute-help" :aria-label="`${item.key}: ${smartExplanation(item)}`" @pointerenter="showSmartTip($event,item)" @pointerleave="hideSmartTip" @focus="showSmartTip($event,item)" @blur="hideSmartTip" @click="showSmartTip($event,item)" @keydown.esc="hideSmartTip"><CircleHelp :size="17" aria-hidden="true" /></button></td><td class="smart-raw-value">{{ item.value }}</td><td>{{ item.normalized ?? '—' }}</td><td>{{ item.threshold ?? '—' }}</td></tr></tbody></table></div></template></div><div v-else class="drawer-body"><div class="score-panel"><div><small>{{ t('current') }}</small><strong>{{ activeDisk.score === null ? '—' : activeDisk.score }}</strong><span>{{ gradeText(activeDisk) }}</span></div><div><small>{{ t('status') }}</small><span class="badge large" :class="condition(activeDisk)">{{ conditionLabel(activeDisk) }}</span><span>{{ coverageText(activeDisk.coverage) }}</span></div></div><p class="subtle-note">{{ t('scoreNote') }}</p><div v-if="attentionModules(activeDisk).length > 0" class="attention-detail"><strong>{{ t('attentionReasons') }}</strong><ul><li v-for="item in attentionModules(activeDisk)" :key="item.name">{{ moduleLabel(item.name) }}: {{ moduleSummary(item) }} <small>({{ item.current ? t('fresh') : t('stale') }})</small></li></ul></div><div class="section-head"><h3>{{ t('checks') }}</h3><History :size="17" /></div><div v-if="!activeDisk.modules.length" class="empty compact">{{ t('noCheck') }}</div><div v-for="item in activeDisk.modules" :key="item.name" class="module-row module-detail"><button type="button" class="module-expand" :aria-expanded="expandedModule===item.name" @click="expandedModule=expandedModule===item.name ? null : item.name"><strong>{{ moduleLabel(item.name) }}</strong><small>{{ date(item.timestamp) }} · {{ item.current ? t('fresh') : t('stale') }}</small><p>{{ moduleSummary(item) }}</p><small>{{ t('viewDetails') }} {{ expandedModule===item.name ? '⌃' : '⌄' }}</small></button><span class="badge" :class="item.status">{{ label(item.status) }}</span><div v-if="expandedModule===item.name" class="module-expanded"><p><strong>{{ t('status') }}:</strong> {{ label(item.status) }}</p><p><strong>{{ t('date') }}:</strong> {{ date(item.timestamp) }}</p><p><strong>{{ t('deduction') }}:</strong> {{ item.deduction }}</p><p><strong>{{ t('summary') }}:</strong> {{ item.summary || t('noDetail') }}</p><p><strong>{{ t('attentionReasons') }}:</strong> {{ item.issues || t('noDetail') }}</p></div></div><div class="section-head"><h3>{{ t('launch') }}</h3><Play :size="17" /></div><p class="subtle-note">{{ t('scanNote') }}</p><div class="launch-row"><UiSelect v-model="moduleChoice" :options="diskSelectOptions" :aria-label="t('checkType')" :disabled="busy || status.running" /><button class="button primary" :disabled="busy || status.running" @click="launch"><Play :size="15" />{{ t('launch') }}</button></div><div class="section-head"><h3>{{ t('history') }}</h3><History :size="17" /></div><div v-if="!diskHistory.length" class="empty compact">{{ t('noHistory') }}</div><div v-else class="table-scroll"><table><thead><tr><th>{{ t('date') }}</th><th>{{ t('realloc') }}</th><th>{{ t('pending') }}</th><th>{{ t('uncorrect') }}</th><th>{{ t('crc') }}</th><th>{{ t('temp') }}</th><th></th></tr></thead><tbody><tr v-for="row in diskHistory" :key="row.index"><td>{{ date(row.values[0]) }}</td><td>{{ row.values[2] }}</td><td>{{ row.values[3] }}</td><td>{{ row.values[4] }}</td><td>{{ row.values[6] }}</td><td>{{ row.values[7] }}°</td><td><button class="history-delete" type="button" @click="deleteSample(row)">{{ t('deleteHistory') }}</button></td></tr></tbody></table></div></div></section></div>
       <template v-else>
       <div v-if="previewMode" class="preview-note" role="status"><ShieldAlert :size="18" /><span>{{ t('previewOnly') }}</span></div>
       <div v-if="error" class="alert"><ShieldAlert :size="18" /><span>{{ error }}</span><button class="text-button" @click="refresh">{{ t('retry') }}</button></div>
@@ -724,6 +748,6 @@ onUnmounted(() => { if (timer) clearInterval(timer); if (themeTimer) clearTimeou
       </template>
     </main>
     <div v-if="confirmation" class="confirm-backdrop" @click.self="answerConfirmation(false)"><section ref="confirmDialog" class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title" @keydown="onConfirmKeydown"><div class="confirm-heading"><div class="eyebrow">{{ t('checkType') }}</div><h2 id="confirm-title">{{ confirmation.title }}</h2></div><p v-if="confirmation.detail" class="confirm-detail">{{ confirmation.detail }}</p><div v-if="confirmation.targets?.length" class="confirm-targets"><strong>{{ t('assessmentCount') }}: {{ confirmation.targets.length }}</strong><div>{{ confirmation.targets.join(' · ') }}</div></div><div class="confirm-actions"><button ref="confirmCancelButton" class="button" type="button" @click="answerConfirmation(false)">{{ t('cancel') }}</button><button class="button primary" type="button" @click="answerConfirmation(true)">{{ confirmation.action }}</button></div></section></div>
-    <Transition name="toast-pop"><div v-if="message" class="toast" role="status"><span>{{ message }}</span><button :aria-label="t('close')" @click="message = ''"><X :size="19" /></button></div></Transition><Teleport to="body"><div v-if="smartTip" class="smart-tip" role="tooltip" :class="{above:smartTip.above}" :style="{left:`${smartTip.left}px`,top:`${smartTip.top}px`}">{{ smartTip.text }}</div></Teleport>
+    <Transition name="toast-pop"><div v-if="message" :key="messageSequence" class="toast" role="status"><span>{{ message }}</span><button :aria-label="t('close')" @click="closeMessage"><X :size="19" /></button></div></Transition><Teleport to="body"><div v-if="smartTip" class="smart-tip" role="tooltip" :class="{above:smartTip.above}" :style="{left:`${smartTip.left}px`,top:`${smartTip.top}px`}">{{ smartTip.text }}</div></Teleport>
   </div>
 </template>
