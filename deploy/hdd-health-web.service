@@ -12,6 +12,7 @@ Restart=on-failure
 RestartSec=5
 UMask=0077
 StateDirectory=hdd-health
+StateDirectoryMode=0700
 LogsDirectory=disk-health
 ProtectSystem=strict
 ReadWritePaths=/root/apps/hdd-health-check /var/lib/hdd-health /var/log/disk-health /run
