@@ -20,6 +20,10 @@ spec.loader.exec_module(app)
 
 with tempfile.TemporaryDirectory() as directory:
     app.STATE = Path(directory)
+    app.ASSETS = app.STATE / 'assets'
+    app.ASSETS.mkdir()
+    (app.ASSETS / 'index.html').write_text('<!doctype html><title>Auth test</title>')
+    (app.ASSETS / 'version.json').write_text(json.dumps({'version': 'test-auth'}))
     app.SCHEDULE = app.STATE / 'web-schedule.json'
     app.ACCESS = app.STATE / 'web-access.json'
     app.PREFERENCES = app.STATE / 'web-preferences.json'
