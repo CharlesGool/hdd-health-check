@@ -37,7 +37,7 @@ A full SSD/NVMe assessment runs SMART quick, short and long self-tests plus a fu
 ## Requirements
 
 - Minimum: root, Bash 4.3+, Linux block-device utilities (`lsblk`, `blockdev`), `smartctl` (`smartmontools`), `dd` (`coreutils`) and `flock`; Debian/Ubuntu is the intended platform. Other distributions receive a warning; automatic dependency installation uses `apt-get`.
-- Recommended: `badblocks` (`e2fsprogs`) for surface checks; systemd with `systemd-run` for detached tasks. Missing packages may trigger an interactive `apt-get update`/install offer (or automatic confirmation with `-y`). Check dependencies before unattended runs. No pinned third-party code is vendored and no dependency lock file applies.
+- Recommended: `badblocks` (`e2fsprogs`) for surface checks; systemd with `systemd-run` for detached tasks. Missing packages may trigger an interactive `apt-get update`/install offer (or automatic confirmation with `-y`). Check dependencies before unattended runs. The checker uses host-provided system tools; npm dependencies for the Web frontend are pinned by `src/web/package-lock.json`.
 - Real HDD and SMART access are needed to assess actual health. SSD/NVMe can be included explicitly. A completed SSD full assessment scores 100 when SMART checks, self-tests and the full read-only scan report no issues; actual read errors and SMART findings lower that heuristic score. It is not a calibrated failure probability.
 
 ## Install

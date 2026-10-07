@@ -36,7 +36,7 @@
 ## 要求
 
 - 最低要求:root,Bash 4.3+,Linux 块设备工具(`lsblk`,`blockdev`),`smartctl`(`smartmontools`),`dd`(`coreutils`)及 `flock`;目标平台为 Debian/Ubuntu.其他发行版会收到警告;自动安装依赖使用 `apt-get`.
-- 推荐:使用 `badblocks`(`e2fsprogs`)进行盘面检查;使用支持 `systemd-run` 的 systemd 执行分离式任务.缺少软件包时可能提示交互式执行 `apt-get update`/安装(或通过 `-y` 自动确认).无人值守运行前请检查依赖.项目未内置固定版本的第三方代码,也不适用依赖锁文件.
+- 推荐:使用 `badblocks`(`e2fsprogs`)进行盘面检查;使用支持 `systemd-run` 的 systemd 执行分离式任务.缺少软件包时可能提示交互式执行 `apt-get update`/安装(或通过 `-y` 自动确认).无人值守运行前请检查依赖.检测器的系统工具由主机提供; Web 前端的 npm 依赖由 `src/web/package-lock.json` 固定版本.
 - 评估真实 HDD 健康状况需要实体 HDD 和 SMART 访问.可显式纳入 SSD/NVMe.完成的 SSD 全面评估若 SMART 检查,自检和全盘只读扫描均无异常,得分为 100;实际读取错误和 SMART 异常会降低这一启发式评分.它不是经过校准的故障概率.
 ## 安装
 

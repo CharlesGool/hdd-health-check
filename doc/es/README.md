@@ -39,7 +39,7 @@ La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, aut
 ## Requisitos
 
 - Mínimos: root, Bash 4.3+, utilidades de dispositivos de bloques de Linux (`lsblk`, `blockdev`), `smartctl` (`smartmontools`), `dd` (`coreutils`) y `flock`; la plataforma prevista es Debian/Ubuntu. En otras distribuciones se muestra una advertencia; la instalación automática de dependencias utiliza `apt-get`.
-- Recomendados: `badblocks` (`e2fsprogs`) para comprobaciones de superficie; systemd con `systemd-run` para tareas desacopladas. Si faltan paquetes, puede ofrecerse su instalación interactiva mediante `apt-get update`/instalación (o confirmarse automáticamente con `-y`). Compruebe las dependencias antes de una ejecución desatendida. No se incluye código de terceros con versiones fijadas ni se necesita un archivo de bloqueo de dependencias.
+- Recomendados: `badblocks` (`e2fsprogs`) para comprobaciones de superficie; systemd con `systemd-run` para tareas desacopladas. Si faltan paquetes, puede ofrecerse su instalación interactiva mediante `apt-get update`/instalación (o confirmarse automáticamente con `-y`). Compruebe las dependencias antes de una ejecución desatendida. El comprobador utiliza herramientas del sistema proporcionadas por el host; las dependencias npm de la interfaz Web se fijan en `src/web/package-lock.json`.
 - Para evaluar la salud real se necesitan un HDD físico y acceso SMART. Se pueden incluir SSD/NVMe explícitamente. Una evaluación SSD completa y limpia obtiene 100 puntos, pero la puntuación no es una probabilidad calibrada de fallo.
 
 ## Instalación
