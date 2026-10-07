@@ -1,107 +1,112 @@
 ---
-name: web-guide
-description: Setup and operation of the local Web UI
+name: project-web
+description: 本地 Web UI 的安装和运行说明
 metadata:
   version: "0.1.0"
-  lang: en
+  lang: "zh-CN"
 ---
 
-# Local Web UI
+# 本地 Web UI
 
-The Web UI shows local disk results, recent SMART counter history, active jobs and a configurable quick-check schedule. It starts selected checks through the existing Bash tool. It does not turn partial or expired results into a current score. Only a complete, unexpired assessment batch can show a numeric score.
+Web UI 展示本机磁盘结果,SMART 计数历史,运行中的任务,并可设置定时快速巡检.它调用现有 Bash 检查器执行检查.只有同一批次,完整且未过期的评估才显示当前数字评分;部分结果和历史结果不会被当成当前评分.
 
-## Multi-language
+关注卡片直接显示检查原因.通电时长仅作参考,不单独扣分;旧版缺少原始错误计数的阈值提示改为待复查.检查确认使用站内弹窗,详情以型号为标题,`/dev/` 设备路径在下.
 
-**English** | [简体中文](zh-CN/WEB.md) | [繁體中文 (台灣)](zh-TW/WEB.md) | [繁體中文 (香港)](zh-HK/WEB.md) | [हिन्दी](hi/WEB.md) | [Español](es/WEB.md) | [العربية](ar/WEB.md) | [Français](fr/WEB.md)
+## 多语言
 
-## Documentation
+[English](en/WEB.md) | **简体中文** | [繁體中文 (台灣)](zh-TW/WEB.md) | [繁體中文 (香港)](zh-HK/WEB.md) | [हिन्दी](hi/WEB.md) | [Español](es/WEB.md) | [العربية](ar/WEB.md) | [Français](fr/WEB.md)
 
-- Project overview: [README](../README.md)
+## 文档
 
-- Design rationale: [DESIGN](DESIGN.md)
+- 项目概览: [README](../README.md)
 
-- Release history: [LOG](LOG.md)
+- 设计依据: [DESIGN](DESIGN.md)
 
-- Third-party notices: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
+- 版本历史: [LOG](LOG.md)
 
-- Web UI guide: [WEB](WEB.md)
+- 第三方清单: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
-## Requirements
+- Web UI 指南: [WEB](WEB.md)
+## 要求
 
-- Debian or Ubuntu with Python 3.10+, Node.js compatible with the checked-in Vite version, systemd and `systemd-run`.
-- The existing checker dependencies: `smartmontools`, `util-linux`, `coreutils`, and optionally `e2fsprogs` for badblocks.
-- Root access for the Web service. The Debian installer listens on IPv4 port 8765 and uses a Web login page and a session for its API. Use `http://<NAS-IP>:8765` on the same trusted LAN; do not forward this port to the Internet. LAN HTTP does not encrypt the password. An SSH local port forward remains available when encrypted transport is needed.
+- Debian 或 Ubuntu,Python 3.10+,与仓库内 Vite 版本兼容的 Node.js,systemd 及 `systemd-run`.
+- 现有检查器依赖:`smartmontools`,`util-linux`,`coreutils`,以及用于 badblocks 的可选 `e2fsprogs`.
+- Web 服务需要 root 权限.Debian 安装器在 IPv4 端口 8765 监听,为 API 提供网页登录及会话.在同一可信局域网访问 `http://<NAS-IP>:8765`;不要把端口转发到互联网.局域网 HTTP 不加密密码;需要加密传输时可使用 SSH 本地端口转发.
 
-## Build and run
+## 构建和运行
 
-The current source contains Web UI code in `src/web/` and does not track the generated `dist/web/` build. The historical `v3.0.0` tag retains the former `web/` layout. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm, build the UI, then run the installer:
+当前源码将 Web UI 代码放在 `src/web/`,不跟踪生成的 `dist/web/` 构建产物.历史 `v3.0.0` 标签保留原来的 `web/` 布局.在 Debian systemd 主机安装 Node.js 22.12+ 或 24+ 及 npm 10+,构建 UI,然后运行安装器:
 
 ```bash
 git clone https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
-npm run build
+npm run check
 cd ../..
 sudo bash deploy/install.sh
 ```
 
-Repeat the build and installer steps after updating the checkout. Node.js is only needed while building; the installed service runs with Python and the checker dependencies. Review `deploy/install.sh` before running it as root.
+更新检出目录后再次执行构建和安装步骤.Node.js 仅在构建时需要;安装后的服务使用 Python 和检查器依赖.以 root 运行前先审查 `deploy/install.sh`.
 
-For the prebuilt Debian NAS archive, extract it, enter its directory, and run:
+使用预构建的 Debian NAS 归档包时,解压并进入目录,然后运行:
 
 ```bash
 sudo bash deploy/install.sh
 ```
 
-The installer checks Debian, systemd, Python 3.10+, package files, and port 8765; installs missing packages through apt; copies the checker and built UI to `/root/apps/hdd-health-check`; and enables and checks `hdd-health-web.service`. It does not run a disk scan. On an update it keeps the previous application and unit as timestamped backups and attempts to restore them if startup fails. It does not modify existing disk state or logs. The prebuilt archive needs no Node.js or frontend build on the NAS.
+安装器检查 Debian,systemd,Python 3.10+,软件包文件和端口 8765;通过 apt 安装缺少的软件包;将检查器和已构建的 UI 复制到 `/root/apps/hdd-health-check`;启用并检查 `hdd-health-web.service`.它不会启动磁盘扫描.更新时,安装器将旧应用和服务单元保存为带时间戳的备份,启动失败时尝试恢复.它不修改已有磁盘状态或日志.预构建归档包在 NAS 上无需 Node.js 或前端构建.
 
-After installation, open `http://<NAS-IP>:8765` from a computer on the same LAN. The Web login page asks for the generated password. Read it on the NAS with `sudo cat /root/apps/hdd-health-check/web-password`; the installer preserves it during updates. The password file is readable only by root. Security Settings asks for the administrator password before exposing the IP list or password-change form. After verification, enter and confirm a new password of 12–128 characters without repeating the old password during the five-minute verification window. The change invalidates existing Web sessions and requires a new login. If the page does not open, check `sudo systemctl status hdd-health-web.service` and whether the NAS firewall allows TCP 8765 from the LAN. The installer does not change firewall rules.
+安装后,从同一局域网的电脑打开 `http://<NAS-IP>:8765`.登录页面要求输入生成的密码.在 NAS 上运行 `sudo cat /root/apps/hdd-health-check/web-password` 查看;更新时安装器会保留此密码.密码文件仅 root 可读.Security Settings 会在显示 IP 名单或密码修改表单前要求管理员密码.验证后,可在五分钟权限窗口内输入并确认 12–128 字符的新密码,无需再次输入旧密码.修改会使所有 Web 会话失效,需要重新登录.若页面无法打开,检查 `sudo systemctl status hdd-health-web.service`,以及 NAS 防火墙是否允许局域网 TCP 8765.安装器不修改防火墙规则.
 
-To check service status later, run `sudo systemctl status hdd-health-web.service`. The manual build and run steps below are for development or installations without the prebuilt archive.
+以后可用 `sudo systemctl status hdd-health-web.service` 查看服务状态.以下手动构建和运行步骤供开发或没有预构建归档包时使用.
 
-From a trusted checkout:
+在可信的检出目录中运行:
 
 ```bash
 cd src/web
 npm ci
-npm run build
+npm run check
 cd ../..
 sudo python3 src/web/server.py --port 8765
 ```
 
-Open `http://127.0.0.1:8765`. This manual command keeps the service on loopback without a password. The UI build is served by the Python process; Node is not needed at runtime. Keep the source checkout and its `dist/web` together. `npm run dev` runs Vite on another local port and proxies `/api` to the Python service.
+打开 `http://127.0.0.1:8765`.这条手动命令使服务只监听回环地址,无需密码.Python 进程提供 UI 构建产物;运行时不需要 Node.请将源码检出目录及其 `dist/web` 保持在一起.`npm run dev` 在另一个本地端口运行 Vite,并将 `/api` 代理到 Python 服务.
 
-The Codex `site-preview` address serves static files only. It displays the layout and bundled update record, but cannot show disks or run checks because it has no `/api` backend. Open the Python service address above for live data. For encrypted access from another computer, forward the NAS loopback port with `ssh -L 8765:127.0.0.1:8765 user@nas-host`, then open `http://127.0.0.1:8765` on that computer. An installer deployment still shows its password login page through the tunnel.
+Codex `site-preview` 地址只提供静态文件.它可显示布局和打包的更新记录,但没有 `/api` 后端,不能显示磁盘或执行检查.实时数据应打开上面的 Python 服务地址.从其他电脑加密访问时,使用 `ssh -L 8765:127.0.0.1:8765 user@nas-host` 转发 NAS 回环端口,然后在该电脑打开 `http://127.0.0.1:8765`.通过隧道访问安装器部署的服务时仍需登录密码.
 
-Use the installer above for a persistent service: its systemd unit requires the password file created during installation. Before upgrading, back up `/var/lib/hdd-health` with the matching script version. The Web UI does not change the script's state migration policy.
+常驻服务请使用上面的安装器:其 systemd 单元依赖安装时创建的密码文件.升级前请用匹配的脚本版本备份 `/var/lib/hdd-health`.Web UI 不改变脚本的状态迁移政策.
 
-To remove the Web service, run `sudo systemctl disable --now hdd-health-web.service`, remove its installed unit file, and run `sudo systemctl daemon-reload`. Review active transient checks before removing the checkout. Keep or remove the state and logs separately, according to the CLI uninstall guidance.
+移除 Web 服务时,运行 `sudo systemctl disable --now hdd-health-web.service`,删除已安装的单元文件,再运行 `sudo systemctl daemon-reload`.删除检出目录前,检查仍在运行的临时任务.状态和日志按 CLI 卸载说明另行保留或删除.
 
-## Behavior and boundaries
+## 行为与边界
 
-- Automatic quick checks are disabled initially. Enabling them runs a check every 6–168 hours. The first run starts shortly after enabling, if no check has previously been scheduled. The schedule runs only rotational disks and starts through a transient systemd unit.
-- Manual checks are selected per disk. The per-disk controls offer quick, SMART short/long, read-only surface scan and full checks for an SSD. Batch controls show the union of checks supported by selected disks. In mixed HDD/SSD selections, HDD-only checks run on eligible HDDs and skip SSDs; SSD-only selections offer only their supported checks. The full-device read-only check is labeled as such in the Web UI for both media types. The tool may still enable SMART or start drive-internal self-tests. A safe stop preserves surface progress but does not cancel a drive-internal self-test.
-- `--no-install` prevents the Web service from approving package installation while launching jobs. Install missing dependencies separately. The Web service accepts only fixed check names and currently enumerated devices and does not use a shell for command construction.
-- The private state directory remains `/var/lib/hdd-health` and logs remain `/var/log/disk-health` by default. `web-schedule.json`, `web-job.json`, completed task receipts in `web-job-history/`, and the private-address allowlist and enable switch in `web-access.json` are stored in the private state directory with restricted permissions. The browser sees health results and recent history through same-origin JSON endpoints.
-- The installer deployment binds to all IPv4 interfaces but accepts only a Host matching the destination IP and port. It checks Origin and requires a password session or an allowlisted source IPv4 address for APIs. Static assets are public so the login page can load. Only a recently password-verified administrator session can read or edit the private-use IP allowlist and its enable switch; IP admission alone grants ordinary dashboard access. Logging out sets a browser cookie that suppresses automatic IP access until the user chooses IP login again. It has no TLS; anyone able to inspect LAN HTTP traffic can see the password. Use a trusted LAN or the SSH tunnel, and keep TCP 8765 closed to the Internet. The manual `python3 src/web/server.py` command remains loopback-only unless `--bind` and `--password-file` are supplied.
-- Controls are available in the project's eight languages. Detailed check summaries and live task logs originate in the existing Chinese Bash checker and currently remain in Chinese regardless of the selected interface language.
+- 自动快速检查默认关闭.启用后每 6–168 小时运行一次;若此前没有排定检查,首次检查会在启用后不久开始.计划只覆盖机械盘,并通过临时 systemd 单元启动.
+- 手动检查按磁盘选择.单盘控件也为 SSD 提供快检,SMART 短测/长测,全盘只读扫描及完整评估.批次控件显示所选磁盘支持项目的并集;混合 HDD/SSD 选择中,仅适用于 HDD 的项目在符合条件的 HDD 上运行,跳过 SSD.固态盘单独选择时只提供支持的检查.网页将两种介质的全设备只读检查明确标为“全盘只读扫描”.工具仍可能启用 SMART 或启动磁盘内部自检.安全停止保留盘面进度,但不取消磁盘内部自检.
+- Web 服务启动任务时附加 `--no-install`,不批准安装软件包.缺少的依赖需单独安装.服务只接受固定的检查名称和当前枚举的设备,构造命令时不使用 shell.
+- 私有状态目录默认仍为 `/var/lib/hdd-health`,日志目录为 `/var/log/disk-health`.`web-schedule.json`,`web-job.json`,`web-job-history/` 中已完成任务的收据,以及 `web-access.json` 中的私有地址允许名单和启用开关,均以受限权限存放在私有状态目录.浏览器通过同源 JSON 接口查看健康结果和最近历史.
+- 安装器部署监听所有 IPv4 地址,但只接受与目标 IP 和端口一致的 Host.它检查 Origin,要求 API 请求有密码会话或允许名单内的来源 IPv4 地址.静态资源公开以供登录页加载.只有近期通过管理员密码验证的会话才能读取或编辑私有地址允许名单及其启用开关;仅靠 IP 进入只能访问普通仪表盘功能.退出时设置浏览器 Cookie,抑制自动 IP 登录,直到用户重新选择 IP 登录.服务不提供 TLS;能查看局域网 HTTP 流量的人可能看见密码.只在可信局域网或 SSH 隧道中使用,不要向互联网开放 TCP 8765.手动运行 `python3 src/web/server.py` 时,除非提供 `--bind` 和 `--password-file`,否则仍只监听回环地址.
+- 界面控件支持项目的八种语言.详细检查摘要和实时任务日志来自现有中文 Bash 检查器,因此无论选择哪种界面语言,这些内容目前仍为中文.
 
 ## API
 
-`GET /api/auth` reports the login state; `POST /api/auth/login`, `/api/auth/logout`, and `/api/auth/ip-login` manage sessions. `POST /api/auth/security-verify` checks the administrator password, rotates the session cookie and grants a fixed five-minute Security Settings permission. `POST /api/auth/change-password` requires that permission and matching new-password/confirmation fields; it atomically replaces the root-owned password file and invalidates existing sessions. `GET` and `POST /api/access` require the same short-lived permission; they read or edit the enable switch and exact RFC 1918 IPv4 or IPv6 unique-local addresses. `GET` and `POST /api/preferences` read and save whether sleeping disks should wake on page entry for any authenticated visitor. `POST /api/disks/wake-on-visit` starts the opted-in wake operation in the background for authenticated visitors. `GET /api/disks/<device>/smart` reads SMART details on demand without waking a standby HDD; authenticated `POST /api/disks/<device>/wake` wakes only a currently enumerated rotational disk. `GET /api/snapshot` returns the checker's structured disk snapshot. `GET /api/status` returns the active task display and a bounded live log tail. Completed, stopped, failed, and stale Web task receipts are removed from the active display when status is read; completed task receipts are archived separately. `GET /api/jobs/history` returns all archived Web task summaries and `GET /api/jobs/history/<id>` returns a bounded log tail when its host log remains available. Older tasks whose receipts were already deleted cannot be reconstructed reliably. `GET /api/history/<device>` returns up to 30 SMART counter rows for compatibility. `GET /api/history/samples` returns all enumerated drives’ SMART trend samples for the unified history page. Authenticated `DELETE /api/history/samples/<device>/<index>` removes one SMART sample from the drive history, changing the next comparison baseline if the last row is removed. `DELETE /api/jobs/history/<id>` removes a completed Web task receipt and its associated log. `POST /api/disks/<device>/sleep` requests ATA standby for an enumerated SATA HDD only and refuses while a check runs; normal OS I/O may wake it again. `GET` and `POST /api/schedule` manage the quick-check interval. `POST /api/jobs` starts a fixed check on an enumerated device; `POST /api/jobs/assess` accepts a `scope` of `sata`, `hdd`, `ssd`, `nvme`, or `all` and a `module` of `quick`, `short`, `long`, `speed`, `surface`, `badblocks`, `iface`, or `full`. It starts one batch on matching enumerated drives. `POST /api/jobs/stop` requests a safe stop. Unknown API routes return 404. The checker `--json` output is the scoring source; the Web service does not recalculate scores.
+`GET /api/auth` 报告登录状态;`POST /api/auth/login`,`/api/auth/logout` 和 `/api/auth/ip-login` 管理会话.`POST /api/auth/security-verify` 检查管理员密码,轮换会话 Cookie,并授予固定五分钟的 Security Settings 权限.`POST /api/auth/change-password` 要求该权限及匹配的新密码/确认字段;它以原子操作替换 root 所有的密码文件,并使现有会话失效.`GET` 和 `POST /api/access` 要求同样的短时权限;可读取或编辑启用开关及精确的 RFC 1918 IPv4 或 IPv6 唯一本地地址.`GET` 和 `POST /api/preferences` 供已认证访客读取和保存是否在进入页面时唤醒休眠盘.`POST /api/disks/wake-on-visit` 在后台启动已选择的唤醒操作.`GET /api/disks/<device>/smart` 按需读取 SMART 详情,不唤醒待机 HDD;已认证的 `POST /api/disks/<device>/wake` 只唤醒当前枚举的机械盘.`GET /api/snapshot` 返回检查器的结构化磁盘快照.`GET /api/status` 返回运行中任务显示和有界的实时日志末尾.读取状态时,已完成,停止,失败及失效的 Web 收据会从运行中显示移除;已完成任务收据另行归档.`GET /api/jobs/history` 返回所有归档 Web 任务摘要;主机日志仍在时,`GET /api/jobs/history/<id>` 返回有界日志末尾.已经删除收据的旧任务无法可靠重建.`GET /api/history/<device>` 为兼容性返回最多 30 行 SMART 计数器.`GET /api/history/samples` 返回所有已枚举磁盘的 SMART 趋势样本,供统一历史页使用.已认证的 `DELETE /api/history/samples/<device>/<index>` 删除一条 SMART 样本;若删除最后一行,将改变下一次比较基线.`DELETE /api/jobs/history/<id>` 删除已完成 Web 任务收据及关联日志.`POST /api/disks/<device>/sleep` 只对当前枚举的 SATA HDD 请求 ATA 待机,检查运行时拒绝;正常的操作系统 I/O 可能再次唤醒它.`GET` 和 `POST /api/schedule` 管理快检间隔.`POST /api/jobs` 在枚举设备上启动固定检查;`POST /api/jobs/assess` 接受 `scope` 为 `sata`,`hdd`,`ssd`,`nvme` 或 `all`,以及 `module` 为 `quick`,`short`,`long`,`speed`,`surface`,`badblocks`,`iface` 或 `full`,并为匹配的已枚举磁盘启动一个批次.`POST /api/jobs/stop` 请求安全停止.未知 API 路由返回 404.检查器的 `--json` 输出是评分来源;Web 服务不重新计算分数.
 
-## Interface
+## 界面与权限
 
-The upper-left HDD Health brand links to the disk dashboard at `/disks`. A separate adjacent version link opens Changelog; untagged builds are labeled `test-<sha>` (with `-dirty` for modified trees), and `/api/build` reports the version embedded in that build. The browser tab uses the project favicon from `src/web/public/favicon.svg`, included in the production build.
+顶部依次显示仪表盘,更新记录和设置.仪表盘在磁盘,需要关注,运行任务(包括历史记录)及定时巡检页面保持激活;在这些页面点击仪表盘不会改变当前页面,只有从设置或更新记录点击时才返回 `/disks`.左上角 Logo 始终链接到 `/disks`.四张概览卡分别打开 `/disks`,`/attention`,`/tasks`,`/schedule`;一键评估留在磁盘主页.更新记录入口打开可直接访问的独立 `/changelog` 页面.
 
-The four overview cards open Disks (`/disks`), Attention (`/attention`), Tasks (`/tasks`), and Scheduled checks (`/schedule`). Dashboard, Changelog, and Settings appear in the top bar. Dashboard stays active across Disks, Attention, Tasks (including its history section), and Scheduled checks. Clicking Dashboard on those pages leaves the current page in place; clicking it from Settings or Changelog opens `/disks`. Changelog opens `/changelog`, while the upper-left brand remains a link to `/disks`. The Disks home page contains the disk list and one-click batch check; Attention contains only disks with warning or bad check results; Tasks shows the active Web job and recent completed-task history; Scheduled checks contains the interval controls. Settings contains language, eight accent colors and a light/dark mode switch, plus the disk sleep policy and a link to a dedicated Security Settings page. Accent and mode persist independently across reloads. That page challenges for the administrator password when the short-lived verification permission is absent, then shows the IP allowlist, its enable switch and the password-change form. The default policy keeps sleeping HDDs asleep. An administrator can instead choose to wake them one at a time when a visitor opens the page; the page does not wait for spin-up. An IP-admitted visitor may use the ordinary disk and sleep-policy controls, but must verify the administrator password to open protected Security Settings. Password change invalidates every Web session and requires a new login. The disk list uses the drive model as its title and labels its `/dev/` path separately. Disk capacity, home total/used capacity, detail capacity and SSD lifetime host writes switch between decimal and binary units when their value is clicked. Each disk row has a dedicated View details button; clicking the rest of the row does not open it. The snapshot and SMART APIs send only masked serial numbers, and the public snapshot omits the internal disk ID because it can contain a serial. The SMART detail tab fetches the full serial through a separate authenticated request after the user activates its show control, and clears it when hidden or when the detail view closes. It also shows capacity, bus-qualified media type, interface link, and a periodically refreshed temperature when available. Temperatures below 50 °C are green, 50–59 °C blue, and 60 °C or higher red; this display color does not itself deduct a score. Batch checks have separate disk-group and check-type selectors. Groups are all SATA drives, rotational drives, solid-state drives, NVMe drives, or all drives. The server selects currently enumerated devices and launches one detached `<module> --rescan` batch; it does not accept client-supplied device paths. Only the `full` module can establish a current composite score. A full assessment includes SMART quick and short/long tests and a complete read-only scan; HDDs also run speed sampling. It can take hours and add substantial load. SSD slow reads do not reduce health points. A clean completed SSD batch scores 100, while SMART findings or actual read errors can reduce that heuristic score; it is not a calibrated failure probability.
+左上角的 HDD Health 项目名称链接到 `/disks` 磁盘主页.相邻的独立版本链接打开更新记录;无标签构建显示为 `test-<sha>`,修改过的工作树追加 `-dirty`,`/api/build` 返回构建时嵌入的版本.浏览器标签页使用 `src/web/public/favicon.svg` 中的项目图标,并随正式构建一起提供.磁盘列表将型号作为标题,另列 `/dev/` 路径;公开快照省略可能包含序列号的内部磁盘 ID;快照和 SMART API 只发送遮蔽的序列号.用户按下显示控件后,SMART 详情通过独立认证请求取得完整序列号;隐藏或关闭详情时清除它.
 
-The dashboard sums the enumerated physical disk capacities and reports used bytes from mounted filesystems under those disks, deduplicated by filesystem UUID, plus allocation from ZFS pools whose leaf devices all map to listed disks. RAID and unmounted volumes can make the two figures incomparable. ZFS allocation includes pool metadata and may differ from dataset payload size. SSD SMART details show lifetime host writes from NVMe Data Units Written (512,000 bytes per unit) or ATA Device Statistics Logical Sectors Written when logical sector size is reported; vendor-specific SMART attribute 241 is not converted without a known unit. Opening a disk shows SMART information and project checks in separate tabs. The SMART tab displays a form factor only when the device reports one; NVMe or SATA transport does not establish whether a drive uses an M.2, U.2, or expansion-card form factor. Dashboard temperature probes run in the background with a bounded worker pool; non-NVMe probes use `smartctl -n standby` to avoid waking sleeping HDDs by default. Confirmed standby or sleep appears as “Sleeping” in the disk list and SMART detail, pending probes appear as “Reading,” and unsupported or failed readings remain unknown. A sleeping HDD also has an individual Wake button in SMART detail. The opt-in wake worker checks each enumerated rotational disk with `-n standby` before requesting SMART attributes without that skip option; it runs serially and refreshes temperature afterward. SATA version and negotiated speed come from smartctl when reported; Linux sysfs supplies a negotiated SATA speed or NVMe PCIe generation, lane width, and link rate when available. Missing fields remain unknown, particularly behind bridges. Click the power-on hours to switch between hours and approximate years/days/hours (365 days per year). The Changelog tab opens a separate `/changelog` page that renders the Changelog section as Markdown and supports direct page visits. SMART support and health fields can be unavailable for a sleeping disk, unsupported bridge, or failed `smartctl` query; an unknown result is not reported as healthy.
+普通设置页提供语言,八种主题色和浅色/深色模式切换,以及硬盘休眠策略与 Security Settings 入口.主题色和明暗模式分别保存,重新加载页面后仍保持选择.只有近期通过管理员密码验证的会话可查看和修改私有地址允许名单及其启用开关,并在五分钟窗口内更改密码.仅通过 IP 进入的用户仍可使用普通磁盘和休眠策略功能,但需验证管理员密码后才能进入安全设置.默认保持机械硬盘休眠;也可选择打开网页时逐块唤醒休眠盘并读取温度.磁盘详情提供 SMART 信息与检测两个标签;更新记录在独立的 `/changelog` 页面按 Markdown 渲染.
 
-The Attention cards show the warning module and its recorded cause directly. Quick-check power-on hours are informational rather than health deductions. A legacy ATA near-threshold notice with no stored raw count is shown as pending review and no longer contributes points; new near-threshold findings require a nonzero raw error count and include the attribute, normalized value, threshold, and raw count. The disk detail uses the model as its heading and the `/dev/` path beneath it. Check-start and task-stop confirmations use a themed in-page dialog with keyboard cancellation.
+主页的一键评估可分别选择磁盘范围和检测项目.范围包括 SATA,机械盘,固态盘,NVMe 或全部磁盘;项目包括快速,SMART 短/长自检,速度,盘面,badblocks,接口复查和完整评估.服务端按当前枚举结果选盘,运行 `<module> --rescan` 后台批次.只有 `full` 完整评估可能生成当前综合分数;SSD/NVMe 评分未经单独校准;SSD 的慢读不扣健康分,干净完成的批次得 100 分,SMART 异常或实际读取错误会降低启发式评分.列表按传输协议和介质类型显示 SATA SSD,NVMe SSD 等,并在后台读取可用温度,默认使用 `smartctl -n standby` 避免唤醒休眠机械盘;选择唤醒策略后,工作进程先用 `-n standby` 逐盘确认待机状态,再按顺序读取 SMART 属性.无法读取的温度仍保持未知,不会据此判定设备健康.详情页仅在设备明确报告时显示外形规格;不能仅凭 NVMe 或 SATA 判断是否为 M.2.SATA 版本和速率来自 `smartctl` 或 Linux sysfs;NVMe 的 PCIe 代际,通道数和链路速率来自 sysfs.点击通电时长可切换小时与年/天/小时.
 
-The disk detail keeps the latest result for each check module, including distinct SMART short and long tests. This per-disk result differs from the Tasks page archive of Web job runs and from the 30-row SMART counter trend. The check tab shows each recorded cause and deduction; older records with a deduction but no saved cause explicitly ask for a new check. A background launch first shows as submitted, then running, completed, stopped, or failed. The Tasks page shows a short natural-language state summary by default and a button to reveal the bounded raw log. Its separate history section lists the latest 30 completed, stopped, or failed Web tasks and can show a detailed log tail. When a task ends, its active Web receipt disappears; its archived receipt, saved per-disk check results, and host log files remain. If a submitted task has no live process after 15 seconds, its stale Web receipt is removed. Exit codes 1 and 2 mean completed checks with attention or danger, while 3 indicates a runtime failure. Partial assessment coverage alone does not set a warning exit code.
+需要关注卡片筛出有警告或异常记录的磁盘.详情以型号为标题,`/dev/` 路径在下.检测详情列出原因和扣分;旧记录扣分但未保存原因时提示重新检查.任务页保留正在运行的任务和可展开的详细日志,另设最近 30 条任务历史;任务结束后从运行区清除收据,在 任务归档目录 保存新任务收据,并保留磁盘检测结果和主机日志.返回码 1 或 2 表示检测完成但发现问题,并非启动失败.
 
-## Current SSD assessment and controls
+主页面汇总物理硬盘总容量和已挂载文件系统的已用量,按文件系统 UUID 去重;RAID,未挂载卷可能造成两者口径不同.SSD 的 SMART 详情优先显示 NVMe 标准写入量,或具有明确逻辑扇区大小的 ATA 设备统计写入量;厂商自定义计数不猜测单位.可识别的 ZFS 池分配空间也计入已用量.容量按钮可切换 TB/TiB,查看详情由独立按钮打开.
 
-A full SSD/NVMe assessment runs SMART quick, short and long self-tests plus a full read-only scan. It omits speed sampling; slow reads alone do not deduct health points. A completed clean batch scores 100, while SMART findings or actual read errors may reduce the heuristic score. When selected drives include SSDs, the Web UI offers only quick, short, long, read-only scan and full assessment. Capacity and host-write values switch between decimal and binary units by clicking the value. The SMART detail of a sleeping HDD offers a button to wake that drive alone.
+任务页保留运行中任务,另设历史记录,展示最近 30 条已完成,停止或失败的 Web 任务,并可查看有存留日志时的详细末尾.新的任务收据保存在 任务归档目录;已删除的旧收据无法可靠恢复.顶部“仪表盘”在磁盘,需要关注,运行任务和定时巡检页面保持激活.
+
+## 当前固态盘评估与操作
+
+固态盘与 NVMe 的完整评估包括 SMART 快检,短测,长测和全盘只读扫描,不运行速度采样.单纯慢读不扣健康分;同一批次全部检查完成且无异常时显示 100 分,SMART 异常或实际读取错误可能扣分.选中范围含固态盘时,网页仅提供快速检查,短测,长测,只读扫描及完整评估.点击容量或固态盘累计写入量可切换十进制与二进制单位.休眠机械盘的 SMART 详情可单独唤醒该盘.

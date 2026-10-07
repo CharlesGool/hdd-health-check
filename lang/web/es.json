@@ -288,5 +288,6 @@
   "candidateDiskDetail": "Los detalles del disco ahora ocupan una página completa; el número de serie se puede mostrar y copiar a petición.",
   "candidateSmart": "Los atributos SMART muestran explicaciones al pasar el cursor o enfocarlos; los SSD compatibles muestran lecturas y escrituras del host.",
   "smartBusyHelp": "Tiempo que el controlador estuvo ocupado con E/S; la unidad informada depende del dispositivo.",
-  "smartTemperatureDurationHelp": "Tiempo por encima del límite térmico de aviso o crítico; una exposición prolongada requiere atención."
+  "smartTemperatureDurationHelp": "Tiempo por encima del límite térmico de aviso o crítico; una exposición prolongada requiere atención.",
+  "saved": "Guardado"
 }

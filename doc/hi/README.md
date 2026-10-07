@@ -1,18 +1,10 @@
----
-name: project-overview-hi
-description: Project overview and usage
-metadata:
-  version: "0.1.0"
-  lang: hi
----
-
 # hdd-health-check
 
 यह root के रूप में चलने वाला Bash टूल SMART डेटा और केवल-पठन डिस्क जाँचों से Debian/Ubuntu पर HDD की स्थिति का आकलन करता है। `v4.1.0` रिलीज़ में जाँचकर्ता और वैकल्पिक स्थानीय Web UI शामिल हैं; स्रोत और पहले से बना Debian Web संग्रह GitHub पर उपलब्ध हैं। Debian NAS पर वास्तविक डिस्क सूची और प्रमाणित Security Settings के साथ Web सेवा जाँची गई है, लेकिन वास्तविक HDD पर नियंत्रित पूर्ण आकलन और होस्ट रीबूट के बाद सेवा की वापसी अभी सत्यापित नहीं हैं।
 
 ## बहुभाषी
 
-[English](../../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文(台灣)](../zh-TW/README.md) | [繁體中文(香港)](../zh-HK/README.md) | **हिन्दी** | [Español](../es/README.md) | [العربية](../ar/README.md) | [Français](../fr/README.md)
+[English](../../README.md) | [简体中文](../../README.md) | [繁體中文(台灣)](../zh-TW/README.md) | [繁體中文(香港)](../zh-HK/README.md) | **हिन्दी** | [Español](../es/README.md) | [العربية](../ar/README.md) | [Français](../fr/README.md)
 
 ## दस्तावेज़ीकरण
 

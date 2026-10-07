@@ -1,9 +1,9 @@
 ---
-name: web-guide-ar
+name: project-web-ar
 description: إعداد واجهة Web المحلية وتشغيلها
 metadata:
   version: "0.1.0"
-  lang: ar
+  lang: "ar"
 ---
 
 # واجهة Web المحلية
@@ -14,7 +14,7 @@ metadata:
 
 ## تعدد اللغات
 
-[English](../WEB.md) | [简体中文](../zh-CN/WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | [Español](../es/WEB.md) | **العربية** | [Français](../fr/WEB.md)
+[English](../en/WEB.md) | [简体中文](../WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | [Español](../es/WEB.md) | **العربية** | [Français](../fr/WEB.md)
 
 ## الوثائق
 

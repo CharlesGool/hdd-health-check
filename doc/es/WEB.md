@@ -1,9 +1,9 @@
 ---
-name: web-guide-es
+name: project-web-es
 description: Instalación y uso de la interfaz Web local
 metadata:
   version: "0.1.0"
-  lang: es
+  lang: "es"
 ---
 
 # Interfaz Web local
@@ -14,7 +14,7 @@ Las tarjetas de atención muestran la causa registrada. Las horas de encendido p
 
 ## Multilingüe
 
-[English](../WEB.md) | [简体中文](../zh-CN/WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | **Español** | [العربية](../ar/WEB.md) | [Français](../fr/WEB.md)
+[English](../en/WEB.md) | [简体中文](../WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | **Español** | [العربية](../ar/WEB.md) | [Français](../fr/WEB.md)
 
 ## Documentación
 
@@ -36,13 +36,13 @@ Las tarjetas de atención muestran la causa registrada. Las horas de encendido p
 
 ## Compilación y ejecución
 
-El código Web UI actual está en `src/web/` y no incluye el resultado generado `dist/web/`. La etiqueta histórica `v3.0.0` conserva el antiguo diseño `web/`. En un equipo Debian con systemd, instale Node.js 20.19+ o 22.12+ y npm, compile la interfaz y ejecute el instalador:
+El código Web UI actual está en `src/web/` y no incluye el resultado generado `dist/web/`. La etiqueta histórica `v3.0.0` conserva el antiguo diseño `web/`. En un equipo Debian con systemd, instale Node.js 22.12+ o 24+ y npm 10+, compile la interfaz y ejecute el instalador:
 
 ```bash
 git clone https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
-npm run build
+npm run check
 cd ../..
 sudo bash deploy/install.sh
 ```
@@ -61,7 +61,7 @@ Desde una copia de trabajo de confianza:
 ```bash
 cd src/web
 npm ci
-npm run build
+npm run check
 cd ../..
 sudo python3 src/web/server.py --port 8765
 ```

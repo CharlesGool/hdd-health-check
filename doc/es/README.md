@@ -1,20 +1,12 @@
----
-name: project-overview-es
-description: Project overview and usage
-metadata:
-  version: "0.1.0"
-  lang: es
----
-
 # hdd-health-check
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La versión `v4.1.0` incluye el comprobador y la interfaz Web local opcional, con código fuente y un archivo Web Debian precompilado en GitHub. El servicio Web se comprobó en un NAS Debian con inventario real de discos y ajustes de seguridad autenticados, pero siguen sin verificarse una evaluación completa en HDD reales y la recuperación tras reiniciar el equipo.
+<img align="right" src="../resources/logo.png" width="160" alt="hdd-health-check">
 
-Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
+[简体中文](../../README.md) | [English](../en/README.md) | **Español**
 
-## Multilingüe
+Evalúa la salud de discos en Debian/Ubuntu mediante SMART y pruebas de solo lectura, con CLI y controlador Web local.
 
-[English](../../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文(台灣)](../zh-TW/README.md) | [繁體中文(香港)](../zh-HK/README.md) | [हिन्दी](../hi/README.md) | **Español** | [العربية](../ar/README.md) | [Français](../fr/README.md)
+[![License](https://img.shields.io/badge/License-MIT-orange)](../../LICENSE) [![Release](https://img.shields.io/badge/Release-v4.1.0-blue?logo=github)](https://github.com/CharlesGool/hdd-health-check/releases/tag/v4.1.0)
 
 ## Documentación
 
@@ -22,17 +14,27 @@ Las horas de encendido son información de uso y por sí solas no restan puntos 
 
 - Justificación del diseño: [DESIGN](DESIGN.md)
 
-- Historial de versiones: [LOG](LOG.md)
+- Estado del proyecto: [LOG](LOG.md)
+- Registros históricos: [HISTORY](HISTORY.md)
+- Historial de cambios: [CHANGELOG](CHANGELOG.md)
 
 - Avisos de terceros: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
+
 ## Introducción
+
+
+Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La versión `v4.1.0` incluye el comprobador y la interfaz Web local opcional, con código fuente y un archivo Web Debian precompilado en GitHub. El servicio Web se comprobó en un NAS Debian con inventario real de discos y ajustes de seguridad autenticados, pero siguen sin verificarse una evaluación completa en HDD reales y la recuperación tras reiniciar el equipo.
+
+Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
 
 El menú interactivo o la CLI por lotes seleccionan unidades, realizan una evaluación rápida de SMART, montajes y registros del kernel, y presentan una puntuación heurística de 0 a 100 y un nivel de riesgo. Otros módulos ofrecen autopruebas SMART cortas y largas, medición de velocidad de lectura por muestreo, exploración reanudable de la latencia de lectura de todo el disco con una nueva comprobación dirigida y opcional mediante `badblocks`, ejecución de `badblocks` de solo lectura en todo el disco y pruebas de lectura de la interfaz tras una reparación. En HDD, la evaluación completa ejecuta las comprobaciones rápida, corta, larga, de velocidad y de superficie; en SSD ejecuta las comprobaciones rápida, corta, larga y una exploración integral de solo lectura sin muestreo de velocidad; no incluye el módulo independiente de `badblocks` para todo el disco ni el de interfaz. Los resultados pueden reutilizarse, compararse con el historial de contadores SMART y reunirse en un informe. Véanse los [problemas conocidos](LOG.md) y los [objetivos](DESIGN.md).
 
 **«Solo lectura» se refiere a los datos del disco de destino, no al equipo anfitrión.** El programa escribe registros, ajustes, progreso e historial en el equipo anfitrión; puede activar SMART, iniciar autopruebas internas de la unidad, leer dispositivos enteros bajo carga sostenida, instalar paquetes previa confirmación e iniciar unidades transitorias de systemd. No sustituye a las copias de seguridad. No se implementa ninguna exploración de superficie con escritura destructiva, borrado ni escritura en el sistema de archivos.
 
 La evaluación completa repite SMART/ATA/CRC tras las lecturas prolongadas. Solo muestra una puntuación global de 0 a 100 si las pruebas rápida, corta, larga y de superficie terminada, además del muestreo de velocidad para HDD, son del mismo lote, están completas y vigentes. Los resultados reutilizados, interrumpidos, caducados o antiguos siguen visibles como históricos, con clasificación parcial/desconocida; consultar informes no actualiza la base de comparación. Tras reparar la interfaz, verifíquela por separado y repita la evaluación completa para obtener una puntuación nueva; resolverla no borra errores anteriores. Un primer total de errores ATA tiene causa desconocida y conserva un descuento de 5 puntos por riesgo no resuelto en revisiones sucesivas, incluso después de la evaluación completa. Un aumento resta 20 puntos; un contador estable no es un error nuevo ni prueba que el riesgo se haya resuelto. La verificación de interfaz por sí sola no atribuye los errores ATA antiguos a una reparación. Las lecturas lentas aisladas aconsejan repetir la prueba de rendimiento, no prueban sectores defectuosos; los errores confirmados de superficie siguen restando 40 puntos. Haga copias de seguridad antes de probar un disco sospechoso.
+
+La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, autopruebas corta y larga y una lectura completa del disco. Omite el muestreo de velocidad; las lecturas lentas por sí solas no restan puntos de salud. Un lote completo sin anomalías obtiene 100 puntos; los hallazgos SMART o errores reales de lectura pueden reducir esta puntuación heurística. Los controles por lotes muestran la unión de las comprobaciones admitidas por los discos seleccionados; los módulos exclusivos de HDD omiten los SSD seleccionados. Al pulsar la capacidad o los datos escritos se alternan unidades decimales y binarias. En los detalles SMART de un HDD en reposo hay un botón para activar solo ese disco.
 
 ## Requisitos
 
@@ -62,13 +64,13 @@ Revise e instale usted mismo los paquetes necesarios del sistema operativo antes
 
 ### Interfaz Web desde la etiqueta v4.1.0
 
-La etiqueta de código fuente no incluye los archivos generados de `dist/web` en el control de versiones. En un equipo Debian con systemd, instale Node.js 20.19+ o 22.12+ y npm, compile la interfaz y ejecute el instalador. GitHub Release también ofrece un archivo Web precompilado para instalarla sin Node.js en el NAS:
+La etiqueta de código fuente no incluye los archivos generados de `dist/web` en el control de versiones. En un equipo Debian con systemd, instale Node.js 22.12+ o 24+ y npm 10+, compile la interfaz y ejecute el instalador. GitHub Release también ofrece un archivo Web precompilado para instalarla sin Node.js en el NAS:
 
 ```bash
 git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
-npm run build
+npm run check
 cd ../..
 sudo bash deploy/install.sh
 ```
@@ -76,6 +78,8 @@ sudo bash deploy/install.sh
 El instalador comprueba e instala los paquetes de ejecución ausentes de Debian, inicia el servicio protegido con contraseña en el puerto LAN 8765 y no inicia ninguna exploración de disco. Lea la contraseña generada con `sudo cat /root/apps/hdd-health-check/web-password`. Node.js solo es necesario para compilar la interfaz. Consulte [WEB](WEB.md) para conocer las actualizaciones, los límites de seguridad y la reversión.
 
 ## Orientaciones
+
+Desde la raíz del repositorio ejecute `python3 scripts/check-project.py` y `bash scripts/check.sh`; desde `src/web/` ejecute `npm ci`, `npm run check`, `npm run test:ui` y `npm audit`. Las pruebas de navegador solo usan datos sintéticos, no ejecutan comprobaciones de disco. La primera ejecución requiere `npx playwright install chromium`.
 
 Ejecute la herramienta únicamente sobre unidades que tenga autorización para examinar; una exploración de lectura sostenida puede generar una carga considerable. Los comandos siguientes son **ejemplos, no instrucciones para validar este entorno**:
 
@@ -111,7 +115,3 @@ Los créditos del código y las fuentes de terceros figuran en [THIRD_PARTY_NOTI
 ## Licencia
 
 MIT (SPDX: MIT); consulte [LICENSE](../../LICENSE).
-
-## Evaluación y controles actuales de SSD
-
-La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, autopruebas corta y larga y una lectura completa del disco. Omite el muestreo de velocidad; las lecturas lentas por sí solas no restan puntos de salud. Un lote completo sin anomalías obtiene 100 puntos; los hallazgos SMART o errores reales de lectura pueden reducir esta puntuación heurística. Los controles por lotes muestran la unión de las comprobaciones admitidas por los discos seleccionados; los módulos exclusivos de HDD omiten los SSD seleccionados. Al pulsar la capacidad o los datos escritos se alternan unidades decimales y binarias. En los detalles SMART de un HDD en reposo hay un botón para activar solo ese disco.

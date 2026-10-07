@@ -1,6 +1,6 @@
 [Unit]
 Description=HDD Health local Web UI
-After=multi-user.target
+After=network.target
 
 [Service]
 Type=simple
@@ -14,6 +14,7 @@ UMask=0077
 StateDirectory=hdd-health
 StateDirectoryMode=0700
 LogsDirectory=disk-health
+LogsDirectoryMode=0700
 ProtectSystem=strict
 ReadWritePaths=/root/apps/hdd-health-check /var/lib/hdd-health /var/log/disk-health /run
 ProtectHome=read-only

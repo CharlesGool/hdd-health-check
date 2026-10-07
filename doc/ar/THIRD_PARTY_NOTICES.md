@@ -1,9 +1,9 @@
 ---
-name: third-party-notices-ar
+name: project-third-party-notices-ar
 description: Third-party software and asset notices
 metadata:
   version: "0.1.0"
-  lang: ar
+  lang: "ar"
 ---
 
 # إشعارات الأطراف الثالثة
@@ -12,7 +12,7 @@ metadata:
 
 ## تعدد اللغات
 
-[English](../THIRD_PARTY_NOTICES.md) | [简体中文](../zh-CN/THIRD_PARTY_NOTICES.md) | [繁體中文(台灣)](../zh-TW/THIRD_PARTY_NOTICES.md) | [繁體中文(香港)](../zh-HK/THIRD_PARTY_NOTICES.md) | [हिन्दी](../hi/THIRD_PARTY_NOTICES.md) | [Español](../es/THIRD_PARTY_NOTICES.md) | **العربية** | [Français](../fr/THIRD_PARTY_NOTICES.md)
+[English](../en/THIRD_PARTY_NOTICES.md) | [简体中文](../THIRD_PARTY_NOTICES.md) | [繁體中文(台灣)](../zh-TW/THIRD_PARTY_NOTICES.md) | [繁體中文(香港)](../zh-HK/THIRD_PARTY_NOTICES.md) | [हिन्दी](../hi/THIRD_PARTY_NOTICES.md) | [Español](../es/THIRD_PARTY_NOTICES.md) | **العربية** | [Français](../fr/THIRD_PARTY_NOTICES.md)
 
 ## الوثائق
 

@@ -64,7 +64,7 @@ command -v dpkg-query >/dev/null || die "dpkg-query is required"
 command -v systemctl >/dev/null || die "systemd is required"
 [[ -d /run/systemd/system ]] || die "systemd is not running as the system manager"
 
-for file in src/checker/hdd-health-check.sh src/web/server.py dist/web/index.html deploy/hdd-health-web.service doc/LOG.md; do
+for file in src/checker/hdd-health-check.sh src/web/server.py dist/web/index.html deploy/hdd-health-web.service doc/CHANGELOG.md; do
     [[ -f $source_dir/$file && ! -L $source_dir/$file ]] || die "Missing or linked package file: $file"
 done
 [[ -z $(find "$source_dir/dist/web" -type l -print -quit) ]] || die "dist/web contains a symbolic link"
@@ -115,12 +115,12 @@ else
     python3 -c 'import pathlib, secrets, sys; pathlib.Path(sys.argv[1]).write_text(secrets.token_urlsafe(32) + "\n")' "$stage/web-password"
     chmod 0600 "$stage/web-password"
 fi
-install -m 0644 "$source_dir/doc/LOG.md" "$stage/doc/LOG.md"
-for language in ar es fr hi zh-CN zh-HK zh-TW; do
-    [[ -f $source_dir/doc/$language/LOG.md && ! -L $source_dir/doc/$language/LOG.md ]] ||
-        die "Missing or linked update record: doc/$language/LOG.md"
+install -m 0644 "$source_dir/doc/CHANGELOG.md" "$stage/doc/CHANGELOG.md"
+for language in ar en es fr hi zh-HK zh-TW; do
+    [[ -f $source_dir/doc/$language/CHANGELOG.md && ! -L $source_dir/doc/$language/CHANGELOG.md ]] ||
+        die "Missing or linked update record: doc/$language/CHANGELOG.md"
     install -d -m 0755 "$stage/doc/$language"
-    install -m 0644 "$source_dir/doc/$language/LOG.md" "$stage/doc/$language/LOG.md"
+    install -m 0644 "$source_dir/doc/$language/CHANGELOG.md" "$stage/doc/$language/CHANGELOG.md"
 done
 find "$stage/web/dist" -type d -exec chmod 0755 {} +
 find "$stage/web/dist" -type f -exec chmod 0644 {} +

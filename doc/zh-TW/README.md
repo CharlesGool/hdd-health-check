@@ -1,18 +1,10 @@
----
-name: project-overview-zh-tw
-description: Project overview and usage
-metadata:
-  version: "0.1.0"
-  lang: zh-TW
----
-
 # hdd-health-check
 
 這款以 root 身分執行的 Bash 工具透過 SMART 資料與唯讀磁碟檢查,評估 Debian/Ubuntu 上的 HDD 健康狀態.`v4.1.0` 版本包含檢查器與選用的本機 Web UI;GitHub 提供原始碼及預先建置的 Debian Web 安裝封存檔.Web 服務已在 Debian NAS 上以實際磁碟清單及通過身分驗證的 Security Settings 完成檢查,但實體 HDD 的完整評估與主機重新啟動後的服務復原仍未驗證.
 
 ## 多語言
 
-[English](../../README.md) | [简体中文](../zh-CN/README.md) | **繁體中文(台灣)** | [繁體中文(香港)](../zh-HK/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | [Français](../fr/README.md)
+[English](../../README.md) | [简体中文](../../README.md) | **繁體中文(台灣)** | [繁體中文(香港)](../zh-HK/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | [Français](../fr/README.md)
 
 ## 文件
 

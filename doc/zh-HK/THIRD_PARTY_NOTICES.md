@@ -1,9 +1,9 @@
 ---
-name: third-party-notices-zh-hk
+name: project-third-party-notices-zh-hk
 description: Third-party software and asset notices
 metadata:
   version: "0.1.0"
-  lang: zh-HK
+  lang: "zh-HK"
 ---
 
 # 第三方聲明
@@ -12,7 +12,7 @@ metadata:
 
 ## 多語言
 
-[English](../THIRD_PARTY_NOTICES.md) | [简体中文](../zh-CN/THIRD_PARTY_NOTICES.md) | [繁體中文(台灣)](../zh-TW/THIRD_PARTY_NOTICES.md) | **繁體中文(香港)** | [हिन्दी](../hi/THIRD_PARTY_NOTICES.md) | [Español](../es/THIRD_PARTY_NOTICES.md) | [العربية](../ar/THIRD_PARTY_NOTICES.md) | [Français](../fr/THIRD_PARTY_NOTICES.md)
+[English](../en/THIRD_PARTY_NOTICES.md) | [简体中文](../THIRD_PARTY_NOTICES.md) | [繁體中文(台灣)](../zh-TW/THIRD_PARTY_NOTICES.md) | **繁體中文(香港)** | [हिन्दी](../hi/THIRD_PARTY_NOTICES.md) | [Español](../es/THIRD_PARTY_NOTICES.md) | [العربية](../ar/THIRD_PARTY_NOTICES.md) | [Français](../fr/THIRD_PARTY_NOTICES.md)
 
 ## 文件
 

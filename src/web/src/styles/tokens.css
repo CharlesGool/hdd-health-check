@@ -1,0 +1,275 @@
+/*
+ * 设计标记: 本项目全部视觉数值的唯一来源.
+ * 页面和组件只能通过 Tailwind 工具类或 var(--*) 引用这里的标记; 新增标记只能加在本文件,
+ * 并记录在 doc/DESIGN.md 的 `设计标记` 部分. scripts/check-design.mjs 会拒绝本文件以外的写死数值.
+ */
+
+/* 主题色由色相和彩度两个数值决定; 注册为可动画属性, 切换主题时整套调色板平滑过渡. */
+@property --theme-h {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 255;
+}
+@property --theme-c {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0.07;
+}
+
+@theme {
+  /* 关闭 Tailwind 默认值, 只保留下面定义的标记 */
+  --color-*: initial;
+  --text-*: initial;
+  --font-*: initial;
+  --font-weight-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --container-*: initial;
+
+  /* 字体 */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* 字号阶梯: 正文 base; 标题从大到小 3xl, 2xl, xl, lg; 辅助文字 sm */
+  --text-sm: 14px;
+  --text-sm--line-height: 1.5;
+  --text-base: 16px;
+  --text-base--line-height: 1.5;
+  --text-lg: 18px;
+  --text-lg--line-height: 1.5;
+  --text-xl: 20px;
+  --text-xl--line-height: 1.4;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 1.3;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 1.25;
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+
+  /* 间距: 只用整数倍, 如 p-1 = 4 px, p-4 = 16 px, h-9 = 36 px, h-12 = 48 px */
+  --spacing: 4px;
+
+  /* 圆角: 基础圆角 md */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px color-mix(in oklch, black 6%, transparent);
+  --shadow-md:
+    0 4px 12px color-mix(in oklch, black 8%, transparent),
+    0 1px 3px color-mix(in oklch, black 6%, transparent);
+  --shadow-lg:
+    0 12px 32px color-mix(in oklch, black 14%, transparent),
+    0 2px 6px color-mix(in oklch, black 8%, transparent);
+
+  /* 缓动; transition-colors 等工具类默认使用 --default-transition-* */
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: var(--ease-standard);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* 容器宽度: max-w-<name> */
+  --container-content: 1200px;
+  --container-reading: 720px;
+  --container-login: 480px;
+  --container-toast: 460px;
+  --container-tip: 280px;
+}
+
+/* 语义颜色: 页面只用这些名字, 如 bg-card, text-muted-foreground, border-border */
+@theme inline {
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-overlay: var(--overlay);
+}
+
+/* 动效时长和非 Tailwind 尺寸, 组件内用 var() 引用 */
+:root {
+  --duration-fast: var(--default-transition-duration);
+  --duration-tab: 240ms;
+  --duration-theme: 360ms;
+  --duration-toast: 420ms;
+  --duration-resize: 620ms;
+  --duration-slider: 720ms;
+  --resize-settle: 180ms;
+  --toast-lifetime: 3000ms;
+  --tab-indicator-height: 2px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --card-min-width: 240px;
+  --toast-enter-offset: 16px;
+  --toast-enter-scale: 0.96;
+}
+
+/* 八种主题色 */
+:root,
+[data-theme='slate-blue'] {
+  --theme-h: 255;
+  --theme-c: 0.07;
+}
+[data-theme='sage'] {
+  --theme-h: 150;
+  --theme-c: 0.05;
+}
+[data-theme='teal'] {
+  --theme-h: 190;
+  --theme-c: 0.08;
+}
+[data-theme='plum'] {
+  --theme-h: 330;
+  --theme-c: 0.08;
+}
+[data-theme='ocean'] {
+  --theme-h: 235;
+  --theme-c: 0.11;
+}
+[data-theme='olive'] {
+  --theme-h: 115;
+  --theme-c: 0.07;
+}
+[data-theme='terracotta'] {
+  --theme-h: 40;
+  --theme-c: 0.11;
+}
+[data-theme='indigo'] {
+  --theme-h: 275;
+  --theme-c: 0.14;
+}
+
+/* 主题色样本: 声明在带 data-theme 的元素自身上, 预览其他主题时取该元素的色相 */
+:root {
+  --swatch-l: 0.5;
+}
+.dark {
+  --swatch-l: 0.74;
+}
+[data-theme] {
+  --theme-swatch: oklch(var(--swatch-l) var(--theme-c) var(--theme-h));
+}
+
+/* 浅色模式 */
+:root {
+  --background: oklch(0.985 0.004 var(--theme-h));
+  --foreground: oklch(0.21 0.015 var(--theme-h));
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.5 var(--theme-c) var(--theme-h));
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.945 0.012 var(--theme-h));
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.955 0.008 var(--theme-h));
+  --muted-foreground: oklch(0.49 0.02 var(--theme-h));
+  --accent: oklch(0.94 calc(var(--theme-c) * 0.4) var(--theme-h));
+  --accent-foreground: oklch(0.38 var(--theme-c) var(--theme-h));
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.55 0.13 150);
+  --border: oklch(0.9 0.01 var(--theme-h));
+  --input: oklch(0.86 0.012 var(--theme-h));
+  --ring: oklch(0.6 var(--theme-c) var(--theme-h));
+  --overlay: oklch(0.2 0.01 var(--theme-h) / 0.4);
+  color-scheme: light;
+}
+
+/* 深色模式 */
+.dark {
+  --background: oklch(0.17 0.01 var(--theme-h));
+  --foreground: oklch(0.95 0.005 var(--theme-h));
+  --card: oklch(0.21 0.012 var(--theme-h));
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.23 0.012 var(--theme-h));
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.74 var(--theme-c) var(--theme-h));
+  --primary-foreground: oklch(0.18 0.02 var(--theme-h));
+  --secondary: oklch(0.27 0.014 var(--theme-h));
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.25 0.012 var(--theme-h));
+  --muted-foreground: oklch(0.72 0.015 var(--theme-h));
+  --accent: oklch(0.3 calc(var(--theme-c) * 0.6) var(--theme-h));
+  --accent-foreground: oklch(0.88 var(--theme-c) var(--theme-h));
+  --destructive: oklch(0.65 0.19 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.72 0.13 150);
+  --border: oklch(0.3 0.012 var(--theme-h));
+  --input: oklch(0.34 0.014 var(--theme-h));
+  --ring: oklch(0.65 var(--theme-c) var(--theme-h));
+  --overlay: oklch(0 0 0 / 0.55);
+  color-scheme: dark;
+}
+
+/* Disk data, authentication and legacy layout geometry; see doc/DESIGN.md. */
+:root {
+  --app-disk-min-width: 280px;
+  --app-size-1120: 1120px;
+  --app-size-120: 120px;
+  --app-size-1240: 1240px;
+  --app-size-128: 128px;
+  --app-size-136: 136px;
+  --app-size-152: 152px;
+  --app-size-160: 160px;
+  --app-size-192: 192px;
+  --app-size-200: 200px;
+  --app-size-204: 204px;
+  --app-size-220: 220px;
+  --app-size-280: 280px;
+  --app-size-380: 380px;
+  --app-size-420: 420px;
+  --app-size-480: 480px;
+  --app-size-560: 560px;
+  --app-size-640: 640px;
+  --app-size-720: 720px;
+  --destructive-background: color-mix(in oklch, var(--destructive) 12%, var(--card));
+  --header-height: 72px;
+  --layer-overlay: 40;
+  --layer-popover: 50;
+  --login-control-height: 48px;
+  --password-control-size: 44px;
+  --success-background: color-mix(in oklch, var(--success) 12%, var(--card));
+  --tracking-eyebrow: 0.08em;
+  --warning: oklch(0.58 0.13 75);
+  --warning-background: color-mix(in oklch, var(--warning) 12%, var(--card));
+}
+
+:root {
+  --app-size-140: 140px;
+  --app-size-680: 680px;
+  --app-size-104: 104px;
+  --app-size-1480: 1480px;
+  --app-size-2040: 2040px;
+}

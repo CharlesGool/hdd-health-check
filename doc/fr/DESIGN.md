@@ -3,7 +3,7 @@ name: project-design-fr
 description: Architecture, data model, and boundaries
 metadata:
   version: "0.1.0"
-  lang: fr
+  lang: "fr"
 ---
 
 # hdd-health-check — Conception
@@ -13,7 +13,7 @@ Ce document décrit le comportement de `v4.1.0`. L’utilisateur indique avoir e
 
 ## Multilingue
 
-[English](../DESIGN.md) | [简体中文](../zh-CN/DESIGN.md) | [繁體中文(台灣)](../zh-TW/DESIGN.md) | [繁體中文(香港)](../zh-HK/DESIGN.md) | [हिन्दी](../hi/DESIGN.md) | [Español](../es/DESIGN.md) | [العربية](../ar/DESIGN.md) | **Français**
+[English](../en/DESIGN.md) | [简体中文](../DESIGN.md) | [繁體中文(台灣)](../zh-TW/DESIGN.md) | [繁體中文(香港)](../zh-HK/DESIGN.md) | [हिन्दी](../hi/DESIGN.md) | [Español](../es/DESIGN.md) | [العربية](../ar/DESIGN.md) | **Français**
 
 ## Documentation
 

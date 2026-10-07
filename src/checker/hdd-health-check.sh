@@ -269,10 +269,11 @@ cleanup() {
 # systemd-run call only means the unit was accepted, not that its checks ran.
 job_write() {
     [[ -n $WEB_JOB_ID ]] || return 0
-    local phase=$1 code=${2:-0} finished=0 file="$STATE_DIR/web-job.json" tmp="$STATE_DIR/web-job.json.tmp"
+    local phase=$1 code=${2:-0} finished=0 file="$STATE_DIR/web-job.json" tmp
     [[ $phase == completed || $phase == failed || $phase == stopped ]] && finished=$(now)
     [[ ! -L $STATE_DIR ]] || return 1
     mkdir -p "$STATE_DIR" || return 1
+    tmp=$(mktemp "$STATE_DIR/.web-job.XXXXXX") || return 1
     {
         printf '{"id":'; json_string "$WEB_JOB_ID"
         printf ',"state":'; json_string "$phase"
@@ -280,7 +281,9 @@ job_write() {
         printf ',"targets":'; json_string "${SELECTED[*]:-${REQ_DISKS[*]}}"
         printf ',"log":'; json_string "$LOG_FILE"
         printf ',"started":%s,"finished":%s,"exitCode":%s}\n' "${WEB_JOB_STARTED:-0}" "$finished" "$code"
-    } > "$tmp" && chmod 600 "$tmp" && mv -f "$tmp" "$file"
+    } > "$tmp" && chmod 600 "$tmp" && mv -f "$tmp" "$file" && return 0
+    rm -f -- "$tmp"
+    return 1
 }
 job_finish() {
     local code=$1 phase=completed archive="$STATE_DIR/web-job-history"
@@ -1282,14 +1285,17 @@ mod_selftest() {
 #==============================================================================
 #  模块三：读性能曲线
 #==============================================================================
-# read_mib <dev> <offset_MiB> <count_MiB> -> RD_OK RD_KBS RD_USEC
+# read_mib <dev> <offset_MiB> <count_MiB> -> RD_OK RD_KBS RD_USEC RD_SETUP_ERROR
 # 计时优先用 bash 5 的 EPOCHREALTIME（墙钟，微秒），否则解析 dd 自报耗时
 read_mib() {
     local o rc t0="" t1 b=0
     [[ -n ${EPOCHREALTIME:-} ]] && t0=${EPOCHREALTIME//[!0-9]/}
     o=$(trap '' HUP; LC_ALL=C exec dd if="$1" of=/dev/null bs=1M count="$3" skip="$2" iflag=direct 2>&1); rc=$?
     [[ -n $t0 ]] && t1=${EPOCHREALTIME//[!0-9]/}
-    RD_KBS=0; RD_USEC=0
+    RD_KBS=0; RD_USEC=0; RD_SETUP_ERROR=0
+    if (( rc != 0 )) && [[ $o =~ (Invalid\ argument|Operation\ not\ supported|Permission\ denied|No\ such\ file\ or\ directory) ]]; then
+        RD_SETUP_ERROR=1
+    fi
     if [[ $o =~ ([0-9]+)\ bytes.*copied,\ ([0-9]+)(\.([0-9]+))?\ s ]]; then
         local si=${BASH_REMATCH[2]} sf=${BASH_REMATCH[4]}
         b=${BASH_REMATCH[1]}
@@ -1324,6 +1330,11 @@ speed_one() {
         [[ $INTERRUPTED -eq 1 ]] && { warn "已中断"; return; }
         off=$(( (tot_mib - mb) * k / (pts-1) ))
         IN_TASK=1; read_mib "$dev" "$off" "$mb"; IN_TASK=0
+        if (( ${RD_SETUP_ERROR:-0} )); then
+            warn "读取环境不支持当前检查; 未完成, 不作为磁盘损坏证据"
+            save_result "$id" speed incomplete "读取环境不支持当前检查"
+            return
+        fi
         (( RD_OK )) || { RD_KBS=0; errs=$((errs+1)); }
         sp+=("$RD_KBS")
         prog '\r    采样 %d/%d  当前 %s MB/s \e[K' "$((k+1))" "$pts" "$(mbs "$RD_KBS")"
@@ -1340,6 +1351,10 @@ speed_one() {
         if (( sp[k]*100 < nb*60 )); then
             off=$(( (tot_mib - mb) * k / (pts-1) ))
             read_mib "$dev" "$off" "$mb"
+            if (( ${RD_SETUP_ERROR:-0} )); then
+                save_result "$id" speed incomplete "读取环境不支持当前检查"
+                return
+            fi
             (( RD_OK && RD_KBS > sp[k] )) && sp[k]=$RD_KBS
             if (( sp[k]*100 < nb*60 )); then flag[k]=1; anom=$((anom+1)); fi
             : # First-pass failures are counted above even when a retry succeeds.
@@ -1461,13 +1476,22 @@ surface_worker() {
     local name=$1 id=$2 dev="/dev/$1"
     local st="$STATE_DIR/$id/surface.state" map="$STATE_DIR/$id/surface.map"
     trap '' HUP
+    rm -f -- "$RUN_DIR/$name.read-error"
     surface_load "$st" || return
     local base=$S_ELAPSED t0=$SECONDS k k2
     while (( S_NEXT < S_TOTAL )); do
         [[ -e $RUN_DIR/stop_all || -e $RUN_DIR/$name.stop ]] && break
         read_mib "$dev" $(( S_NEXT * S_CHUNK )) "$S_CHUNK"
+        if (( ${RD_SETUP_ERROR:-0} )); then
+            : > "$RUN_DIR/$name.read-error"
+            break
+        fi
         if (( RD_OK == 0 )); then
             read_mib "$dev" $(( S_NEXT * S_CHUNK )) "$S_CHUNK"         # 复读确认
+            if (( ${RD_SETUP_ERROR:-0} )); then
+                : > "$RUN_DIR/$name.read-error"
+                break
+            fi
             if (( RD_OK == 0 )); then
                 S_ERR=$((S_ERR+1)); echo "$S_NEXT E 0" >> "$map"; RD_KBS=0
             else
@@ -1480,6 +1504,10 @@ surface_worker() {
                 S_OK=$((S_OK+1)); S_EMA=$(( (S_EMA*7 + k) / 8 ))
             else
                 read_mib "$dev" $(( S_NEXT * S_CHUNK )) "$S_CHUNK"     # 慢块复测，排除偶发干扰
+                if (( ${RD_SETUP_ERROR:-0} )); then
+                    : > "$RUN_DIR/$name.read-error"
+                    break
+                fi
                 k2=$RD_KBS; (( RD_OK && k2 > k )) && k=$k2
                 if   (( k*100 >= S_EMA*50 )); then S_TRANS=$((S_TRANS+1)); S_OK=$((S_OK+1))
                 elif (( k*100 >= S_EMA*20 )); then S_SLOW=$((S_SLOW+1));   echo "$S_NEXT S $k" >> "$map"
@@ -1495,6 +1523,8 @@ surface_worker() {
     done
     (( S_NEXT >= S_TOTAL )) && { S_DONE=1; surface_write "$st"; }
 }
+
+
 
 # 监控界面
 declare -A SW_PID=() SW_START=()
@@ -1567,9 +1597,9 @@ bb_bs() { local size=$1 bs=4096; while (( size / bs > 4294967295 )); do bs=$((bs
 bb_recheck() {
     local name=$1 id=${DID[$1]} dev="/dev/$1" map
     map="$STATE_DIR/$id/surface.map"
-    BB_FOUND=0
+    BB_FOUND=0; BB_COMPLETE=0
     command -v badblocks >/dev/null 2>&1 || { warn "未安装 badblocks (e2fsprogs)，跳过复查"; return; }
-    local bs per first last maxb idx t k=0 n tmp
+    local bs per first last maxb idx t k=0 n tmp failed=0
     bs=$(bb_bs "$S_SIZE"); per=$(( S_CHUNK*1048576 / bs )); maxb=$(( S_SIZE / bs - 1 ))
     mapfile -t _chunks < <(awk '$2=="E"||$2=="V"{print $1}' "$map" | sort -n -u | head -n 64)
     n=${#_chunks[@]}
@@ -1581,17 +1611,23 @@ bb_recheck() {
         [[ $INTERRUPTED -eq 1 ]] && break
         k=$((k+1)); first=$(( idx*per )); last=$(( first+per-1 )); (( last > maxb )) && last=$maxb
         prog '\r    复查 %d/%d …\e[K' "$k" "$n"
-        ( trap '' HUP; exec badblocks -b "$bs" "$dev" "$last" "$first" ) 2>/dev/null >> "$tmp"
+        if ! ( trap '' HUP; exec badblocks -b "$bs" "$dev" "$last" "$first" ) 2>/dev/null >> "$tmp"; then
+            failed=1
+            break
+        fi
     done
     IN_TASK=0
     prog '\r\e[K'
     BB_FOUND=$(grep -c '^[0-9]' "$tmp")
+    (( ! failed && ! INTERRUPTED )) && BB_COMPLETE=1
     if (( BB_FOUND > 0 )); then
         bad "badblocks 确认 $BB_FOUND 个坏块（块大小 ${bs}B，前 10 个）："
         dump "$(head -n 10 "$tmp" | paste -sd' ')"
         cp "$tmp" "$STATE_DIR/$id/recheck-badblocks.txt"
+    elif (( BB_COMPLETE )); then
+        ok "badblocks 复查未发现不可读块; 慢读本身不能证明介质损坏"
     else
-        ok "badblocks 复查未发现不可读块（极慢块属于弱扇区：能读出但需多次重试）"
+        warn "badblocks 复查未完成, 不能据此判断异常是否已消失"
     fi
     rm -f "$tmp"
 }
@@ -1603,6 +1639,11 @@ surface_finalize() {
     surface_load "$STATE_DIR/$id/surface.state"
     CUR_DED=0; CUR_ISS=()
     head2 "全盘读延迟扫描结果 · /dev/$name"
+    if [[ -e $RUN_DIR/$name.read-error ]]; then
+        warn "读取环境不支持当前检查; 进度已保留, 不作为磁盘损坏证据"
+        save_result "$id" surface incomplete "读取环境不支持当前检查, 进度已保留"
+        return
+    fi
     local avg=$(( S_SIZE / 1024 / (S_ELAPSED>0 ? S_ELAPSED : 1) ))
     info "块大小 ${S_CHUNK} MiB，共 ${S_TOTAL} 块，用时 $(fmt_dur "$S_ELAPSED")，平均 $(mbs $avg) MB/s"
     info "正常 ${S_OK}（其中复测后正常 ${S_TRANS}）  慢 ${S_SLOW}  极慢 ${S_VSLOW}  读错误 ${S_ERR}"
@@ -1617,7 +1658,7 @@ surface_finalize() {
             END{flush()}' | head -n 20)"
     fi
 
-    (( S_ERR > 0 ))   && { bad "发现 $S_ERR 个不可读块 —— 存在实际坏道"; pen 40 "表面读错误 $S_ERR 块"; }
+    (( S_ERR > 0 ))   && { bad "发现 $S_ERR 个连续两次读取失败的块; 需结合 SMART 与接口证据定位原因"; pen 40 "表面读错误 $S_ERR 块"; }
     if [[ $rota == 0 ]]; then
         (( S_SLOW + S_VSLOW > 0 )) && info "固态盘慢读仅记录为性能波动，不扣健康分；读错误仍会扣分"
     else
@@ -1639,7 +1680,7 @@ surface_finalize() {
         if (( doit )); then
             bb_recheck "$name"
             if (( BB_FOUND > 0 && S_ERR == 0 )); then pen 30 "badblocks 确认坏块 $BB_FOUND"; fi
-            (( BB_FOUND == 0 && S_ERR > 0 )) && info "复查未复现读错误：可能已被硬盘重映射，请看 SMART 05/197 是否变化"
+            (( ${BB_COMPLETE:-0} && BB_FOUND == 0 && S_ERR > 0 )) && info "复查范围内未复现读错误; 原始异常仍保留, 建议结合 SMART 05/197 和接口计数复测"
         fi
     fi
     local sum
@@ -1705,7 +1746,7 @@ mod_surface() {
     INTERRUPTED=0      # 让结果汇总与复查能正常进行
     for name in "${torun[@]}"; do
         surface_load "$STATE_DIR/${DID[$name]}/surface.state"
-        if (( S_DONE )); then
+        if (( S_DONE )) || [[ -e $RUN_DIR/$name.read-error ]]; then
             surface_finalize "$name"
         else
             local pct=0; (( S_TOTAL )) && pct=$(( S_NEXT*1000 / S_TOTAL ))
@@ -1814,12 +1855,17 @@ clear_results() {
 iface_worker() {
     trap '' HUP
     local name=$1 dur=$2 dev="/dev/$1" f="$RUN_DIR/$1.iface" size tot r mb=0 errs=0 end
+    rm -f -- "$RUN_DIR/$name.read-error"
     end=$(( SECONDS + dur ))
     size=$(blockdev --getsize64 "$dev" 2>/dev/null); tot=$(( ${size:-0} / 1048576 - 64 )); (( tot > 0 )) || tot=1
     while (( SECONDS < end )); do
         [[ -e $RUN_DIR/stop_all || -e $RUN_DIR/$name.stop ]] && break
         r=$(( ((RANDOM << 15) | RANDOM) % tot ))
         read_mib "$dev" "$r" 64
+        if (( ${RD_SETUP_ERROR:-0} )); then
+            : > "$RUN_DIR/$name.read-error"
+            break
+        fi
         if (( RD_OK )); then mb=$(( mb + 64 )); else errs=$(( errs + 1 )); fi
         printf 'W_MB=%s\nW_ERR=%s\nW_KBS=%s\n' "$mb" "$errs" "$RD_KBS" > "$f.tmp" && mv -f "$f.tmp" "$f"
     done
@@ -1958,16 +2004,22 @@ mod_iface() {
         if (( nlnk > 0 )); then bad "内核日志   : 维修后有 ${nlnk} 条链路复位/CRC/命令失败记录："; dump "$KL_LNK"; fails=$((fails+1))
         else ok "内核日志   : 维修后无链路错误（$KL_SRC）"; fi
         info "压力测试   : 读取 ${gb} GB，读错误 ${W_ERR} 次"
-        (( W_ERR > 0 )) && warn "读取出错属于介质问题而非接口问题，建议做 [6] 全盘读延迟扫描定位"
+        (( W_ERR > 0 )) && warn "读取出错不能单独区分介质、接口或主机原因; 建议结合 SMART、CRC 与 [6] 全盘读延迟扫描定位"
 
         local st sum
-        if (( fails > 0 )); then
+        if [[ -e $RUN_DIR/$name.read-error ]]; then
+            warn "读取环境不支持当前检查; 未完成接口验证"
+            st=incomplete; sum="读取环境不支持当前检查, 未完成接口验证"
+        elif (( fails > 0 )); then
             out ""; bad "结论：接口问题【未解决】"
             info "建议按顺序排查：换一根线 → 换主板口/背板槽位 → 换供电线或去掉转接头/一拖多 →"
             info "                换硬盘盒/转接卡 → 以上都换过仍增长，可能是硬盘自身接口板问题"
             pen 15 "接口问题未解决"
             st=bad; sum="未解决：CRC 维修后 +${d_rep}，链路错误 ${nlnk} 条"
-        elif (( gb < 5 && W_ERR == 0 )); then
+        elif (( W_ERR > 0 )); then
+            warn "本次仍有读取错误, 原因未确认, 接口验证未完成"
+            st=incomplete; sum="验证未完成（存在读取错误, 原因未确认）"
+        elif (( gb < 5 )); then
             out ""; warn "结论：读取量仅 ${gb} GB，数据量不足，建议延长时间再测一次"
             st=incomplete; sum="验证不足（仅读取 ${gb} GB）"
         else
@@ -2539,7 +2591,7 @@ json_snapshot() {
 #==============================================================================
 banner() {
     say "${C_BOLD}  ╔════════════════════════════════════════════════════════════╗${C_OFF}"
-    say "${C_BOLD}  ║   机械硬盘全方位健康评估  v${SCRIPT_VERSION}        只读检测 · 不写盘   ║${C_OFF}"
+    say "${C_BOLD}  ║   机械硬盘全方位健康评估  v${SCRIPT_VERSION}        盘面只读 · 主机保存记录   ║${C_OFF}"
     say "${C_BOLD}  ╚════════════════════════════════════════════════════════════╝${C_OFF}"
 }
 
@@ -2635,7 +2687,7 @@ main_menu() {
 #------------------------------ 帮助 ------------------------------------------
 usage() {
 cat <<EOF
-${SCRIPT_NAME} v${SCRIPT_VERSION} —— 机械硬盘全方位健康评估 (Debian/Ubuntu，需 root，全程只读)
+${SCRIPT_NAME} v${SCRIPT_VERSION} —— 机械硬盘全方位健康评估 (Debian/Ubuntu，需 root，盘面只读，主机保存记录)
 
 交互模式（推荐）:
   sudo ${SCRIPT_NAME}              直接运行，进入按键菜单

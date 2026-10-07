@@ -1,11 +1,3 @@
----
-name: project-overview-fr
-description: Project overview and usage
-metadata:
-  version: "0.1.0"
-  lang: fr
----
-
 # hdd-health-check
 
 Cet outil Bash exécuté avec les droits root évalue la santé des HDD sous Debian/Ubuntu avec les données SMART et des contrôles en lecture seule. La version `v4.1.0` comprend le vérificateur et l’interface Web locale facultative, avec le code source et une archive Web Debian précompilée sur GitHub. Le service Web a été vérifié sur un NAS Debian avec un inventaire réel des disques et des paramètres de sécurité authentifiés, mais une évaluation complète sur de vrais HDD et la reprise après redémarrage de l’hôte restent à vérifier.
@@ -14,7 +6,7 @@ La durée de fonctionnement est une donnée d’usage et ne réduit pas seule le
 
 ## Multilingue
 
-[English](../../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文(台灣)](../zh-TW/README.md) | [繁體中文(香港)](../zh-HK/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | **Français**
+[English](../../README.md) | [简体中文](../../README.md) | [繁體中文(台灣)](../zh-TW/README.md) | [繁體中文(香港)](../zh-HK/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | **Français**
 
 ## Documentation
 

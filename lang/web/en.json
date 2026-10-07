@@ -288,5 +288,6 @@
   "candidateDiskDetail": "Disk details now open as full pages; serials can be revealed and copied on request.",
   "candidateSmart": "SMART attributes show explanations on hover or focus, and supported SSDs show host reads and writes.",
   "smartBusyHelp": "Time the controller spent busy handling I/O; the reported unit is device-specific.",
-  "smartTemperatureDurationHelp": "Time spent above the warning or critical temperature limit; sustained exposure needs attention."
+  "smartTemperatureDurationHelp": "Time spent above the warning or critical temperature limit; sustained exposure needs attention.",
+  "saved": "Saved"
 }

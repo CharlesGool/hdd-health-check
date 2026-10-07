@@ -288,5 +288,6 @@
   "candidateDiskDetail": "磁盘详情改为完整页面；序列号可按需显示并复制。",
   "candidateSmart": "SMART 属性支持悬停或聚焦解释，支持的固态盘显示主机读写总量。",
   "smartBusyHelp": "控制器处理读写操作的繁忙时间；报告单位以设备为准。",
-  "smartTemperatureDurationHelp": "超过温度警告或严重阈值的累计时长；持续超限需关注。"
+  "smartTemperatureDurationHelp": "超过温度警告或严重阈值的累计时长；持续超限需关注。",
+  "saved": "已保存"
 }

@@ -3,7 +3,7 @@ name: project-design-zh-hk
 description: Architecture, data model, and boundaries
 metadata:
   version: "0.1.0"
-  lang: zh-HK
+  lang: "zh-HK"
 ---
 
 # hdd-health-check — 設計
@@ -12,7 +12,7 @@ metadata:
 
 ## 多語言
 
-[English](../DESIGN.md) | [简体中文](../zh-CN/DESIGN.md) | [繁體中文(台灣)](../zh-TW/DESIGN.md) | **繁體中文(香港)** | [हिन्दी](../hi/DESIGN.md) | [Español](../es/DESIGN.md) | [العربية](../ar/DESIGN.md) | [Français](../fr/DESIGN.md)
+[English](../en/DESIGN.md) | [简体中文](../DESIGN.md) | [繁體中文(台灣)](../zh-TW/DESIGN.md) | **繁體中文(香港)** | [हिन्दी](../hi/DESIGN.md) | [Español](../es/DESIGN.md) | [العربية](../ar/DESIGN.md) | [Français](../fr/DESIGN.md)
 
 ## 文件
 

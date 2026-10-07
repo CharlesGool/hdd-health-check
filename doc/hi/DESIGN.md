@@ -3,7 +3,7 @@ name: project-design-hi
 description: Architecture, data model, and boundaries
 metadata:
   version: "0.1.0"
-  lang: hi
+  lang: "hi"
 ---
 
 # hdd-health-check — डिज़ाइन
@@ -13,7 +13,7 @@ metadata:
 
 ## बहुभाषी
 
-[English](../DESIGN.md) | [简体中文](../zh-CN/DESIGN.md) | [繁體中文(台灣)](../zh-TW/DESIGN.md) | [繁體中文(香港)](../zh-HK/DESIGN.md) | **हिन्दी** | [Español](../es/DESIGN.md) | [العربية](../ar/DESIGN.md) | [Français](../fr/DESIGN.md)
+[English](../en/DESIGN.md) | [简体中文](../DESIGN.md) | [繁體中文(台灣)](../zh-TW/DESIGN.md) | [繁體中文(香港)](../zh-HK/DESIGN.md) | **हिन्दी** | [Español](../es/DESIGN.md) | [العربية](../ar/DESIGN.md) | [Français](../fr/DESIGN.md)
 
 ## दस्तावेज़ीकरण
 

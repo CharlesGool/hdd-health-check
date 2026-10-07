@@ -1,18 +1,10 @@
----
-name: project-overview-ar
-description: Project overview and usage
-metadata:
-  version: "0.1.0"
-  lang: ar
----
-
 # hdd-health-check
 
 تقيّم أداة Bash هذه، التي تعمل بصلاحية root، صحة أقراص HDD على Debian/Ubuntu باستخدام بيانات SMART وفحوص الأقراص للقراءة فقط. يتضمن إصدار `v4.1.0` الفاحص وواجهة Web محلية اختيارية، مع المصدر وأرشيف Debian Web مبني مسبقًا على GitHub. فُحصت خدمة Web على NAS يعمل بنظام Debian مع قائمة أقراص فعلية وإعدادات Security Settings موثقة، لكن التقييم الكامل المضبوط على HDD حقيقي والتعافي بعد إعادة تشغيل المضيف لم يُتحقق منهما بعد.
 
 ## تعدد اللغات
 
-[English](../../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文(台灣)](../zh-TW/README.md) | [繁體中文(香港)](../zh-HK/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | **العربية** | [Français](../fr/README.md)
+[English](../../README.md) | [简体中文](../../README.md) | [繁體中文(台灣)](../zh-TW/README.md) | [繁體中文(香港)](../zh-HK/README.md) | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | **العربية** | [Français](../fr/README.md)
 
 ## الوثائق
 

@@ -1,9 +1,9 @@
 ---
-name: web-guide-hi
+name: project-web-hi
 description: स्थानीय Web UI की स्थापना और संचालन
 metadata:
   version: "0.1.0"
-  lang: hi
+  lang: "hi"
 ---
 
 # स्थानीय Web UI
@@ -14,7 +14,7 @@ Web UI स्थानीय डिस्क के परिणाम, हा�
 
 ## बहुभाषी
 
-[English](../WEB.md) | [简体中文](../zh-CN/WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | **हिन्दी** | [Español](../es/WEB.md) | [العربية](../ar/WEB.md) | [Français](../fr/WEB.md)
+[English](../en/WEB.md) | [简体中文](../WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | **हिन्दी** | [Español](../es/WEB.md) | [العربية](../ar/WEB.md) | [Français](../fr/WEB.md)
 
 ## दस्तावेज़ीकरण
 

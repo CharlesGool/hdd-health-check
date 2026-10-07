@@ -1,9 +1,9 @@
 ---
-name: web-guide-fr
+name: project-web-fr
 description: Installation et utilisation de l’interface Web locale
 metadata:
   version: "0.1.0"
-  lang: fr
+  lang: "fr"
 ---
 
 # Interface Web locale
@@ -14,7 +14,7 @@ Les cartes des disques à surveiller affichent la cause enregistrée. La durée 
 
 ## Multilingue
 
-[English](../WEB.md) | [简体中文](../zh-CN/WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | [Español](../es/WEB.md) | [العربية](../ar/WEB.md) | **Français**
+[English](../en/WEB.md) | [简体中文](../WEB.md) | [繁體中文(台灣)](../zh-TW/WEB.md) | [繁體中文(香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | [Español](../es/WEB.md) | [العربية](../ar/WEB.md) | **Français**
 
 ## Documentation
 

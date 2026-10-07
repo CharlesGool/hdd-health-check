@@ -1,52 +1,52 @@
----
-name: project-overview
-description: Project overview and usage
-metadata:
-  version: "0.1.0"
-  lang: en
----
-
 # hdd-health-check
 
-This root-run Bash tool evaluates HDD health on Debian/Ubuntu through SMART data and read-only disk checks. The `v4.1.0` release includes the checker and optional local Web UI, with source and a prebuilt Debian Web archive on GitHub. The Web service has been checked on a Debian NAS with real disk inventory and authenticated Security Settings, but a complete assessment on real HDDs and recovery after a host reboot remain unverified.
+<img align="right" src="doc/resources/logo.png" width="160" alt="hdd-health-check">
 
-## Multi-language
+**简体中文** | [English](doc/en/README.md) | [Español](doc/es/README.md)
 
-**English** | [简体中文](doc/zh-CN/README.md) | [繁體中文 (台灣)](doc/zh-TW/README.md) | [繁體中文 (香港)](doc/zh-HK/README.md) | [हिन्दी](doc/hi/README.md) | [Español](doc/es/README.md) | [العربية](doc/ar/README.md) | [Français](doc/fr/README.md)
+通过 SMART 和只读检查评估 Debian/Ubuntu 磁盘健康, 提供命令行与本地 Web 控制器.
 
-## Documentation
+[![License](https://img.shields.io/badge/License-MIT-orange)](LICENSE) [![Release](https://img.shields.io/badge/Release-v4.1.0-blue?logo=github)](https://github.com/CharlesGool/hdd-health-check/releases/tag/v4.1.0)
 
-- Project overview: [README](README.md)
+## 文档
 
-- Design rationale: [DESIGN](doc/DESIGN.md)
+- 项目概览: [README](README.md)
 
-- Release history: [LOG](doc/LOG.md)
+- 设计思路: [DESIGN](doc/DESIGN.md)
 
-- Third-party notices: [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md)
+- 项目状态: [LOG](doc/LOG.md)
+- 历史记录: [HISTORY](doc/HISTORY.md)
+- 变更日志: [CHANGELOG](doc/CHANGELOG.md)
 
-## Introduction
+- 第三方声明: [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md)
 
-The interactive menu or batch CLI selects drives, performs a quick SMART, mount and kernel-log assessment, and reports a heuristic 0–100 score and risk grade. Other modules offer SMART short/long self-tests, sampled read-speed profiling, resumable full-disk read-latency scanning with optional targeted `badblocks` recheck, full-disk read-only `badblocks`, and post-repair interface read testing. For HDDs, a full assessment runs quick, short, long, speed and full read-only scan checks; for SSDs, it runs quick, short, long and a full read-only surface scan without speed sampling; it does not include the separate full-disk `badblocks` or interface module. Results can be reused, compared against SMART counter history, and assembled into a report. See [known issues](doc/LOG.md#bugs) and [goals](doc/DESIGN.md#design-goals).
 
-A complete assessment repeats the quick SMART/ATA/CRC check after the long reads. A 0–100 composite score is shown only when the required quick, short, long and completed surface checks (and speed sampling for HDDs) belong to the same unexpired assessment batch. Reused, interrupted, expired and older-format results remain visible as historical evidence, but yield a partial/unknown grade instead of a current score; reviewing a report does not refresh the baseline. After interface repair, use the separate interface verification and repeat the full assessment to establish a new score. A resolved interface check does not erase historical errors. An ATA error count with no prior comparison is an unresolved unknown cause (5-point deduction), retained across repeated checks and full assessments; a stable counter alone does not prove resolution. Newly increased ATA errors deduct 20 points; unchanged historical counts do not count as new errors. Existing interface verification does not attribute ATA errors to an interface repair. Sparse slow surface reads are performance prompts to retest, not proof of bad sectors; confirmed read errors remain medium-risk evidence (40-point surface deduction). Power-on hours alone do not deduct health points, and an ATA near-threshold warning requires a nonzero raw error count; old threshold-only notices without raw evidence are marked for review. Back up important data before testing a suspect drive.
+## 简介
 
-**Read-only refers to target disk data, not the host.** The program writes logs, settings, progress and history on the host; it can enable SMART, launch drive-internal self-tests, read whole devices under sustained load, install packages after confirmation, and start transient systemd units. Do not use it as a substitute for backups. No destructive write-mode surface scan, erase or filesystem write is implemented.
+这款以 root 身份运行的 Bash 工具通过 SMART 数据和只读磁盘检查评估 Debian/Ubuntu 上的 HDD 健康状况.`v4.1.0` 版本包含检查器和可选的本地 Web UI;GitHub 提供源码及预构建的 Debian Web 安装包.Web 服务已在 Debian NAS 上使用真实磁盘清单和经过身份验证的 Security Settings 完成检查,但真实 HDD 的完整评估及主机重启后的服务恢复仍未验证.
 
-## Requirements
+交互式菜单或批处理 CLI 可选择磁盘,快速评估 SMART,挂载状态和内核日志,并给出启发式 0–100 分及风险等级.其他模块提供 SMART 短测/长测,抽样读速分析,可续扫的全盘读取延迟扫描及可选的针对性 `badblocks` 复查,全盘只读 `badblocks` 检查,以及维修后的接口读取测试.对 HDD,完整评估运行快检,短测,长测,速度和全盘只读扫描;对 SSD,运行快检,短测,长测和全盘只读盘面扫描,不采样速度.两者均不包含独立的全盘 `badblocks` 或接口模块.结果可复用,与 SMART 计数器历史比较并汇总成报告.参见[已知问题](doc/LOG.md#缺陷)和[设计目标](doc/DESIGN.md#设计目标).
 
-- Minimum: root, Bash 4.3+, Linux block-device utilities (`lsblk`, `blockdev`), `smartctl` (`smartmontools`), `dd` (`coreutils`) and `flock`; Debian/Ubuntu is the intended platform. Other distributions receive a warning; automatic dependency installation uses `apt-get`.
-- Recommended: `badblocks` (`e2fsprogs`) for surface checks; systemd with `systemd-run` for detached tasks. Missing packages may trigger an interactive `apt-get update`/install offer (or automatic confirmation with `-y`). Check dependencies before unattended runs. No pinned third-party code is vendored and no dependency lock file applies.
-- Real HDD and SMART access are needed to assess actual health. SSD/NVMe can be included explicitly. A completed SSD full assessment scores 100 when SMART checks, self-tests and the full read-only scan report no issues; actual read errors and SMART findings lower that heuristic score. It is not a calibrated failure probability.
+完整评估在长时间读取后再次检查快速 SMART/ATA/CRC.只有同一未过期评估批次内所需的快检,短测,长测及完整盘面扫描(以及 HDD 的速度采样)都完成,才显示 0–100 综合分数.复用,中断,过期和旧格式结果仍作为历史证据显示,但等级为部分/未知;查看报告不刷新比较基线.维修接口后,单独进行接口验证并重新完成完整评估,才能得到新分数.已解决的接口检查不会抹去历史错误.没有先前比较值的 ATA 错误总数原因未明,扣 5 分且未解决的风险会在后续检查和完整评估中保留;计数稳定本身不证明风险解除.新增 ATA 错误扣 20 分;未变化的历史计数不算新错误.现有接口验证不能把 ATA 错误归因于接口维修.零星慢读提示复测性能,并非坏扇区证据;确认的读取错误仍属中等风险证据(盘面扣 40 分).通电时长本身不扣健康分;ATA 接近阈值警告需要非零原始错误计数,缺少原始依据的旧阈值提示标为待复查.检查可疑磁盘前请备份重要数据.
 
-## Install
+**只读指的是目标磁盘数据,并非主机.** 程序会在主机上写入日志,设置,进度和历史记录;可能启用 SMART,启动磁盘内部自检,持续读取整台设备,经确认后安装软件包及启动临时 systemd 单元.不能以此替代备份.本工具不执行破坏性的写入模式盘面扫描,擦除或文件系统写入.
 
-### Quick Install
+固态盘和 NVMe 的完整评估包括 SMART 快检,短测,长测及全盘只读扫描,不采样速度.单纯慢读不扣健康分;干净完成的批次得 100 分,SMART 异常或实际读取错误可能降低启发式评分.批量控制显示所选磁盘支持的项目并集;仅适用于 HDD 的项目会跳过所选 SSD.点击容量和主机写入量可切换十进制与二进制单位.SATA HDD 可在 SMART 详情页单独唤醒或进入待机.
 
-From a trusted checkout, run `sudo bash ./hdd-health-check.sh --help` to inspect options without starting a scan. Do not pipe an unreviewed remote script into a root shell.
+## 要求
 
-### Normal Install
+- 最低要求:root,Bash 4.3+,Linux 块设备工具(`lsblk`,`blockdev`),`smartctl`(`smartmontools`),`dd`(`coreutils`)及 `flock`;目标平台为 Debian/Ubuntu.其他发行版会收到警告;自动安装依赖使用 `apt-get`.
+- 推荐:使用 `badblocks`(`e2fsprogs`)进行盘面检查;使用支持 `systemd-run` 的 systemd 执行分离式任务.缺少软件包时可能提示交互式执行 `apt-get update`/安装(或通过 `-y` 自动确认).无人值守运行前请检查依赖.项目未内置固定版本的第三方代码,也不适用依赖锁文件.
+- 评估真实 HDD 健康状况需要实体 HDD 和 SMART 访问.可显式纳入 SSD/NVMe.完成的 SSD 全面评估若 SMART 检查,自检和全盘只读扫描均无异常,得分为 100;实际读取错误和 SMART 异常会降低这一启发式评分.它不是经过校准的故障概率.
+## 安装
 
-The following checkout uses the `v4.1.0` release tag. The repository-root command remains a thin entry point; its implementation is in `src/checker/`.
+### 快速安装
+
+在可信的检出目录中运行 `sudo bash ./hdd-health-check.sh --help`,无需启动扫描即可查看选项.不要将未经审查的远程脚本通过管道传给 root shell.
+
+### 常规安装
+
+以下检出 `v4.1.0` 发布标签.仓库根目录的命令只是简短入口,实现位于 `src/checker/`.
 
 ```bash
 git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
@@ -55,30 +55,32 @@ bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
 ```
 
-Review and install the required OS packages yourself before scanning to avoid the script's package-install prompt. To upgrade an existing checkout, back up any desired host logs and `${HDD_STATE_DIR:-/var/lib/hdd-health}` first; replace the script from a reviewed checkout, keep that state directory for history/resume, then review `--help` and run the chosen checks. v2.2 state parsing accepts only known data fields; nonconforming prior v2.2 state may be rejected. A rollback requires restoring the previous script **and its matching state backup**; do not assume newer state is backwards compatible. No v1 CLI behavior or state migration is promised.
+扫描前请自行核查并安装所需系统软件包,以免触发脚本的安装提示.升级现有检出目录时,先备份需要保留的主机日志和 `${HDD_STATE_DIR:-/var/lib/hdd-health}`;从经审查的检出目录替换脚本,保留该状态目录以便使用历史记录/续扫,随后查看 `--help` 并执行所选检查.v2.2 仅解析已知的状态数据字段;不符合格式的旧 v2.2 状态可能被拒绝.回滚时需同时恢复旧脚本**及与之匹配的状态备份**;不要假定新版状态向后兼容.不承诺兼容 v1 CLI 行为或迁移 v1 状态.
 
-### Web UI from the v4.1.0 tag
+### 从 v4.1.0 标签安装 Web UI
 
-The source tag does not track generated assets in `dist/web`. On a Debian systemd host, install Node.js 20.19+ or 22.12+ and npm, build the UI, then run the installer. The GitHub Release also provides a prebuilt Web archive for installation without Node.js on the NAS.
+源码标签不跟踪 `dist/web` 中生成的资源.在 Debian systemd 主机安装 Node.js 22.12+ 或 24+ 及 npm 10+,构建界面,然后运行安装器.GitHub Release 另提供预构建的 Web 安装包,在 NAS 上安装时无需 Node.js.
 
 ```bash
 git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
 cd hdd-health-check/src/web
 npm ci
-npm run build
+npm run check
 cd ../..
 sudo bash deploy/install.sh
 ```
 
-The installer checks and installs missing Debian runtime packages, starts the password-protected service on LAN port 8765, and does not start a disk scan. Read the generated password with `sudo cat /root/apps/hdd-health-check/web-password`. Node.js is only needed to build the UI. See [WEB](doc/WEB.md) for updates, security boundaries, and rollback.
+安装器检查并安装缺少的 Debian 运行依赖,在局域网 8765 端口启动受密码保护的服务,但不会启动磁盘扫描.使用 `sudo cat /root/apps/hdd-health-check/web-password` 查看生成的密码.Node.js 仅用于构建界面.更新,安全边界和回滚说明见 [WEB](doc/WEB.md).
 
-## Guidance
+## 指南
 
-Run only on drives you are authorized to examine; a sustained read scan can add significant load. The commands below are **examples, not validation instructions for this environment**:
+开发检查: 从仓库根运行 `python3 scripts/check-project.py` 和 `bash scripts/check.sh`; 从 `src/web/` 运行 `npm ci`, `npm run check`, `npm run test:ui` 和 `npm audit`. 浏览器测试只使用合成数据, 不运行磁盘检查. 首次运行需要 `npx playwright install chromium`.
+
+只能检查你有权检查的磁盘;持续读取扫描可能造成较大负载.以下命令**仅为示例,并非要求在本环境中验证**:
 
 ```bash
-sudo bash ./hdd-health-check.sh                 # terminal menu
-sudo bash ./hdd-health-check.sh -a              # all rotational disks, default quick scan
+sudo bash ./hdd-health-check.sh                 # 终端菜单
+sudo bash ./hdd-health-check.sh -a              # 所有机械盘,默认快速检查
 sudo bash ./hdd-health-check.sh -d sdb -r quick,short
 sudo bash ./hdd-health-check.sh -d sdb -r full -y
 sudo bash ./hdd-health-check.sh -d sdb -r iface --duration 30 --detach
@@ -86,29 +88,25 @@ sudo bash ./hdd-health-check.sh --status
 sudo bash ./hdd-health-check.sh --stop
 ```
 
-`-d/--disk` accepts comma-separated device names; `-a/--all` selects mechanical disks and `--include-ssd` extends selection. `-r/--run` accepts `quick,short,long,speed,surface,badblocks,iface,full`; default is `quick`, and batch mode always adds a report. `--duration` sets interface-test minutes (default 15). `--rescan` restarts instead of reusing/resuming prior results; by default batch quick is repeated, other results are reused while valid, and interrupted surface scans resume. `-q/--quiet` suppresses terminal output, **not log writes**; `-y/--yes` auto-confirms prompts, including package installs. `--detach` requires batch mode and available `systemd-run`; terminal disconnect during eligible interactive long tasks may also hand off to systemd. `--stop` requests a safe stop and preserves surface progress, but does **not** cancel drive-internal SMART self-tests. `-l/--log FILE` changes the log path; `HDD_LOG_DIR` and `HDD_STATE_DIR` override default directories. `NO_COLOR` disables color; `HDD_NO_BG` disables automatic interactive background handoff. Menu settings are saved in the state directory.
+`-d/--disk` 接受逗号分隔的设备名;`-a/--all` 选择机械磁盘,`--include-ssd` 扩展选择范围.`-r/--run` 接受 `quick,short,long,speed,surface,badblocks,iface,full`;默认是 `quick`,批处理模式始终会生成报告.`--duration` 设置接口测试时长(分钟,默认 15).`--rescan` 会重新扫描,而非复用/续扫先前结果;默认情况下,批处理快速检查会重复执行,其他有效结果会复用,中断的盘面扫描会续扫.`-q/--quiet` 抑制终端输出,**但仍写入日志**;`-y/--yes` 自动确认提示,包括安装软件包.`--detach` 要求批处理模式且 `systemd-run` 可用;交互式长任务执行期间终端断开时,也可能转交给 systemd.`--stop` 请求安全停止并保留盘面扫描进度,但**不会**取消磁盘内部的 SMART 自检.`-l/--log FILE` 修改日志路径;`HDD_LOG_DIR` 和 `HDD_STATE_DIR` 覆盖默认目录.`NO_COLOR` 禁用颜色;`HDD_NO_BG` 禁用交互模式下的自动后台转交.菜单设置保存在状态目录中.
 
-The parser also maps `-t short|long` to the matching self-test, `-s` to speed and `-b` to badblocks; **`-w/--wait` is ignored** and does not wait for a test. These aliases do not provide v1 behavior. Refer to `--help` for the installed script's options.
+解析器还将 `-t short|long` 映射到对应的自检,将 `-s` 映射到速度检查,`-b` 映射到 badblocks;**`-w/--wait` 会被忽略**,不会等待测试完成.这些别名不提供 v1 行为.请以已安装脚本的 `--help` 为准.
 
-Exit codes: `0` all healthy; `1` notice/warning; `2` danger; `3` runtime error. Logs default to `/var/log/disk-health/hdd-health-<timestamp>.log`; state defaults to `/var/lib/hdd-health`. The host writes and operational boundaries are detailed in [DESIGN](doc/DESIGN.md#data-design).
+退出码:`0` 全部健康;`1` 提示/警告;`2` 危险;`3` 运行时错误.日志默认位于 `/var/log/disk-health/hdd-health-<timestamp>.log`;状态默认位于 `/var/lib/hdd-health`.主机写入及操作边界详见 [DESIGN](doc/DESIGN.md#数据设计).
 
-## Upgrade
+## 升级
 
-For the current source layout, update the checkout, build in `src/web`, then run `sudo bash deploy/install.sh` from the repository root. The installer copies `src/checker/hdd-health-check.sh`, `src/web/server.py`, and `dist/web` into the existing service layout, preserves the Web password and keeps timestamped application and unit backups. Review changes before running the installer as root. The historical `v3.0.0` tag retains its original `web/` source layout and its own installation instructions.
+对于当前源码布局,更新检出目录,在 `src/web` 中构建,然后从仓库根目录运行 `sudo bash deploy/install.sh`.安装器将 `src/checker/hdd-health-check.sh`,`src/web/server.py` 和 `dist/web` 复制到现有服务布局,保留 Web 密码,并备份带时间戳的程序及服务单元.以 root 运行安装器前先检查变更.历史 `v3.0.0` 标签仍保留原来的 `web/` 源码布局及其安装说明.
 
-## Uninstall
+## 卸载
 
-- Remove the checkout or installed script to remove the CLI while retaining logs and history. The CLI installs no permanent systemd service; if you installed the optional Web service, stop and disable it first as described in [WEB](doc/WEB.md). Check for active transient tasks before removing the script.
-- For full removal, first stop any task and back up desired records, then manually remove the configured `HDD_STATE_DIR` (default `/var/lib/hdd-health`) and `HDD_LOG_DIR` (default `/var/log/disk-health`) after verifying their paths and contents. This deletes reports, progress, history, repair notes and logs; never blindly delete a shared or overridden directory. Packages installed via `apt-get` are not removed automatically.
+- 删除检出目录或已安装脚本即可移除 CLI,同时保留日志和历史记录.CLI 本身不会永久安装 systemd 服务;若安装了可选 Web 服务,请先按 [WEB](doc/WEB.md) 停止并禁用它.删除脚本前先检查是否仍有运行中的临时任务.
+- 要彻底移除,先停止所有任务并备份需要保留的记录,然后核实路径和内容,再手动删除配置的 `HDD_STATE_DIR`(默认 `/var/lib/hdd-health`)和 `HDD_LOG_DIR`(默认 `/var/log/disk-health`).这会删除报告,进度,历史记录,修复记录和日志;切勿盲目删除共用目录或经覆盖的目录.通过 `apt-get` 安装的软件包不会自动卸载.
 
-## Acknowledgements
+## 致谢
 
-Third-party code and font credits are listed in [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md).
+第三方组件的致谢见 [THIRD_PARTY_NOTICES](doc/THIRD_PARTY_NOTICES.md).
 
-## License
+## 许可证
 
-MIT (SPDX: MIT); see [LICENSE](LICENSE).
-
-## Current SSD assessment and controls
-
-A full SSD/NVMe assessment runs SMART quick, short and long self-tests plus a full read-only scan. It omits speed sampling; slow reads alone do not deduct health points. A completed clean batch scores 100, while SMART findings or actual read errors may reduce the heuristic score. Batch controls show the union of checks supported by the selected drives; HDD-only checks skip selected SSDs. Capacity and host-write values switch between decimal and binary units by clicking the value. A SATA HDD can be woken or put in standby from its SMART detail.
+MIT(SPDX: MIT);参见 [LICENSE](LICENSE).

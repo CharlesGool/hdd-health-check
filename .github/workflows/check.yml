@@ -1,0 +1,41 @@
+name: Project checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.10'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: src/web/package-lock.json
+      - name: Synthetic checker and HTTP tests
+        run: bash scripts/check.sh
+      - name: Install locked frontend dependencies
+        run: npm ci
+        working-directory: src/web
+      - name: Design, types and production build
+        run: npm run check
+        working-directory: src/web
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+        working-directory: src/web
+      - name: Install browser
+        run: npx --no-install playwright install --with-deps chromium
+        working-directory: src/web
+      - name: Browser regression tests
+        run: npm run test:ui
+        working-directory: src/web

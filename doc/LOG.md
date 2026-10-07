@@ -3,280 +3,76 @@ name: project-log
 description: Project decisions, limitations, handoff, and release history
 metadata:
   version: "0.1.0"
-  lang: en
+  lang: "zh-CN"
 ---
 
-# hdd-health-check — Log
+# hdd-health-check — 日志
 
-This record preserves accepted historical decisions, known limitations and release history. The current release is `v4.1.0`. The user reports running the earlier `v2.2.0` code on a real machine, without device, environment or coverage details. The revised scoring has synthetic tests and Web verification on a Debian NAS, but no controlled complete assessment on real HDDs.
+本文记录当前缺陷, 限制, 决策和交接; 发布与历史记录分别保存在独立文档.当前大版本为 `v4.1.0`.用户报告较早的 `v2.2.0` 曾在实机运行,但未提供设备,环境或测试覆盖范围.修订后的评分已有模拟测试及 Debian NAS 上的 Web 验证,但尚未在真实 HDD 上完成受控的完整评估.
 
-## Multi-language
+## 多语言
 
-**English** | [简体中文](zh-CN/LOG.md) | [繁體中文 (台灣)](zh-TW/LOG.md) | [繁體中文 (香港)](zh-HK/LOG.md) | [हिन्दी](hi/LOG.md) | [Español](es/LOG.md) | [العربية](ar/LOG.md) | [Français](fr/LOG.md)
+**简体中文** | [English](en/LOG.md) | [Español](es/LOG.md)
 
-## Documentation
+## 文档
 
-- Project overview: [README](../README.md)
+- 项目概览: [README](../README.md)
 
-- Design rationale: [DESIGN](DESIGN.md)
+- 设计思路: [DESIGN](DESIGN.md)
 
-- Release history: [LOG](LOG.md)
+- 项目状态: [LOG](LOG.md)
+- 历史记录: [HISTORY](HISTORY.md)
+- 变更日志: [CHANGELOG](CHANGELOG.md)
 
-- Third-party notices: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
+- 第三方声明: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
-## Bugs
+## 记录
 
-- [ ] The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Testing of root execution, package installation and systemd behavior is unconfirmed; previous v1.0.0 release checks also lacked a real HDD and SMART data (syntax and help only). The script was reportedly used before the original normalization, which is not a replacement for a controlled hardware test.
-- [ ] The revised batch scoring and final SMART/ATA/CRC recheck have only synthetic test coverage, not real-HDD validation of this code. Firmware self-test log time resolution and cross-run resumed scans can produce partial/unknown coverage; historical errors cannot be automatically reattributed after repair. This hardware-validation limitation remains disclosed; authorized HDD retesting remains recommended.
-- [ ] Heuristic health weights are not calibrated failure probabilities; SAS/SCSI scoring is less exercised than ATA and USB/RAID SMART passthrough may fail. Vendor-dependent temperature reporting is incomplete.
-- [ ] The authenticated Web UI and LAN service were checked on a Debian NAS with real disk inventory, but a complete assessment on real HDDs and recovery after a reboot remain unverified. Nonconforming pre-existing v2.2 state is rejected. CSV export is not provided.
-- [x] The disk-detail tab underline extended past the selected tab in a user screenshot after `test-771001c`. The previous indicator scaled a one-pixel line using an integer button width. It now animates the button's fractional measured width directly; local Chromium checks matched the selected SMART and Checks buttons at narrow width, including zoom and RTL. The screenshot's exact browser configuration was not available to reproduce.
-- [ ] The user reports an issue with the animation when returning from disk detail and asked to leave it for later. No return-animation code was changed in the tab-underline fix.
-- [x] v1.0.0 normalization corrected clone instructions pointing to the nonexistent `hdd-health-check-repo/main` path and mixed Traditional Chinese characters in the Simplified Chinese README.
+- [HISTORY](HISTORY.md)
+- [CHANGELOG](CHANGELOG.md)
 
-## Limitations
+## 缺陷
 
-- The installed Debian service keeps its existing `/root/apps/hdd-health-check/web/` host layout for upgrade compatibility; the source layout is `src/web/` with generated output in `dist/web/`.
+- [ ] 用户报告已在实机测试 v2.2.0,但未提供设备,环境或测试范围;不能确认 root/软件包安装或 systemd 行为已测;此前 v1.0.0 发布检查也没有真实 HDD 和 SMART 数据(仅检查语法及帮助).据称原始目录规范化之前使用过此脚本,但这不能代替受控的硬件测试.
+- [ ] 修订后的批次评分及末尾 SMART/ATA/CRC 复查只通过合成测试,尚未经真实 HDD 验证.固件自检日志时间精度及跨运行续扫可能导致部分/未知;维修后无法自动重新归因旧错误. 此硬件验证局限仍予以披露;仍建议在获授权 HDD 上复测.
+- [ ] 启发式健康评分权重并非经过校准的故障概率;SAS/SCSI 评分比 ATA 验证得少,USB/RAID SMART 透传可能失败.依赖厂商数据的温度报告尚不完整.
+- [ ] 已在 Debian NAS 上检查带认证的局域网 Web 服务和真实磁盘清单;真实 HDD 完整评估及重启后恢复仍未验证.不符合格式的旧 v2.2 状态会被拒绝;目前不提供 CSV 导出.
+- [x] 用户提供的 `test-771001c` 截图显示,磁盘详情中当前标签的下划线超出所选标签.旧指示线按整数按钮宽度缩放一像素线条.现在直接动画调整到按钮测得的精确宽度;本地 Chromium 在窄屏,缩放和 RTL 情况下,下划线均与选中的 SMART 和 Checks 按钮匹配.无法取得截图的确切浏览器配置以复现.
+- [x] 历史返回动画问题: `5b8e2db` 已按当前标准移除页面过渡. 本次迁移继续采用立即导航, 未创建正式修复版本.
+- [x] v1.0.0 目录规范化修正了克隆说明中指向不存在的 `hdd-health-check-repo/main` 路径,以及简体中文 README 中混用繁体字的问题.
 
-### Compatibility entry points
+## 限制
 
-Baseline: `35f24e5`
-Reason: existing CLI commands and installation instructions invoke the repository-root shell entry point; the implementation now lives under `src/checker/`.
-Update boundary: retain the root dispatcher until a separately communicated CLI path migration replaces the established command.
+- Bash 检测器的终端文本与 SMART 原始信息暂不支持运行时多语言; 现有终端界面为简体中文, 厂商诊断为原始输出. Web 界面使用语言资源, 服务端操作失败包含系统原始错误.
+
+- 已安装的 Debian 服务为兼容升级,仍使用 `/root/apps/hdd-health-check/web/` 主机目录布局;源码位于 `src/web/`,生成的构建产物位于 `dist/web/`.
+
+### 兼容入口
+
+根目录入口保留已发布的命令行接口, 实现位于 `src/checker/`.
 
 - `hdd-health-check.sh` -> `src/checker/hdd-health-check.sh`
 
-## Decisions
+## 决策
 
-| Decisions | Reasons |
-| --- | --- |
-| 2026-08-12: Split the local project into a Git working tree and separate snapshots; reject a flat local layout. | Historical release snapshots needed separation from tracked source. The then-current `main/` naming was local only and never part of the GitHub checkout; tags and `git archive` snapshots were planned. |
-| 2026-08-13: Rename local `main/` to `repo/`; repair install paths, bilingual headers and `.gitignore`; keep private mirror and snapshot paths out of public status. Reject committing the stale staged docs unchanged. | The GitHub checkout places the script at its root. Old snippets would fail immediately after cloning; local paths and translation errors did not belong in public documentation. |
-| 2026-08-13: Do not simulate a real-HDD release check on the available virtual disk; disclose the weaker validation. | No usable SMART hardware or `smartmontools` was available; installing packages to scan a virtual disk would not test HDD logic. |
-| 2026-08-13: Replace the public v1.0.0 history with one clean noreply-identity commit and annotated tag, retaining the original history in a private renamed archive; reject force-pushing the prior public repository or preserving its superseded intermediate commit. | The prior public commit contained a personal email in Git metadata. Existing clones/forks do not migrate automatically and prior exposure cannot be guaranteed erased from caches. This is historical, not authorization for another rewrite. |
-| Current integration: Adopt the supplied v2.2.0 behavior without v1 compatibility guarantees and retain the existing MIT license. | The new script adds persistent state and optional background tasks; `-w` is ignored. At integration time, no release, tag or hardware validation was claimed. |
+| 日期 | 决策 | 状态 | 原因 |
+| --- | --- | --- | --- |
+| 2026-08-12 | 将本地项目拆分为 Git 工作树和独立快照;不采用扁平化的本地目录结构. | 接受 | 历史发布快照需要与跟踪的源代码分开.当时使用的 `main/` 名称仅存在于本地,从未成为 GitHub 检出目录的一部分;当时计划使用 tag 和 `git archive` 快照. |
+| 2026-08-13 | 将本地 `main/` 重命名为 `repo/`;修正安装路径,双语标题和 `.gitignore`;不在公开状态信息中显示私有镜像和快照路径.拒绝原样提交已暂存的过时文档. | 接受 | GitHub 检出目录的根目录中即有脚本.克隆后旧命令片段会立即失败;本地路径和翻译错误不应出现在公开文档中. |
+| 2026-08-13 | 不在现有虚拟磁盘上模拟真实 HDD 发布检查;披露验证程度较低. | 接受 | 当时没有可用的 SMART 硬件或 `smartmontools`;安装软件包并扫描虚拟磁盘无法测试 HDD 逻辑. |
+| 2026-08-13 | 以一个使用 noreply 身份的干净提交及附注标签替换公开的 v1.0.0 历史,并将原始历史保存在重命名后的私有归档中;拒绝强制推送之前的公开仓库,也不保留已被取代的中间提交. | 接受 | 此前的公开提交在 Git 元数据中含有个人电子邮箱.现有克隆/派生仓库不会自动迁移,也无法保证缓存中先前暴露的信息已被删除.这是历史记录,并非再次改写历史的授权. |
+| 历史记录 | 当前整合:采用提供的 v2.2.0 行为,不保证兼容 v1,并保留现有 MIT 许可证. | 接受 | 新脚本增加持久化状态和可选后台任务;`-w` 会被忽略.整合当时并未声称已经发布,打标签或通过硬件验证. |
 
-## Handoff
+## 交接
 
-2026-09-29. Branch `main`; page transitions have been removed from source. No temporary project rules were found.
-
-- Removed the View Transition route engine, page-motion preference and Appearance switch, route-only CSS and source identifiers. Page links, disk-detail entry and return, login, sign-out, and browser history now change views without route animation; protected history still checks server authentication. Retained resize, theme, tab-underline, toast, and local feedback motion. Updated the active design record and all eight Web locale candidate notes; historical release entries remain historical.
-- Checks: an isolated `npm run build` passed Vue type checking and production bundling. Chromium preview removed a legacy `page-motion=on` query, opened Settings and Security, returned through Back and Forward, retained dark mode, showed no page-motion switch or route animations, and recorded zero console errors. Project structure, 40 multilingual documents and locale-key parity passed; three English documents passed format checking with zero errors and five existing warnings, and local links passed with zero errors. `git diff --check` passed. Disk-detail navigation with live disk data and real mobile browsers were not exercised.
-- Deployment: the NAS at `172.22.31.10:8765` served its current `v4.1.0` `version.json` and HTTP 200 at `/`. Direct root SSH reported `Permission denied (publickey,password)`, so the running service was not updated. Its existing state, password, and backups were not accessed or changed. No disk scan, password change, or reboot was run. Next action: deploy a test-marked build through an authorized NAS access path, then verify the running UI and service while retaining the previous artifact for rollback.
-
-2026-09-29. Branch `main`; formal `v4.1.0` was published from `09e6fa5` and deployed to the Debian NAS. No temporary project rules were found.
-
-- NAS installer follow-up: the first NAS run of `test-bf14ed5` started the new service, but its health probe received HTTP 403 because it omitted the required `X-HDD-CSRF` header. The installer then reported failure without rolling back because its `die` path bypassed the rollback trap. The service remained active and the prior application remained available. Commit `cd7d69b` adds the header and calls rollback for explicit errors after installation starts. A fresh installation of `test-cd7d69b` then passed the installer health check. The service is active and enabled on `0.0.0.0:8765`; the installer preserved the previous application and unit backups. The Web password matched the previous backup, and `/var/lib/hdd-health` and `/var/log/disk-health` remained in place.
-
-- Completed: reorganized the source into `src/checker/` and `src/web/`, moved generated Web output to `dist/web/`, retained the root CLI compatibility entry point, updated installer and test paths, and standardized locale directory names and document navigation. Source installs still copy into the existing Debian service layout. The UI now offers eight accent presets and light/dark modes in ordinary Settings, persists them independently, and uses a real Changelog link in top navigation.
-- Security: added a dedicated Security Settings page with a server-enforced five-minute administrator-password verification window. Verification rotates the session; an IP-only session cannot read or change the allowlist or password. Password change requests only the new password and confirmation during that window and invalidates all sessions. IP admission has an enable switch, accepts only exact RFC 1918 IPv4 or ULA IPv6 addresses, rejects disallowed legacy entries, uses the connection peer rather than client-supplied forwarding headers, and checks the original Host/Origin and a same-origin request header for mutations.
-- Privacy and version: snapshot and SMART responses now mask serials; an authenticated reveal request retrieves a full serial only on explicit user action, and the view clears it when hidden or closed. The version link sits beside the project name and opens Changelog; an untagged build uses a `test-<sha>` marker and serves the same value at `/api/build`.
-- Unreleased behavior: SSD/NVMe full assessments run quick SMART, short/long self-tests and a full read-only scan without speed sampling. Clean completed batches score 100; slow reads alone do not deduct points. Batch choices follow selected disk types; capacity and SSD host writes can switch decimal/binary units, and a sleeping HDD can be woken individually. Synthetic tests passed, with no real full-disk assessment started for this update.
-- Checks: Vue type check and production build passed. All shell and Python Web tests passed, including IP admission, permission expiry, session rotation, password change, serial reveal and masking. The theme checker passed all eight accents in both modes. Multilingual, document format (zero errors, eight warnings), local-link and project structure checks passed after browser artifacts were moved out of the source root. Shell syntax, Python compilation and `git diff --check` passed. Local Chromium showed the Security Settings page and responsive dark-mode appearance settings at 390 px with no horizontal overflow; direct Changelog navigation rendered the v3.0.0 section first. The isolated browser harness returned expected 503 responses for disk status because it has no checker process. The final review also changed source-archive builds to use a `test-archive-<package version>` marker instead of a bare release version.
-- NAS verification: the installed `/api/build` matched the `test-cd7d69b` artifact. Password login, rejection of unauthenticated Security Settings, administrator verification, session rotation, protected allowlist read and serial masking in a 13-disk snapshot passed. The LAN Security page and favicon returned HTTP 200; an unauthenticated LAN request to the ordinary and protected APIs returned 401. An authenticated Chromium session opened Security Settings and showed the saved IP controls and password-change form; at 390 px, document scroll width equaled the viewport width. The browser session was closed and its local temporary password file removed. No disk scan, password change or reboot was run. The installed test build is not a formal release.
-- Release-time status: service recovery after a real reboot and a controlled full assessment on real HDDs remained unverified. The root compatibility entry point is recorded with its pre-move baseline under Limitations. At publication, the NAS ran `test-cd7d69b`; that release task did not deploy the formal build.
-- Release: `main` and `feat/standards-alignment` were pushed at `3cf9da0`. The annotated `v4.0.0` tag points to that commit, and the formal GitHub Release includes the 6,697,392-byte prebuilt Web archive and `SHA256SUMS`; the archive SHA-256 is `491a0c61a99525f9a293b1b49c2de500e47c7b60e20bad5c4e955ecc048121d4`. The `../snapshots/v4.0.0` source snapshot was exported, and the complete Changelog was verified on the project's Notion child page under `My Projects`.
-- Release checks: all shell and Python tests, Vue type checking, production build, document and link checks, multilingual and project structure checks passed. The production build from the exact `v4.0.0` tag served `/api/build`, `version.json`, the main and deep routes, and the favicon with matching `v4.0.0` metadata. Document checking reported zero errors and eight existing English-language warnings. No real disk scan, password change or reboot was performed for the release.
-- Translation recovery: all seven core-document translations were resynchronized with current English, including Handoff and Commit History, under the documented recovery rule. Structural and protected-token checks passed; the English release documents and translations were committed together.
-- Web design alignment: the login header and card now use the shared dimensions. The login-card footer contains the build-version Changelog link and a language selector available before authentication. Login, administrator-verification, new-password and confirmation fields each start masked and have an independent labeled show/hide control with a 44 px touch target. The controls preserve input values without moving focus; language and password-control labels cover all eight UI languages. No NAS deployment was made for this change.
-- Web checks: Vue type checking and production build passed in a separate local build tree. In local Chromium, the login layout had no page-level horizontal overflow at 1280 px and 320 px; Chinese and Arabic login layouts, English language persistence, a failed-login error, login password toggling, and independent new/confirmation password toggles were checked. The isolated server could not read real disk data because its checker was not run as root; that expected API error was outside the login-layout check. Document and project checks are recorded with this handoff commit.
-- Changelog navigation follow-up: the login-card version link now opens the bundled Changelog for an unauthenticated visitor; that page shows the linked version beside the brand and a labeled Changelog navigation entry. Local Chromium followed the version link, rendered the v4.0.0 entry, and returned to login. Unauthenticated `/api/build`, `/api/access`, and `/api/snapshot` requests still returned 401. Vue type checking and production build passed after this change.
-- NAS UI deployment: built current `main` commit `2e6201e` as `test-2e6201e` in a clean local checkout. Vue type checking and production build passed, and the transferred archive checksum matched. The Debian installer upgraded the existing LAN service on port 8765, preserving the Web password and timestamped application and unit backups. The service is active and enabled; the existing state and log directories remain in place. Authenticated `/api/build` returned `test-2e6201e`, `/api/snapshot` listed 13 disks, the LAN disk and Changelog pages returned HTTP 200, and unauthenticated `/api/build` returned 401. LAN Chromium showed the revised login page with its version link and language selector, then followed the version link to the v4.0.0 Changelog entry. No disk scan, password change or reboot was performed.
-- Version and Changelog follow-up: added the post-v4.0.0 Web changes to the English Changelog and all seven translated Changelogs, and synchronized their older Handoff and Commit History sections with the English source through commit `3c3451f`. The clean build embeds `test-3c3451f`; Vue type checking and production build passed. Multilingual, project structure, document format, local-link and diff checks passed; document format reported one existing warning for language names in the English navigation. The transferred package checksum matched. The NAS installer retained the Web password, application and unit backups, and the existing state and log directories. The service is active and enabled on port 8765; authenticated `/api/build` returned `test-3c3451f`, `/api/snapshot` listed 13 disks, the LAN disk and Changelog pages returned HTTP 200, and unauthenticated `/api/build` returned 401. LAN Chromium showed the same version on the login card and Changelog page, with the new Simplified Chinese entry above v4.0.0. No disk scan, password change or reboot was performed.
-- Web design standardization on `main`: the authenticated header now has linked brand/version and Home, Changelog, Settings, Sign out in the prescribed order; each child page has a Back control. Settings and protected Security use responsive section navigation, each route has a distinct matching favicon, and the login card always offers IP access with a server-checked error path. Appearance contains a Beta page-transition switch with persistent choice and a mobile-off default; browser history, viewport resize and reduced motion are handled separately. The exact test build identifier heads a localized candidate Changelog entry in all eight UI languages, followed by formal versions; the English Changelog no longer carries an unversioned post-release section. Existing `v4.0.0` tag and Release are unchanged.
-- Local verification for this Web change: Vue type checking and production build passed in an isolated build tree. Chromium checked the Settings and Security layouts at desktop and 390 px, each language's candidate entry above `v4.0.0`, favicon changes, browser Back/Forward, the page-motion off path without calling View Transitions, the enabled path, and repeated resizes from 320 to 1280 px without horizontal overflow or a persistent transform. The multilingual and project structure checkers passed; document and local-link checks passed with zero errors and five format warnings in the three checked English documents. No real mobile-browser visual transition check was run.
-- NAS deployment of `test-c7b6252`: a clean checkout of commit `c7b6252` passed Vue type checking and production build; `version.json` embedded the same test marker. The transferred package SHA-256 matched `afe858f9ba2a9e8ea19964bc98382f4068085fd5b042fb76f971fc3e54bc6ceb`. The installer upgraded `/root/apps/hdd-health-check`, kept the Web password unchanged, and retained application backup `/root/apps/hdd-health-check.backup-20260929-012509-2525461` and matching service-unit backup. Existing `/var/lib/hdd-health` and `/var/log/disk-health` were not modified by the package. The service is active and enabled under systemd, listening on `0.0.0.0:8765`; a reboot was not performed. Authenticated `/api/build` returned `test-c7b6252`; logout then made `/api/build` return 401. LAN requests for disk, Settings, Security and Changelog routes and their icon assets returned HTTP 200, while unauthenticated `/api/build` returned 401. Live Chromium showed the login card version, always-visible IP action and its denied-address guidance, then opened the exact test Changelog entry followed by `v4.0.0`; the 390 px Changelog had no horizontal overflow. No disk scan, password change or reboot was performed. No temporary project rules were found.
-- Web UI reference v1.2.3 migration on `main`: mapped login, Dashboard, Attention, Tasks, Schedule, Settings, Security, Changelog, and disk detail to the tagged AI-Configs reference. Imported the tagged reference stylesheet, adapted the common header, content width, dashboard cards, settings navigation and cards, forms, switch and private-value states, localized release cards, theme transitions, and route/resize motion. Added the page mapping and the business, permission, and browser differences to `doc/DESIGN.md`. Existing API calls and server-side permissions were not changed. All eight Web locale catalogs gained matching labels and descriptions. No temporary project rules were found.
-- UI migration checks: an isolated clean build tree passed Vue type checking and production build. The theme checker passed eight palettes in both modes; multilingual, project structure and local-link checks passed. Document format found zero errors and four existing warnings in the checked English files. Chromium at 1280 × 800 compared the reference and target login, Dashboard, Attention, Tasks, Schedule, Settings, Security and Changelog views; Settings used the same 192 px sidebar and 856 px card, and Changelog used full-width cards. Dark/teal switching persisted and a 390 px Settings view had no horizontal overflow. A mocked one-disk API verified the detail drawer, tab switching, explicit serial reveal and clearing on close. Static preview and mocked data do not establish live NAS behavior, a real disk scan, password change, or reboot recovery.
-- Test-host deployment follow-up: the first `test-486be47` install exposed a systemd unit omission: after restart, `/var/lib/hdd-health` changed from mode 700 to 755. Its mode was immediately restored, and commit `ce70010` added `StateDirectoryMode=0700`. A clean build of `ce70010` passed Vue type checking and production build, embedded `test-ce70010`, and was installed from a checksum-matched archive (SHA-256 `e809016f4bd5e01bb5ae3eefcc6c8e1893addf5daec4d796a283c0802b184aa4`). The installer retained the prior application at `/root/apps/hdd-health-check.backup-20260929-111224-3324946` and the matching service-unit backup. The service is active and enabled on `0.0.0.0:8765`; the installed unit explicitly keeps the state directory at mode 700 after restart. The Web password file remains mode 600 with its previous checksum, and existing state and log paths remain in place. LAN routes for disks, attention, tasks, schedule, Settings, Security, Changelog and icon assets returned HTTP 200. Unauthenticated protected APIs returned 401; password login returned `test-ce70010` from `/api/build`, 13 serial-masked disks from `/api/snapshot`, and an idle task status. Logout restored 401. Live Chromium showed `test-ce70010` on the login card and atop the Changelog, followed by `v4.0.0`. No disk scan, password change, or reboot was performed. This is a test build, not a new formal release.
-- Disk-detail refinement: reserved a stable scrollbar gutter to reduce the small final shift when opening cards. The administrator verification card now spans the Security page content width while its form remains readable. Disk cards link to full detail pages at `/disks/:id` or `/attention/:id`, with browser history, direct reload and narrow-screen layout. A serial button toggles its masked/full value without extra show/hide text; copying appears only after authenticated reveal and supports the LAN HTTP clipboard fallback. SMART attributes have localized hover/focus explanations and a note about vendor-dependent values. SSD/NVMe facts show host reads as well as writes when NVMe Data Units or ATA Device Statistics supply known units. The candidate Changelog describes the new detail and SMART behavior in all eight Web languages; the formal `v4.0.0` record remains historical.
-- Local checks for this refinement: a clean isolated Vue type check and production build passed. `tests/web-smart.py` and Python compilation passed; multilingual and project-structure checks found zero errors. Focused document and local-link checks found zero errors and five existing document warnings. In mocked Chromium, a disk detail used its own URL, survived reload, supported browser Back/Forward, masked/revealed/copied/hid its serial, and had no horizontal overflow at 390 px. The HTTP clipboard fallback was exercised. A Security challenge card measured 1,072 px within a 1,120 px main frame at 1280 px viewport and had no 390 px overflow. The mocked disk is not hardware evidence. No temporary project rules were found.
-- First test-host pass for `test-aa183e4`: built from clean commit `aa183e4`; the transferred package checksum matched SHA-256 `fe2ebb97a1524a93f83942d1e157c256185575bbfd6fb34101ba65f714d50605`. The installer retained `/root/apps/hdd-health-check.backup-20260929-114536-3447848` and the matching service-unit backup. The service is active/enabled on `0.0.0.0:8765`; `/var/lib/hdd-health` remains mode 700 and the unchanged Web password file mode 600. LAN pages and a direct disk-detail route returned 200; protected APIs returned 401 before login. Authenticated `/api/build` returned `test-aa183e4`; the snapshot listed 13 serial-masked disks and one real NVMe SMART detail supplied both read and write totals. Logout restored 401. Live Chromium showed the same login and Changelog version, full disk detail, localized SMART guidance, and successful reveal/copy/hide on LAN HTTP. A 390 px detail view had no horizontal overflow. Four NVMe table keys still used generic help; this follow-up maps them to specific explanations. No scan, password change, or reboot was performed.
-- Corrected test-host deployment: built clean commit `f0b58be` with Vue type checking and production build; `version.json` embedded `test-f0b58be`. The 6,532,350-byte archive matched SHA-256 `96a029b49dc9a09bb2b1edad414c682dffb8ef357c2e9d6ee55c9721af7c78e5` before installation. The installer retained `/root/apps/hdd-health-check.backup-20260929-115210-3485325` and the matching service-unit backup. The service is active/enabled on `0.0.0.0:8765`, with the state directory at mode 700 and the unchanged password file at mode 600. LAN disk, direct detail, Security and Changelog routes returned 200; protected APIs returned 401 before and after an authenticated session. During that session, `/api/build` returned `test-f0b58be`, the snapshot listed 13 serial-masked disks, and a real NVMe SMART response supplied both read and write totals. Live Chromium showed the matching login and Changelog marker, both new candidate notes, a full detail page, specific help for the previously generic NVMe counters, and no horizontal overflow at 390 px. The reserved scrollbar gutter kept document width stable across a card route transition; the route-cover and animation classes cleared after it settled. The first installed build's LAN HTTP serial reveal/copy/hide flow passed; the correction changed only explanatory labels. Browser sessions were closed. No scan, password change, or reboot was performed.
-- Disk detail interaction follow-up: copy feedback now temporarily changes its button icon to a checkmark while keeping the success toast. The toast is larger and has enter/exit motion. Both the page Back button and browser Back return with a reverse page slide so the disk model is not stretched into a narrow card. The SMART/Checks accent indicator slides between tabs, and the SMART table has clearer rows, values and focusable help icons with floating explanations. The administrator verification and password-change form content is centered and fills its readable column. `doc/DESIGN.md` records the detail-return difference from the reference. No API or permission behavior changed.
-- Local checks for this follow-up: Vue type checking and production build passed in an isolated build tree; `tests/web-smart.py`, multilingual and project structure checks passed. Focused document and local-link checks found zero errors and five existing document warnings. Mocked Chromium verified the temporary copy checkmark and toast, SMART help on hover, tab state, both Back paths and cleared route-animation state. At 390 px, the settled disk detail and Security pages had no page-level horizontal overflow. The mocked disk does not establish live hardware behavior; no temporary project rules were found.
-- Test-host deployment of `test-b6a0ba7`: built from clean commit `b6a0ba7`; Vue type checking and production build passed and `version.json` embedded that exact marker. The transferred archive checksum matched SHA-256 `81aedb34c94bd607e76025c28927c0f221511f79cf418c0e1800108d50956afe`. The installer retained `/root/apps/hdd-health-check.backup-20260929-120631-3533408` and a matching service-unit backup. The Web service is active and enabled on `0.0.0.0:8765`; `/var/lib/hdd-health` remains mode 700 and the existing Web password file mode 600 with the same checksum as the backup. LAN disk and detail routes returned 200, and an unauthenticated build API returned 401. An authenticated build API returned `test-b6a0ba7`, a snapshot listed 13 serial-masked disks, and a real NVMe SMART response supplied both host read and write totals. Live Chromium confirmed the temporary copy checkmark and toast, SMART explanations, tab indicator, and reverse slide on Back with no remaining cover or motion class. The visible Changelog and version link showed `test-b6a0ba7`; at 390 px, the detail, Security and Changelog pages had no horizontal overflow. No disk scan, password change or reboot was performed.
-- Disk-return and toast correction: frame captures found that the reverse slide visibly split the detail and Dashboard, while Home from detail briefly shrank the Dashboard into an illegible miniature. Detail-to-listing and detail-to-Dashboard navigation now fades the full-size pages in sequence, including the Back button, Home/brand/breadcrumb links and browser history; other routes keep their existing motion. Toasts now close automatically after 4.2 seconds and still have a manual close action. The Web UI instruction received a narrowly scoped exception for data-rich detail routes absent from the reference, and `doc/DESIGN.md` records the difference. Local Vue type checking and production build passed. Mocked Chromium checked intermediate return frames, browser Back/Forward, Home/history paths, motion-off behavior, narrow return and timed toast removal; temporary route classes and covers cleared. Document, local-link, multilingual and project-structure checks found no errors. No temporary project rules were found.
-- Test-host deployment of `test-08b6370`: built from clean commit `08b6370`; the production Web asset and `version.json` embedded that exact test marker. The transferred archive matched SHA-256 `36b04555d54e48dd05ad8a0ef7e5e1cd96e6ea8c99b56580f959a810c5bcb458`. The installer kept `/root/apps/hdd-health-check.backup-20260929-124823-3573886` and the matching service-unit backup. The service is active and enabled on `0.0.0.0:8765`; `/var/lib/hdd-health` remains mode 700 and the password file mode 600 with the same checksum as its backup. LAN disk and direct-detail routes returned 200; anonymous `/api/build` returned 401. Authenticated `/api/build` returned `test-08b6370` and the snapshot listed 13 disks. Live Chromium showed the same version on the page, checked intermediate frames for Back and a scrolled SMART-to-Home return, found no split or miniature page, and saw no remaining route cover or class. A real serial-copy toast disappeared after about 4.2 seconds. The settled 390 px disk list and Changelog had no horizontal overflow. No disk scan, password change or reboot was performed.
-- Motion alignment on `main`: changed Toast dismissal to 3 seconds per appearance, restarted its timer and entrance when the same message repeats, and cleared the timer on manual close. The SMART/Checks underline now follows measured tab position and width after selection, translation and reflow; its label color interpolates with the indicator. Resize now clears an interrupted route transition's copy and temporary styles. Page-route motion, theme motion and local feedback retain separate controls; the data-rich disk-detail return crossfade remains the documented project exception.
-- Motion checks: an isolated `npm ci` and Vue type check/production build passed; direct `npm ci` in the mounted source tree failed while removing an existing `node_modules/lightningcss-linux-x64-gnu` directory. Mocked Chromium verified the route-motion off path made zero View Transition calls, the tab indicator matched selected-button offsets and widths at desktop and 390 px in Chinese and Arabic RTL, reduced motion collapsed indicator and label transitions, and repeated serial-copy feedback restarted its 3-second lifetime. A manual Toast close and narrow layout were checked. An enabled detail transition interrupted by a viewport resize settled with no route copy, route class or frozen transform. These browser checks used mocked disk/API responses and do not establish NAS or real mobile behavior. No deployment was made for this change; no temporary project rules were found.
-- Test candidate preparation: the eight Web locale catalogs now describe resize-interruption cleanup, translated detail-tab indicator motion and the repeated Toast's 3-second timer in their in-app candidate entry. The candidate is for deployment of the current motion change and retains a `test-<commit>` identifier; it is not a new formal release. No temporary project rules were found.
-- NAS deployment of `test-771001c`: built from clean commit `771001c`; Vue type checking and production build passed, and `version.json` embedded the same test identifier. The 1:1 transferred archive matched SHA-256 `1b191dd0aa39a01c41936bca5eba763e5e5d0ebbb5689673b5c5f0d2e3b497e9`. Before installation, the checker, Python server and systemd unit hashes matched the installed files, so this deployment changed the Web assets and bundled update record without a checker or state-format migration. The installer preserved `/root/apps/hdd-health-check.backup-20260929-132147-3619345` and `/etc/systemd/system/hdd-health-web.service.backup-20260929-132147-3619345`; the old and new Web password hashes matched, and the password remains mode 600. The service is active and enabled, listening on `0.0.0.0:8765`; `/var/lib/hdd-health` remains mode 700 and `/var/log/disk-health` remains available. LAN GET requests for `/disks/sdb` and the favicon returned 200; anonymous `/api/build` returned 401. Password-authenticated `/api/build` returned `test-771001c`, `/api/snapshot` listed 13 serial-masked disks including `sdb`, `/api/status` showed no active task, and logout restored a 401 for `/api/build`. The `sdb` SMART endpoint reported the disk in standby, so no wake or scan was performed. Live Chromium loaded the direct `/disks/sdb` route and showed the same version, a masked serial and the sleeping state; at 390 px the SMART/Checks underline matched the selected button and there was no page-level horizontal overflow. The version link opened the matching localized candidate Changelog; the route cover cleared. Browser and temporary deployment files were removed. Real mobile-browser rendering and reboot recovery remain unverified; no temporary project rules were found.
-- Deferred visual issue: the user supplied a screenshot from the deployed disk-detail UI showing that the active SMART tab underline is longer than the tab's hover/selection area. The prior 390 px browser measurement did not cover this reported visual state. The Bugs section records the expected alignment and the configurations to recheck. No UI code or NAS deployment was changed for this report; no temporary project rules were found.
-- Tab underline follow-up: replaced one-pixel transform scaling with direct measured width and measured the selected button to fractional precision. Local Chromium checks matched the underline to both tab buttons at 390 px, 100% and 200% CSS zoom, in Simplified Chinese, English and Arabic. Vue type checking and production build passed in an isolated build tree; multilingual, project structure, focused document and local-link checks passed with four existing document warnings. The return-from-detail animation remains an open user-reported issue and was not changed; no temporary project rules were found.
-- NAS deployment of `test-bd438c4`: built from clean commit `bd438c4`, with the same identifier in `version.json`. The transferred archive matched SHA-256 `65d10b167552c232be481edd2f60e3359dd5b5d6a03121960229923ec0e211da`; checker, Python server and service-unit hashes matched the previous installation. The installer preserved the prior app at `/root/apps/hdd-health-check.backup-20260929-134240-3654021` and its matching unit backup. The Web password checksum stayed unchanged and its mode is 600; `/var/lib/hdd-health` remains mode 700 and `/var/log/disk-health` is available. The service is active and enabled on `0.0.0.0:8765`. Authenticated `/api/build` returned `test-bd438c4`, `/api/snapshot` listed 13 disks, `/api/status` reported no running task, and logout restored 401 for `/api/build`. LAN GET requests for `/disks/sda`, the favicon and `version.json` succeeded; the server's local `/changelog` request returned 200. Live Chromium on `/disks/sda` showed the new version and measured both tab underlines equal to their selected buttons at desktop and 390 px with 125% CSS zoom. Temporary NAS deployment files and the browser session were removed. No disk scan, password change or reboot was performed.
-- Remaining: the user-reported return-from-detail animation issue is deferred. Real mobile-browser motion, recovery after a real reboot and a controlled full assessment on real HDDs remain unverified. The root compatibility entry point is recorded with its pre-move baseline under Limitations.
-- Release preparation: the user approved a formal version of the currently deployed changes. `v4.1.0` covers the commits since `v4.0.0`: login and Changelog access, reference-aligned Web pages, disk detail and SMART guidance, service-state permissions, and tab and feedback fixes. The known return animation issue remains deferred by request. The previous `v4.0.0` tag and release stay unchanged; no temporary project rules were found.
-- Formal release: At publication, `main` and the annotated `v4.1.0` tag point to `09e6fa5`. The GitHub Release is public, published and not a prerelease; its prebuilt Web archive is 6,952,186 bytes with SHA-256 `cf4e94597552c84f36140c1890eb62b379421599ae2a8e0f929ce24c65880a98`, alongside `SHA256SUMS`. The clean tagged build embeds `v4.1.0`, and a Chromium check showed the same version and formal Changelog above `v4.0.0` with no test candidate. All shell and Python tests, Vue type checking, production build, multilingual, project structure, focused document and local-link checks passed. The document checker retained five pre-existing warnings. The `../snapshots/v4.1.0` source snapshot was exported, and the complete Changelog was synced to the verified `hdd-health-check` child page under `My Projects` in Notion.
-- Formal NAS deployment: the transferred archive passed its SHA-256 check, and the installer upgraded the running `test-bd438c4` service to `v4.1.0`. It preserved `/root/apps/hdd-health-check.backup-20260929-142539-3689967` and the matching service-unit backup. The Web password checksum was unchanged and its mode remained 600; `/var/lib/hdd-health` remained mode 700 and `/var/log/disk-health` remained available. The service is active and enabled on `0.0.0.0:8765`. Password-authenticated `/api/build` returned `v4.1.0`, `/api/snapshot` listed 13 disks, and logout restored 401 for `/api/build`. LAN GET requests for disk detail, Changelog, version metadata and SVG favicons returned 200. Live Chromium opened `/disks/sda`, showed `v4.1.0`, and measured the SMART and Checks underlines equal to their selected buttons; at 390 px and 125% CSS zoom the width error was under 0.001 px and the offset error was under 0.15 px after reflow. The live Changelog showed the formal version and deferred animation issue. Temporary browser, password and deployment files were removed. No disk scan, password change or reboot was performed.
-- Remaining: the user-reported return-from-detail animation issue is deferred. A controlled real-HDD full assessment, real mobile-browser motion and service recovery after a host reboot remain unverified.
-- Next action: address the deferred return animation when requested; then verify it on the actual target browser and update the Handoff. Separately schedule a controlled HDD assessment and reboot-recovery check when the host can be interrupted.
-
-## Historical Source Baselines
-
-### v2.3.0 — 2026-09-24 (untagged source baseline)
-
-#### Changed
-
-This source baseline includes the previously untagged v2.2 integration: persistent per-drive results, SMART counter history, interactive and batch modules, resumable read-only surface scans, interface verification, optional transient systemd tasks, and safer data-only state parsing. It does not preserve v1 CLI or state compatibility: `-w/--wait` is ignored rather than waiting; back up host state before upgrading and restore matching state with an older script. The revised scoring below has synthetic, not real-HDD, coverage.
-
-#### Fixed
-
-- Recognize a newly completed first SMART self-test record; older, incomplete or wrong-type entries do not count as a completed new test.
-- Recheck SMART/ATA/CRC after a complete assessment; show a numeric composite score only for completed, unexpired checks in one batch. Keep legacy, reused, interrupted, expired or post-interface-verification old results as historical/pending review with partial/unknown overall grade, without wiping earlier risks or refreshing the baseline when viewing reports. Separate resolved interface verification from old penalties: unknown first ATA totals retain a 5-point unresolved-risk deduction across checks (also for legacy records without the risk field); newly increased totals deduct 20, and unchanged historical counts are not new errors or proof of resolution. Interface verification alone cannot attribute old ATA errors to a repaired interface. Sparse slow surface reads prompt performance retesting rather than a bad-sector finding; surface read errors still deduct 40. Synthetic scoring-state tests pass; this revised code has not been tested on a real HDD.
-
-### v2.2.0 — untagged integration history (not released)
-
-#### Added
-
-- Persistent per-disk results, SMART counter history, repair records and reports; interactive menu, sampled read profiling, resumable surface latency scanning with targeted bad-block rechecks, full read-only `badblocks`, interface read stress checks and optional transient systemd background execution.
-
-#### Changed
-
-- Default batch quick checks, reusable timed results and `--rescan`; `-r/--run` selects modules and `--status`/`--stop` manage a running instance. `-t short|long`, `-s` and `-b` map to modules; `-w/--wait` is ignored rather than waiting. New behavior is not v1 CLI compatibility.
-- Host state and logs are written separately; v2.2.0 does not preserve v1 CLI or state compatibility. Back up host state before upgrading; restoring a previous script requires its matching state backup. State records use an allowlisted data-only format; incompatible records may be rejected.
-
-#### Fixed
-
-- Reject executable or malformed state records and symlinked state inputs, restrict background plans to validated fields and the private state directory, and validate device names and log/state paths to reduce unsafe file handling.
-- Treat invalid or incomplete surface checkpoints as new scans instead of calculating progress from a zero denominator; support custom `TMPDIR` in running-instance detection and safe stop.
-
-The user reports testing v2.2.0 on a real machine, but did not provide device, environment or test-coverage details. Root execution, package installation and systemd behavior have not been independently confirmed.
-
-## Changelog
-
-### v4.1.0 — 2026-09-29
-
-This release updates the Web interface and disk details. The previous test build was checked on a Debian NAS with 13 enumerated disks; the formal build is checked separately before publication.
-
-#### Added
-
-- Disk cards open full detail pages with breadcrumbs, Back navigation, per-disk checks, SMART attributes and explanations. Serial values remain masked until an authenticated reveal; copying is available only after reveal. SSD/NVMe details show host reads and writes when the device supplies counters with known units.
-- The Web interface follows the shared visual reference for the login, Dashboard, function pages, Settings, Security and Changelog. It adds responsive layouts, localized controls, icons and optional page and resize motion.
-
-#### Changed
-
-- The Changelog can open from the login screen before authentication and shows the matching build version. Disk-detail controls use a measured tab indicator, and repeated copy feedback restarts its dismissal timer.
-- The NAS service unit keeps `/var/lib/hdd-health` at mode 700 after restart. The installer continues to preserve the prior application, unit and Web password on updates.
-
-#### Fixed
-
-- Correct the active SMART and Checks underline width and position at narrow widths and tested zoom levels, including RTL. Refine disk-detail feedback, SMART counter explanations and interrupted route-motion cleanup.
-
-#### Known issues and validation
-
-- The animation when returning from disk detail has a user-reported issue and remains deferred. A complete assessment on real HDDs, real mobile-browser motion and service recovery after a host reboot remain unverified. The health score remains a heuristic, not a calibrated failure probability.
-- Vue type checking, production build, project and translation checks, and local Chromium layout checks passed for the test build. The NAS test deployment passed authenticated version and disk-list API checks and browser checks of both tab underlines; no disk scan, password change or reboot was performed.
-
-### v4.0.0 — 2026-09-28
-
-This major version updates the local Web controller, its security model and source layout. The authenticated test build was checked on a Debian NAS with 13 enumerated disks. A complete assessment on real HDDs and service recovery after a host reboot remain unverified.
-
-#### Added
-
-- Full SSD/NVMe assessments now run quick SMART checks, short and long self-tests, and a full read-only scan without HDD speed sampling. A completed clean batch scores 100 under the existing heuristic; slow reads alone do not deduct points, while actual read errors and SMART findings still can. Mixed-disk batch controls offer the union of supported checks and skip ineligible SSDs for HDD-only modules.
-- Task history records completed, stopped and failed Web runs separately from the latest per-disk check result and SMART counter trends. Disk detail can request standby for an eligible SATA HDD or wake one sleeping HDD at a time.
-- Settings now offers eight accent colors and light/dark modes. The version beside the project name links to Changelog, and the runtime `/api/build` reports the same embedded build identifier. Disk serials stay masked in normal responses and are retrieved only after an authenticated reveal action.
-
-#### Changed
-
-- Security Settings has a separate route with a server-enforced five-minute administrator-password verification window. Verification rotates the session; changing the password during that window requires the new value and confirmation and invalidates all sessions. Password-free IP admission now has an enable switch and accepts only exact RFC 1918 IPv4 or unique-local IPv6 addresses. IP admission cannot read or change security settings. State-changing requests require a same-origin header, and client-supplied forwarding headers do not establish the peer address.
-- Source files now live under `src/checker/` and `src/web/`, with generated frontend files in `dist/web/`; the root CLI entry point and installed NAS layout remain compatible. Documentation locales use BCP-47 directory names. The disk overview reflows with available viewport width, and the dashboard keeps its four functions on dedicated pages.
-
-#### Fixed
-
-- Keep task status responsive during all-disk self-tests, show distinct SMART short and long results, and retain separate historical task receipts. Correct NVMe temperature display bands and avoid health deductions for temperature alone or SSD speed variation. Clean checks with partial assessment coverage no longer return a warning solely for that partial coverage.
-- The Debian installer now includes the required request header in its authenticated health probe and rolls back when an explicit installation error occurs after the file swap starts.
-
-#### Validation
-
-- Shell and Python tests, Vue type checking and production build, document and structure checks, and local browser checks passed. The NAS test deployment passed authenticated API and Security Settings browser checks, including serial masking and a 390 px layout without horizontal overflow. No disk scan, password change or reboot was performed as part of this release preparation; the health score is not a calibrated failure probability.
-
-### v3.0.0 — 2026-09-27
-
-This major version adds the authenticated persistent Web UI and Debian installer to the existing disk checker. The Web service was checked on a Debian NAS with 13 enumerated disks; a complete assessment on real HDDs and post-reboot recovery remain unverified. The tag contains source code; no GitHub Release or prebuilt UI asset is published.
-
-#### Fixed in NAS follow-up
-
-- Reflow disk cards from available viewport width, including browser zoom: one to four columns while keeping controls visible and avoiding horizontal overflow.
-- Treat SSD/NVMe speed-sample dips and average-speed changes as performance information, retaining penalties for actual read failures and reinterpreting older saved results. Arrange the disk overview in responsive columns and let the dashboard disk card jump to the list.
-
-- Keep task updates responsive during an all-disk SMART self-test by reading the run record and recent log without polling every drive from the Web status endpoint. Refresh the disk list separately and reuse its last successful snapshot while one background read is in progress.
-- Color NVMe temperature independently from health scoring. Use controller warning and critical thresholds when available, or 70/80 °C display bands; temperature-only NVMe warnings do not deduct points. Saved historical assessments remain unchanged until rechecked.
-- Decode empty saved fields correctly and avoid a warning exit code when a clean check has only partial assessment coverage.
-- Move the four dashboard categories into dedicated top-level pages and keep one-click assessment on the disk home page.
-
-#### Added
-
-- A Python Web service, Vue interface, scheduled quick checks, task controls, SMART history view, and deployment unit. The installer configures authenticated LAN access; manual execution remains loopback-only.
-- A Web login and logout, an exact IPv4 passwordless list managed by authenticated users in Settings, disk cards with hardware basics, and separate SMART information and check tabs. The update record renders the Changelog section as Markdown.
-- Available SATA version and negotiated speed or NVMe PCIe generation, width, and rate; a switchable power-on time display; and batch checks scoped to SATA, HDD, SSD, NVMe, or all disks with any of the eight existing modules. The list labels bus and media type and shows cached temperature; SMART detail shows form factor only when reported. Only a full assessment can create a current composite score. SSD/NVMe scores remain HDD-oriented and are not separately calibrated.
-- A Debian installer that checks prerequisites, installs missing apt packages, deploys the prebuilt UI and service, and keeps a rollback copy during updates.
-- `--json` snapshots reuse the Bash composite scoring function. `--no-install` blocks automatic dependency installation for Web-initiated jobs. Web launches now persist accepted, running and terminal task states; the attention card filters disks and check details show recorded deductions, including a clear fallback for older records without a cause.
-
-#### Validation
-
-- The UI builds and type-checks; shell state/scoring tests and local HTTP authentication checks pass. The authenticated LAN service was installed and checked on a Debian NAS with 13 enumerated disks. A complete assessment on real HDDs and post-reboot recovery remain unverified.
-
-### v1.0.0 — 2026-08-08
-
-#### Added
-
-- Initial 12-dimension HDD health check: device/interface data, SMART capability and overall verdict, ATA attributes or SAS defect/error counters, error and self-test logs, short/long self-test launch, lifespan/load, kernel I/O errors, mount and read-only detection, optional read-only `hdparm` benchmark and `badblocks` scan.
-- Heuristic 0–100 score and four grades with process exit codes 0/1/2/3, SMART passthrough auto-detection, interactive and batch disk selection, and offered `apt` installation of missing `smartmontools`.
-- The complete v1.0.0 design and usage documents remain in the `v1.0.0` Git tag (for example, `git show v1.0.0:DESIGN.md` and `git show v1.0.0:README.zh.md`); obsolete v1 commands are not current guidance.
-
-## Commit History
-
-Complete primary-branch history: `git log main --stat`. The `HEAD` entry identifies this handoff commit.
-
-- 2026-09-29 | intended | `fix(web): remove page transition animation` | this commit
-- 2026-09-29 | `7d4871d` | `docs(handoff): clarify v4.1.0 release ref status` | `git show 7d4871d`
-- 2026-09-29 | `59313bb` | `docs(handoff): record v4.1.0 publication and deployment` | `git show 59313bb`
-- 2026-09-29 | `09e6fa5` | `chore(release): prepare v4.1.0` | `git show 09e6fa5`
-- 2026-09-29 | `1fd8ad3` | `docs(handoff): record underline fix deployment` | `git show 1fd8ad3`
-- 2026-09-29 | `bd438c4` | `fix(web): match detail underline to selected tab` | `git show bd438c4`
-- 2026-09-29 | `d44f624` | `docs(handoff): record deferred tab underline issue` | `git show d44f624`
-- 2026-09-29 | `029e634` | `docs(handoff): record motion test deployment` | `git show 029e634`
-- 2026-09-29 | `771001c` | `docs(web): describe motion test candidate` | `git show 771001c`
-- 2026-09-29 | `fa77086` | `fix(web): align local motion with current standard` | `git show fa77086`
-- 2026-09-29 | `a21783b` | `docs(handoff): record disk return deployment` | `git show a21783b`
-- 2026-09-29 | `08b6370` | `fix(web): correct disk return and toast timing` | `git show 08b6370`
-- 2026-09-29 | `8633851` | `docs(handoff): record disk detail UI deployment` | `git show 8633851`
-- 2026-09-29 | `b6a0ba7` | `fix(web): refine disk detail feedback and motion` | `git show b6a0ba7`
-- 2026-09-29 | `c289147` | `docs(handoff): record final disk UI test deployment` | `git show c289147`
-- 2026-09-29 | `f0b58be` | `fix(web): explain NVMe SMART counters` | `git show f0b58be`
-- 2026-09-29 | `aa183e4` | `feat(web): expand disk details and SMART guidance` | `git show aa183e4`
-- 2026-09-29 | `dd4cd84` | `docs(handoff): record corrected test deployment` | `git show dd4cd84`
-- 2026-09-29 | `ce70010` | `fix(deploy): keep HDD state directory private` | `git show ce70010`
-- 2026-09-29 | `486be47` | `feat(web): migrate UI to reference v1.2.3` | `git show 486be47`
-- 2026-09-29 | `d52366b` | `docs(handoff): record NAS Web design deployment` | `git show d52366b`
-- 2026-09-29 | `c7b6252` | `feat(web): align pages with current design standard` | `git show c7b6252`
-- 2026-09-28 | `c0e7ae7` | `docs(handoff): record version and Changelog deployment` | `git show c0e7ae7`
-- 2026-09-28 | `3c3451f` | `docs(changelog): record latest Web update` | `git show 3c3451f`
-- 2026-09-28 | `0a91897` | `docs(handoff): record NAS UI deployment` | `git show 0a91897`
-- 2026-09-28 | `2e6201e` | `fix(web): open changelog before login` | `git show 2e6201e`
-- 2026-09-28 | `c38e6d6` | `fix(web): align login with updated design rules` | `git show c38e6d6`
-- 2026-09-28 | `df35b42` | `docs(handoff): record v4.0.0 publication` | `git show df35b42`
-- 2026-09-28 | `3cf9da0` | `chore(release): prepare v4.0.0` | `git show 3cf9da0`
-- 2026-09-28 | `ebf6e39` | `docs(handoff): record NAS browser verification` | `git show ebf6e39`
-- 2026-09-28 | `0b5f053` | `docs(handoff): record NAS installer and security verification` | `git show 0b5f053`
-- 2026-09-28 | `cd7d69b` | `fix(deploy): verify authenticated service with CSRF header` | `git show cd7d69b`
-- 2026-09-28 | `bf14ed5` | `feat(web): align project layout and security settings` | `git show bf14ed5`
-- 2026-09-28 | `35f24e5` | `docs(handoff): record NAS Web update verification` | `git show 35f24e5`
-- 2026-09-28 | `a6086ff` | `feat(web): unify history and add per-disk standby` | `git show a6086ff`
-- 2026-09-28 | `f5f5dc7` | `docs(handoff): record SSD assessment deployment` | `git show f5f5dc7`
-- 2026-09-28 | `c60d602` | `fix(web): defer option watcher until labels initialize` | `git show c60d602`
-- 2026-09-28 | `261247f` | `fix(web): initialize assessment scope before options` | `git show 261247f`
-- 2026-09-28 | `f882a8d` | `docs: record SSD full assessment behavior` | `git show f882a8d`
-- 2026-09-28 | `bfed16f` | `feat: assess SSDs with full read-only scan` | `git show bfed16f`
-- 2026-09-27 | `97f775f` | `docs(handoff): record v3.0.0 tag publication` | `git show 97f775f`
-- 2026-09-27 | `434ac7d` | `chore(release): prepare v3.0.0 source tag` | `git show 434ac7d`
-- 2026-09-27 | `65acbd0` | `docs(install): point source install to main` | `git show 65acbd0`
-- 2026-09-27 | `b963e06` | `docs(handoff): confirm source publication` | `git show b963e06`
-- 2026-09-27 | `88474d2` | `feat(web): publish LAN dashboard and docs` | `git show 88474d2`
-- 2026-09-24 | `a46b392` | `feat(scoring): improve batch assessment for v2.3.0` | `git show a46b392`
-- 2026-09-24 | `3126bcc` | `docs: clarify public source and reported real-machine testing` | `git show 3126bcc`
-- 2026-09-24 | `7e69fdd` | `feat!: integrate unreleased v2.2.0 HDD health checks` | `git show 7e69fdd`
-- 2026-08-13 | `7b18ca7` | `docs(status): record v1.0.0 release completion` | `git show 7b18ca7`
-- 2026-08-13 | `4e01f52` | `chore(release): v1.0.0 (clean history)` | `git show 4e01f52`
+- 当前分支: `main`.
+- 已完成: 简体中文源文档与英文/西班牙文导航, 独立 HISTORY/CHANGELOG, 旧路径兼容入口, 依赖许可, 环境变量说明, 源码与本地文件分离.
+- 已完成: 当前模板设计标记, 共享组件与原样设计检查器, 格式检查, 严格类型检查, 主题持久化, 无障碍标签/提示/设置分区, 页面立即导航与减少动效.
+- 已完成: 登录限流原子化与 UTF-8 密码, 原子任务记录, 读取环境错误与未完成状态, 未完成 badblocks 复查及接口读取错误的保守判定, systemd 启动依赖与私有日志权限.
+- 已验证: 16 个合成/HTTP/部署定义测试, 36 个页面/模式/视口组合, 八种语言及 RTL 标签定位, 16 套主题配色, 隐私遮蔽, 键盘与触摸提示, 文档链接和依赖锁文件. 详细记录保存在被 Git 忽略的本地验证目录.
+- 已验证: npm 审计为零漏洞; 37 个新增上游链接实际请求成功. TypeScript 7.0.2 与 vue-tsc 3.3.12 的组合报 ERR_PACKAGE_PATH_NOT_EXPORTED, 因此使用已通过构建的 TypeScript 5.9.3; 其他兼容依赖按当前 npm 注册表更新.
+- CI 已配置为固定提交的当前 GitHub Actions, 运行与本地相同的测试, 设计检查, 构建, 审计和浏览器回归.
+- 已完成: 最终差异与敏感信息审查, 检查器与模板原文比对; 保留既有未推送提交, 作者与提交者均使用 GitHub noreply 身份.
+- 待完成: 提交, 推送及远程 CI 验证.
+- 未验证: 真实 HDD 完整评估, 实际 NAS 更新安装及主机重启恢复. 本次没有部署, 创建标签或 GitHub Release.
+- 未发现项目临时规则.

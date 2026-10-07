@@ -1,9 +1,9 @@
 ---
-name: third-party-notices-fr
+name: project-third-party-notices-fr
 description: Third-party software and asset notices
 metadata:
   version: "0.1.0"
-  lang: fr
+  lang: "fr"
 ---
 
 # Avis relatifs aux tiers
@@ -12,7 +12,7 @@ Cet inventaire recense les composants tiers utilisés par l’interface Web facu
 
 ## Multilingue
 
-[English](../THIRD_PARTY_NOTICES.md) | [简体中文](../zh-CN/THIRD_PARTY_NOTICES.md) | [繁體中文(台灣)](../zh-TW/THIRD_PARTY_NOTICES.md) | [繁體中文(香港)](../zh-HK/THIRD_PARTY_NOTICES.md) | [हिन्दी](../hi/THIRD_PARTY_NOTICES.md) | [Español](../es/THIRD_PARTY_NOTICES.md) | [العربية](../ar/THIRD_PARTY_NOTICES.md) | **Français**
+[English](../en/THIRD_PARTY_NOTICES.md) | [简体中文](../THIRD_PARTY_NOTICES.md) | [繁體中文(台灣)](../zh-TW/THIRD_PARTY_NOTICES.md) | [繁體中文(香港)](../zh-HK/THIRD_PARTY_NOTICES.md) | [हिन्दी](../hi/THIRD_PARTY_NOTICES.md) | [Español](../es/THIRD_PARTY_NOTICES.md) | [العربية](../ar/THIRD_PARTY_NOTICES.md) | **Français**
 
 ## Documentation
 

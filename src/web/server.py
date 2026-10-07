@@ -60,6 +60,31 @@ snapshot_stamp = 0.0
 snapshot_future = None
 
 
+
+def verify_password_attempt(ip, supplied, expected, now=None):
+    """Check and record an attempt atomically; retain only the active window."""
+    now = time.time() if now is None else now
+    with session_lock:
+        for address, stamps in list(login_attempts.items()):
+            recent = [stamp for stamp in stamps if now - stamp < 600]
+            if recent:
+                login_attempts[address] = recent
+            else:
+                login_attempts.pop(address, None)
+        attempts = login_attempts.get(ip, [])
+        if len(attempts) >= 10:
+            return 429
+        valid = isinstance(supplied, str) and hmac.compare_digest(
+            supplied.encode("utf-8"), expected.encode("utf-8"))
+        if valid:
+            login_attempts.pop(ip, None)
+            return 200
+        # Bound memory without evicting live entries, which would reset their limits.
+        if ip not in login_attempts and len(login_attempts) >= 4096:
+            return 429
+        login_attempts.setdefault(ip, []).append(now)
+        return 401
+
 def smart_temperature(raw):
     value = (raw.get("temperature") or {}).get("current") if isinstance(raw.get("temperature"), dict) else None
     nvme = raw.get("nvme_smart_health_information_log")
@@ -942,8 +967,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, access_settings())
             if path == "/api/changelog":
                 requested = parse_qs(urlparse(self.path).query).get("lang", ["en"])[0]
-                lang = {"zh-CN": "zh-CN", "zh-TW": "zh-TW", "zh-HK": "zh-HK", "hi": "hi", "es": "es", "ar": "ar", "fr": "fr"}.get(requested, "")
-                file = ROOT / "doc" / lang / "LOG.md"
+                lang = {"en": "en", "zh-CN": "", "zh-TW": "zh-TW", "zh-HK": "zh-HK", "hi": "hi", "es": "es", "ar": "ar", "fr": "fr"}.get(requested, "en")
+                file = ROOT / "doc" / lang / "CHANGELOG.md"
                 return self.send_json(200, {"text": file.read_text()[:40000]})
             if path == "/api/status":
                 result = script("--status-brief", timeout=8)
@@ -1048,15 +1073,10 @@ class Handler(BaseHTTPRequestHandler):
                 if self.server.password is None:
                     return self.send_json(400, {"error": "Password login is disabled"})
                 ip = self.client_address[0]
-                with session_lock:
-                    attempts = [stamp for stamp in login_attempts.get(ip, []) if time.time() - stamp < 600]
-                    login_attempts[ip] = attempts
-                    if len(attempts) >= 10:
-                        return self.send_json(429, {"error": "Too many login attempts; try again later"})
-                supplied = body.get("password")
-                if not isinstance(supplied, str) or not hmac.compare_digest(supplied, self.server.password):
-                    with session_lock:
-                        login_attempts.setdefault(ip, []).append(time.time())
+                verdict = verify_password_attempt(ip, body.get("password"), self.server.password)
+                if verdict == 429:
+                    return self.send_json(429, {"error": "Too many login attempts; try again later"})
+                if verdict != 200:
                     return self.send_json(401, {"error": "Incorrect password"})
                 token = secrets.token_urlsafe(32)
                 with session_lock:
@@ -1081,15 +1101,10 @@ class Handler(BaseHTTPRequestHandler):
                 if self.server.password is None:
                     return self.send_json(403, {"error": "Password login is disabled"})
                 ip = self.client_address[0]
-                with session_lock:
-                    attempts = [stamp for stamp in login_attempts.get(ip, []) if time.time() - stamp < 600]
-                    login_attempts[ip] = attempts
-                    if len(attempts) >= 10:
-                        return self.send_json(429, {"error": "Too many verification attempts; try again later"})
-                supplied = body.get("password")
-                if not isinstance(supplied, str) or not hmac.compare_digest(supplied, self.server.password):
-                    with session_lock:
-                        login_attempts.setdefault(ip, []).append(time.time())
+                verdict = verify_password_attempt(ip, body.get("password"), self.server.password)
+                if verdict == 429:
+                    return self.send_json(429, {"error": "Too many login attempts; try again later"})
+                if verdict != 200:
                     return self.send_json(401, {"error": "Incorrect administrator password"})
                 old_token = self.cookies().get("hdd_session", "")
                 token = secrets.token_urlsafe(32)
@@ -1112,7 +1127,7 @@ class Handler(BaseHTTPRequestHandler):
                         raise ValueError("New passwords do not match")
                     if not isinstance(new, str) or not 12 <= len(new) <= 128 or "\n" in new or "\r" in new or new != new.strip():
                         raise ValueError("New password must be 12–128 characters without leading or trailing whitespace")
-                    if hmac.compare_digest(self.server.password, new):
+                    if hmac.compare_digest(self.server.password.encode("utf-8"), new.encode("utf-8")):
                         raise ValueError("New password must differ from the current password")
                     file = self.server.password_file
                     info = file.lstat()

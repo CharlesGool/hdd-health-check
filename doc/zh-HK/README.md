@@ -1,18 +1,10 @@
----
-name: project-overview-zh-hk
-description: Project overview and usage
-metadata:
-  version: "0.1.0"
-  lang: zh-HK
----
-
 # hdd-health-check
 
 這款以 root 身分運行的 Bash 工具透過 SMART 數據及唯讀磁碟檢查,評估 Debian/Ubuntu 上的 HDD 健康狀態.`v4.1.0` 版本包括檢查器及可選的本機 Web UI;GitHub 提供原始碼及預先建置的 Debian Web 壓縮檔.Web 服務已在 Debian NAS 上以真實磁碟清單及通過身份驗證的 Security Settings 完成檢查,但真實 HDD 的完整評估及主機重啟後的服務復原仍未驗證.
 
 ## 多語言
 
-[English](../../README.md) | [简体中文](../zh-CN/README.md) | [繁體中文(台灣)](../zh-TW/README.md) | **繁體中文(香港)** | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | [Français](../fr/README.md)
+[English](../../README.md) | [简体中文](../../README.md) | [繁體中文(台灣)](../zh-TW/README.md) | **繁體中文(香港)** | [हिन्दी](../hi/README.md) | [Español](../es/README.md) | [العربية](../ar/README.md) | [Français](../fr/README.md)
 
 ## 文件
 
@@ -89,7 +81,7 @@ sudo bash ./hdd-health-check.sh --stop
 
 解析器亦會將 `-t short|long` 對應至相關自我測試,`-s` 對應至速度測試,`-b` 對應至 badblocks;**`-w/--wait` 會被忽略**,不會等待測試完成.這些別名並不提供 v1 行為.請以已安裝腳本的 `--help` 為選項依據.
 
-退出碼:`0` 全部健康;`1` 提示/警告;`2` 危險;`3` 執行時錯誤.日誌預設寫入 `/var/log/disk-health/hdd-health-<timestamp>.log`;狀態預設位於 `/var/lib/hdd-health`.主機寫入內容及操作邊界詳見 [DESIGN](../DESIGN.md#data-design).
+退出碼:`0` 全部健康;`1` 提示/警告;`2` 危險;`3` 執行時錯誤.日誌預設寫入 `/var/log/disk-health/hdd-health-<timestamp>.log`;狀態預設位於 `/var/lib/hdd-health`.主機寫入內容及操作邊界詳見 [DESIGN](../en/DESIGN.md#data-design).
 
 ## 升級
 

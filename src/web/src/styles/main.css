@@ -1,0 +1,40 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@layer base {
+  :root {
+    transition:
+      --theme-h var(--duration-theme) var(--ease-standard),
+      --theme-c var(--duration-theme) var(--ease-standard);
+  }
+
+  html,
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root,
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+    }
+  }
+}

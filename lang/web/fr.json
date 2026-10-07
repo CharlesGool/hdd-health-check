@@ -288,5 +288,6 @@
   "candidateDiskDetail": "Les détails du disque s’ouvrent sur une page complète ; le numéro de série peut être affiché et copié à la demande.",
   "candidateSmart": "Les attributs SMART sont expliqués au survol ou au focus ; les SSD compatibles affichent les volumes lus et écrits par l’hôte.",
   "smartBusyHelp": "Temps pendant lequel le contrôleur a traité des E/S ; l’unité dépend du périphérique.",
-  "smartTemperatureDurationHelp": "Durée au-dessus du seuil thermique d’alerte ou critique ; une exposition prolongée demande une attention particulière."
+  "smartTemperatureDurationHelp": "Durée au-dessus du seuil thermique d’alerte ou critique ; une exposition prolongée demande une attention particulière.",
+  "saved": "Enregistré"
 }

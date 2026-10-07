@@ -36,10 +36,8 @@ venv/
 target/
 
 # Build output
-private/*
-!private/.gitkeep
-dist/*
-!dist/.gitkeep
+private/
+dist/
 build/
 *.egg-info/
 
@@ -48,3 +46,10 @@ build/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local maintenance and browser verification
+.local/
+.playwright-cli/
+.playwright/
+test-results/
+playwright-report/

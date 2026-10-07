@@ -70,6 +70,11 @@ with tempfile.TemporaryDirectory() as directory:
         status, headers, data = request('POST', '/api/auth/login', body={'password': 'test-password'})
         assert status == 200 and data['method'] == 'password' and data['canManageAccess'] is True
         cookie = next(v.split(';')[0] for k, v in headers if k.lower() == 'set-cookie' and v.startswith('hdd_session='))
+        for language in ('zh-CN', 'en', 'es', 'zh-TW', 'zh-HK', 'hi', 'ar', 'fr', '../../etc/passwd'):
+            status, _, changes = request('GET', '/api/changelog?lang=' + language, cookie=cookie)
+            assert status == 200 and 'v4.1.0' in changes['text'], language
+            assert 'web-password' not in changes['text']
+
         assert request('GET', '/api/schedule', cookie=cookie)[0] == 200
         assert request('GET', '/api/build', cookie=cookie)[2] == json.loads((app.ASSETS / 'version.json').read_text())
         with patch.object(app, 'lsblk_details', return_value={'sda': {'serial': 'SERIAL123456'}}):
@@ -177,6 +182,12 @@ with tempfile.TemporaryDirectory() as directory:
             assert status == 200
             assert request('GET', '/api/schedule', cookie=logout_cookie, connect_host=lan_ip)[0] == 401
             assert request('POST', '/api/auth/ip-login', cookie=logout_cookie, connect_host=lan_ip)[0] == 200
+
+        server.password = '磁盘管理密码 🔒 test'
+        app.login_attempts.clear()
+        status, _, unicode_login = request('POST', '/api/auth/login', body={'password': server.password})
+        assert status == 200 and unicode_login['authenticated']
+        assert request('POST', '/api/auth/login', body={'password': '错误的管理密码'})[0] == 401
     finally:
         server.shutdown()
         server.server_close()

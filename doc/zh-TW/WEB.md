@@ -1,9 +1,9 @@
 ---
-name: web-guide-zh-tw
+name: project-web-zh-tw
 description: 本機 Web UI 的設定與操作
 metadata:
   version: "0.1.0"
-  lang: zh-TW
+  lang: "zh-TW"
 ---
 
 # 本機 Web UI
@@ -14,7 +14,7 @@ Web UI 顯示本機磁碟結果, 最近的 SMART 計數器歷史紀錄, 執行�
 
 ## 多語言
 
-[English](../WEB.md) | [简体中文](../zh-CN/WEB.md) | **繁體中文 (台灣)** | [繁體中文 (香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | [Español](../es/WEB.md) | [العربية](../ar/WEB.md) | [Français](../fr/WEB.md)
+[English](../en/WEB.md) | [简体中文](../WEB.md) | **繁體中文 (台灣)** | [繁體中文 (香港)](../zh-HK/WEB.md) | [हिन्दी](../hi/WEB.md) | [Español](../es/WEB.md) | [العربية](../ar/WEB.md) | [Français](../fr/WEB.md)
 
 ## 文件
 
