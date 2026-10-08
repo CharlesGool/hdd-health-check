@@ -1,16 +1,14 @@
 ---
 name: project-design-es
-description: Architecture, data model, and boundaries
+description: Arquitectura y restricciones de diseño del proyecto
 metadata:
-  version: "0.1.0"
+  version: "1.0.0"
   lang: "es"
 ---
 
 # hdd-health-check — Diseño
 
-Este documento describe el comportamiento de `v4.1.0`. El usuario informa de que ejecutó el código anterior `v2.2.0` en una máquina real, sin detalles sobre el dispositivo, el entorno ni la cobertura. La puntuación revisada cuenta con pruebas sintéticas y comprobaciones Web en un NAS Debian, pero no con una evaluación completa y controlada en HDD reales.
-
-## Idiomas
+## Multilingüe
 
 [简体中文](../DESIGN.md) | [English](../en/DESIGN.md) | **Español**
 
@@ -26,92 +24,96 @@ Este documento describe el comportamiento de `v4.1.0`. El usuario informa de que
 
 - Avisos de terceros: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
+
 ## Objetivos de diseño
 
-- Ofrecer una evaluación preliminar rápida de HDD basada en el estado y los atributos SMART, los registros de errores y autopruebas SMART, los montajes, los errores de E/S del kernel y las tendencias; presentar una puntuación heurística y una clasificación útil para actuar, no una probabilidad de fallo.
-- Ofrecer autopruebas SMART internas de la unidad, cortas y largas e independientes; lecturas directas por muestreo; exploraciones reanudables de latencia de superficie; nuevas comprobaciones dirigidas y opcionales con `badblocks` de solo lectura; ejecución de `badblocks` de solo lectura en todo el disco; y pruebas de carga de lectura de la interfaz tras una reparación.
-- Permitir selección interactiva, ejecución por lotes, resultados persistentes, reutilización e informes históricos; transferencia opcional a unidades transitorias de systemd para tareas largas.
-- Excluir recuperación de datos, `badblocks` en modo de escritura, borrado seguro y modificación de sistemas de archivos. El comprobador Bash sigue ejecutándose una sola vez; un complemento Web local opcional ofrece un controlador permanente y comprobaciones rápidas programadas. La inclusión de SSD/NVMe es opcional, pero la puntuación para HDD no está diseñada para diagnosticar plenamente esos dispositivos. La instantánea JSON sirve a la interfaz Web; no se han implementado una puntuación SAS más profunda ni una específica de NVMe.
+- Proporcionar evidencia de salud del disco mediante SMART, registros del kernel, autopruebas y lecturas de solo lectura, mostrando puntuaciones heurísticas y cambios históricos.
+- Soportar CLI interactivo y por lotes, tareas en segundo plano, escaneo de superficie resumible y control web local.
+- Ofrecer una evaluación completa aplicable a SSD/NVMe, excluyendo el muestreo de velocidad específico de HDD, manteniendo errores de lectura reales.
+- Definir explícitamente no objetivos: recuperación de datos, borrado, pruebas de escritura, reparación de sistemas de archivos y predicción de probabilidad de fallo.
 
 ## Arquitectura
 
-La implementación del comprobador está en `src/checker/hdd-health-check.sh` y el comando de la raíz es su punto de entrada de compatibilidad; enumera discos con `lsblk`.
+```mermaid
+flowchart LR
+    Browser[Interfaz Vue] --> HTTP[Servicio HTTP Python]
+    CLI[Entrada de línea de comandos] --> Checker[Detector Bash]
+    HTTP --> Checker
+    Checker --> Tools[smartctl / lsblk / dd / badblocks]
+    Checker --> State[Estado privado y registros]
+    HTTP --> State
+```
 
-Un único script Bash 4.3+ enumera discos con `lsblk`, selecciona destinos mediante menú o CLI, comprueba el acceso SMART con `smartctl`, ejecuta los módulos solicitados y genera un informe compuesto. Los atributos SMART de ATA y los contadores de defectos/errores de SAS/SCSI siguen rutas de puntuación distintas. La comprobación rápida incluye información sobre montajes y registros del kernel; las comprobaciones de velocidad, superficie e interfaz utilizan lecturas directas del dispositivo. Los resultados y la identidad de cada dispositivo se conservan para que las comprobaciones posteriores puedan reutilizarlos. Las decisiones interactivas pueden transferirse a un proceso por lotes mediante un plan restringido; un bloqueo privado impide que varias instancias utilicen simultáneamente el mismo directorio de estado. Una unidad transitoria de `systemd-run` gestiona las tareas desacopladas cuando está disponible; `--status` y `--stop` consultan la instancia registrada.
+El detector se encarga de seleccionar discos, realizar comprobaciones y calcular puntuaciones. El servicio Python gestiona autenticación, programación y llamadas a comandos fijos, sin recalcular puntuaciones. Vue muestra datos del servidor; las solicitudes de producción son del mismo origen.
 
-Un lote completo marca SMART rápido, las autopruebas corta y larga y la exploración de superficie terminada bajo un mismo identificador; los HDD requieren además muestreo de velocidad, mientras que los SSD no lo ejecutan; repite SMART/ATA/CRC al final. Solo los resultados completos, válidos y del mismo lote permiten una puntuación global numérica. Reutilización, interrupción, caducidad, estado antiguo sin marcador y verificación posterior de interfaz dejan los registros anteriores como históricos/pendientes de revisión y el grado general parcial/desconocido; consultar un informe no actualiza la base de comparación rápida. La verificación de interfaz registra aparte si se resolvió el problema; no atribuye de nuevo errores antiguos ni convierte el lote anterior en actual. Un total ATA sin contador previo conserva un descuento de 5 puntos por riesgo no resuelto en revisiones y evaluaciones completas posteriores, también si el registro antiguo carece del campo de riesgo. Una subida resta 20 puntos; la estabilidad no es un nuevo error ni prueba una reparación, y la verificación de interfaz sola no atribuye los errores ATA antiguos a ella. Las lecturas lentas aisladas exigen revisar el rendimiento, no diagnostican sectores defectuosos; los fallos repetidos de lectura de superficie siguen restando 40 puntos. Son pesos heurísticos, no probabilidades de fallo.
-
-Las horas de encendido de la comprobación rápida se muestran como información de uso y nunca restan por sí solas puntos de salud. Los avisos ATA Pre-fail cercanos al umbral exigen como corroboración un contador bruto de errores distinto de cero; los avisos históricos basados solo en el umbral, sin prueba bruta guardada, quedan pendientes de revisión sin deducción. Los avisos nuevos incluyen el atributo SMART y los valores medidos. Las tarjetas de Atención muestran directamente la causa de la comprobación guardada. Las confirmaciones Web para iniciar y detener comprobaciones usan un diálogo accesible dentro de la página. El detalle de disco tiene una ruta secundaria completa, con el modelo como encabezado y la ruta del dispositivo debajo.
-
-En las unidades de estado sólido, las caídas de velocidad de muestras y los cambios de velocidad media entre ejecuciones son observaciones de rendimiento y no reducen la puntuación de salud; los fallos reales de lectura sí pueden hacerlo. Los resultados de velocidad ya guardados se interpretan igual sin cambiar sus archivos de estado. La lista Web muestra tantas tarjetas como permita el ancho CSS disponible, hasta seis en pantallas suficientemente anchas; el zoom del navegador cambia ese ancho y redistribuye las tarjetas. La tarjeta de discos del Dashboard desplaza la vista hasta la lista. La interfaz de `src/web/` se compila en `dist/web/`; `src/web/src/styles/tokens.css` define valores semánticos para ocho colores de acento en modos claro y oscuro. Settings guarda el acento y el modo por separado en el almacenamiento del navegador y los restaura antes de montar Vue. El inicio de sesión usa la cabecera común de 72 px, una tarjeta de hasta 480 px, campos y acciones de 48 px y un pie con el enlace de versión a la izquierda y el selector de idioma a la derecha; el pie pasa a otra línea cuando falta ancho. Cada campo de contraseña introducido por el usuario tiene su propio control etiquetado de mostrar u ocultar de 44 px y empieza oculto. La acción de acceso por IP sigue visible antes de autenticarse; el servidor decide si se permite la dirección de origen. Vite incorpora la versión de compilación y genera `version.json` para `/api/build`; Changelog muestra el `doc/<lang>/CHANGELOG.md` correspondiente incluido en el código. Una compilación de prueba añade al principio una entrada localizada encabezada por su identificador exacto y muestra después el historial formal. El Changelog incluido puede leerse antes de iniciar sesión mediante el enlace de versión; las API de discos y ajustes siguen exigiendo autenticación. Los números de serie permanecen ocultos en la lista y el detalle SMART hasta activar el botón etiquetado para mostrarlos; al cerrar el detalle vuelven a ocultarse.
-
-Todas las rutas autenticadas comparten una cabecera con el nombre enlazado del proyecto y la versión de compilación, seguidos de Home, Changelog, Settings y Sign out. Las entradas de funciones permanecen en el Dashboard; los controles Back devuelven las páginas de funciones y Changelog al Dashboard, y Security Settings a Settings. Settings agrupa General, Appearance, comportamiento de discos y Security tras un navegador adaptable de secciones; Security Settings protegido agrupa igualmente los controles de contraseña e IP. El navegador de Security solo lleva a la tarjeta de entrada; otra acción abre la ruta protegida. Cada página selecciona un favicon distinto dentro del marco común del proyecto. Las transiciones opcionales Beta usan la geometría del control de origen al abrir y volver, siguen el historial del navegador y pueden desactivarse en Appearance. La elección se conserva en la URL, el almacenamiento del navegador y una cookie; en iOS y Android está desactivada por defecto. La animación al cambiar el tamaño de la ventana y el tratamiento de la preferencia de movimiento reducido son independientes de ese interruptor.
-
-| Ubicación raíz | Responsabilidad |
+| Ubicación de nivel superior | Responsabilidad |
 | --- | --- |
-| `src/checker/` | Detector en Bash, llamado desde el punto de entrada de compatibilidad en la raíz |
-| `src/web/` | Servicio HTTP en Python, frontend Vue/TypeScript, manifiesto y lockfile de npm |
+| `src/checker/` | Implementación del detector; los archivos Shell en la raíz son entradas de compatibilidad |
+| `src/web/` | Servicio Python, frontend Vue/TypeScript, manifiesto y lockfile de npm |
 | `lang/web/` | Recursos de interfaz en ocho idiomas |
-| `deploy/` | Instalador para Debian y unidades systemd |
-| `tests/` | Estado sintético, HTTP, limitación de concurrencia y pruebas de navegador |
-| `scripts/` | Puntos de entrada de verificación de documentación y código fuente |
-| `doc/` | Documentación en chino simplificado, traducciones, historial y declaraciones de licencia |
-| `.github/` | Configuración de verificaciones continuas |
-| `.claude/` | Hook de diseño post-edición |
-| `.local/` | Información privada de mantenimiento ignorada por Git |
-| `dist/web/` | Artefactos de UI de producción ignorados por Git |
+| `deploy/` | Instalador Debian y unidades systemd |
+| `tests/` | Estado sintético, HTTP, definiciones de despliegue y pruebas de navegador |
+| `scripts/` | Punto de entrada de verificaciones del proyecto |
+| `doc/` | Documentos fuente en chino simplificado, traducciones al inglés/español; imágenes en `resources/<lang>/` |
+| `.github/`, `.claude/` | CI y verificaciones de diseño post-edición |
+| `.local/` | Información de mantenimiento y registros de verificación excluidos por Git |
+| `dist/web/` | Artefactos de compilación del frontend excluidos por Git |
 
-## Marcas de diseño
-
-La única fuente es `src/web/src/styles/tokens.css`, migrada desde la plantilla inicial de la UI Web actual. `src/web/src/styles/main.css` carga Tailwind y los estilos base de la plantilla; `src/web/src/style.css` solo conserva el diseño de negocio de discos, tareas, inicio de sesión y formularios.
-
-Ejecute `npm run check` en `src/web/`, que verifica en orden las marcas de diseño, TypeScript y la compilación de producción. `.claude/settings.json` ejecuta la misma verificación de diseño tras la edición. El verificador mantiene la plantilla tal cual, sin usar marcas de ignorar.
-
-Los componentes compartidos se ubican en `src/web/src/components/app/`: barra superior, controles de retroceso, Toast, etiquetas subrayadas con ancho de texto, controles segmentados, selección de tema, avisos informativos, navegación por secciones de configuración y colecciones de tarjetas. `components/ui/button/` utiliza el botón shadcn-vue de la plantilla. La barra superior y los encabezados de página se conectan al controlador de historial existente mediante enlaces nativos y eventos; la selección de apariencia conserva las claves de almacenamiento del navegador originales. La interfaz mantiene ocho idiomas; el chino simplificado, el inglés y el español son los idiomas de documentación principales, otros documentos conservan puntos de entrada de compatibilidad.
-
-Novedades respecto a la plantilla: `--header-height`, `--login-control-height`, `--password-control-size`, `--settings-nav-width` para dimensiones de inicio de sesión y configuración; `--warning` y tres fondos de estado para distinguir el riesgo de disco; `--layer-overlay`, `--layer-popover` para cuadros de confirmación y listas de selección; `--tracking-eyebrow` para títulos auxiliares; `--app-disk-min-width` para campos de dispositivo largos; `--app-size-*` conservan la geometría existente de tablas de disco, resumen de almacenamiento y panel de tareas. Tipografía, escala de tamaños, pesos, radio, sombras, animaciones y paleta de ocho tonos usan directamente los valores de la plantilla.
-
-La navegación de páginas se actualiza inmediatamente, sin transición de página. El redimensionamiento de ventana aún usa una transición de 620 ms tras 180 ms de inactividad, leyendo la duración de las marcas. Al reducir animaciones se detienen las de tema, etiquetas, Toast y ventana. Las tarjetas usan un diseño elástico con envoltura; las tarjetas de la última fila se distribuyen equitativamente. La navegación de secciones de configuración actualiza `aria-current` al hacer scroll; hacer clic en la navegación segura solo desplaza a la tarjeta de entrada. Los avisos SMART admiten hover, foco de teclado y tacto; el número de serie siempre se obtiene bajo demanda tras autorización del servidor.
-
-La animación de redimensionamiento utiliza la implementación de la plantilla en `src/web/src/lib/resize-reflow.ts`. Los grupos `data-reflow` no se anidan y actualizan sus posiciones mediante observadores de DOM y tamaño. Cambiar la preferencia de movimiento reducido o desmontar la vista cancela transiciones y limpia observadores, evitando solapamientos por posiciones antiguas.
+La versión de compilación proviene de etiquetas Git o `test-<sha>`, los cambios en el árbol de trabajo añaden `-dirty`; los paquetes de código fuente sin metadatos Git se marcan como archivo de prueba. Vite escribe el mismo identificador en el frontend y en `version.json`, `/api/build` devuelve dicho identificador. Los cambios de registro de la aplicación se toman de `CHANGELOG.md` independiente, el chino simplificado usa la raíz de `doc/`, el inglés y el español usan el directorio de idioma correspondiente, otros idiomas de interfaz recurren al inglés.
 
 ## Restricciones de diseño
 
-- Se conserva un requisito de compatibilidad: TypeScript 7.0.2 falla con vue-tsc 3.3.12 (ERR_PACKAGE_PATH_NOT_EXPORTED). El compilador validado es TypeScript 5.9.3.
+- Los datos de dispositivo en crudo son de solo lectura; los interruptores SMART y las autopruebas internas pueden cambiar el estado del firmware, el host escribe registros y trazas. La parada segura no cancela la autoprueba interna.
+- Solo cuando la verificación rápida, la prueba corta, la prueba larga y el escaneo completo de superficie se completan en el mismo lote no expirado existe una puntuación global actual; los HDD además requieren muestreo de velocidad. Datos antiguos, interrupciones y reutilización no pueden actuar como un nuevo lote completo.
+- Las lecturas lentas y las horas de encendido no pueden por sí solas demostrar un fallo. El riesgo de errores ATA históricos de causa desconocida no se elimina porque el conteo sea estable o se revisen interfaces.
+- Cuando O_DIRECT no está soportado o el dispositivo no es accesible, se registra como incompleto, no como error de medio. Los fallos de lectura y las revisiones con badblocks conservan el rango y el estado de finalización, sin atribuir automáticamente a sectores defectuosos o interfaces ya reparadas.
+- El estado se analiza según los campos permitidos, no se ejecuta como código Shell. Los dispositivos y módulos son enumerados y validados por el servidor, las llamadas a subprocesos no usan interpolación de Shell.
+- La API segura exige verificación reciente de contraseña impuesta por el servidor; el acceso por IP solo otorga permisos normales. El cambio de contraseña invalida todas las sesiones. Los números de serie privados se enmascaran por defecto, se devuelve el texto original solo tras solicitud explícita.
+- Se conservan las entradas CLI publicadas y los campos de estado. TypeScript usa la versión 5.9.3 verificada como compatible con vue-tsc; la combinación 7.0.2 con el vue-tsc actual aún no está disponible.
 
-- O_DIRECT no compatible, dispositivos inaccesibles o rutas no válidas dejan incompletas las pruebas de velocidad, superficie e interfaz; los fallos del entorno no cuentan como errores del medio. Se conserva el progreso de superficie y los errores de lectura anteriores permanecen en el estado. Una repetición con `badblocks` fallida o interrumpida no demuestra que la anomalía desapareciera. Dos lecturas fallidas no bastan para demostrar sectores dañados ni atribuir la causa al medio.
-- La comparación de contraseñas admite UTF-8. Los intentos incorrectos se comprueban y registran bajo un mismo bloqueo, con diez intentos por dirección en diez minutos. Se eliminan entradas caducadas; una tabla llena no elimina límites activos. Los registros de tareas Web usan archivos temporales únicos y sustitución atómica.
-- El servicio systemd arranca después de `network.target` y depende de `multi-user.target` para su activación, evitando un ciclo de ordenación con este último. Los directorios de estado y registros usan permisos 0700.
+## Marcas de diseño
 
+La única fuente es `src/web/src/styles/tokens.css`, los estilos base están en `styles/main.css`, el diseño de negocio está en `style.css`. `components/app/` proporciona barra superior compartida, encabezado, Toast, etiquetas, controles de selección, tooltips, navegación de configuración y tarjetas; `components/ui/button/` proporciona botones shadcn-vue.
 
-- Para un diagnóstico útil se necesitan acceso root y comunicación SMART directa con el dispositivo físico. La detección de puentes USB/RAID es heurística; si falla el acceso directo, se informa del fallo en lugar de inferir que el dispositivo está sano. La puntuación SAS es distinta y se ha probado menos que la ATA. La temperatura y los umbrales dependen de los datos del fabricante.
-- Todas las lecturas de superficie e interfaz del dispositivo se envían a `/dev/null`; `badblocks` se invoca sin el modo destructivo `-w`. **La activación de SMART y las autopruebas pueden modificar el estado del firmware de la unidad**; las rutas del equipo anfitrión permiten escritura. No describa esta ejecución como carente de efectos secundarios.
-- La selección explícita y `--include-ssd` no demuestran que sea seguro someter un dispositivo a carga. Una exploración de toda la superficie puede durar horas; las escrituras del sistema operativo por otros procesos continúan. `--stop` no detiene las autopruebas que se ejecutan dentro de la unidad.
-- Los datos de estado y del plan se analizan según los campos permitidos, no se ejecutan como código de shell. Un estado existente que no se ajuste a ellos puede rechazarse. El directorio de estado del equipo anfitrión no debe ser un enlace simbólico; el script comprueba los enlaces simbólicos del directorio y del registro de salida, pero quienes lo utilicen deben proteger igualmente las rutas elegidas.
+Las marcas de diseño conservan las fuentes del sistema, tamaños de fuente, espaciado, radios, sombras, paleta de ocho colores claro/oscuro y animaciones de la plantilla. Se añaden `--warning` y fondos de estado para indicar riesgo, `--header-height`, `--login-control-height`, `--password-control-size` para dimensiones de controles de autenticación, `--layer-*` para niveles de superposición, `--tracking-eyebrow` para subtítulos auxiliares, `--app-disk-min-width` y `--app-size-*` para dimensiones de datos de dispositivo y diseño de negocio existente.
+
+En `src/web/` ejecutar `npm run check`, que verifica secuencialmente formato, diseño, tipos y compilación de producción. `.claude/settings.json` ejecuta la misma verificación de diseño, el verificador conserva el texto original de la plantilla. Las páginas cambian inmediatamente; los grupos `data-reflow` no anidados actualizan la línea base de posición mediante observadores DOM/tamaño, ejecutando una transición de 620 ms tras 180 ms sin ajustes. Se limpian animaciones y listeners al reducir movimiento o desmontar. El ancho del texto literal determina el subrayado de etiquetas, los tooltips soportan foco y tacto, las tarjetas de última fila distribuyen el ancho equitativamente.
 
 ## Diseño de datos
 
-`HDD_STATE_DIR` tiene como valor predeterminado `/var/lib/hdd-health` (se crea con permisos 700). Contiene `settings.conf` (días de validez, política de reutilización, paralelismo, tamaño de fragmento de exploración, parámetros de muestreo, inclusión de SSD y política de nueva comprobación automática), archivos de resultados `.env` por unidad, `history.csv` de contadores SMART, registros de reparación, mapas/puntos de control de superficie, historial de informes y listas opcionales de bloques defectuosos. Un archivo `.lock`, los datos de la instancia en ejecución y los planes temporales en segundo plano coordinan la ejecución. Los valores predeterminados incluyen siete días de validez de resultados, fragmentos de superficie de 64 MiB y 24 muestras de velocidad de 128 MiB. El menú puede guardar ajustes; `--rescan` anula la reutilización. Al borrar resultados, se puede conservar o eliminar el historial de contadores y reparaciones; el usuario también puede optar por borrar los registros antiguos por separado.
+| Ubicación | Contenido |
+| --- | --- |
+| `HDD_STATE_DIR` | Por defecto `/var/lib/hdd-health`, modo 0700; resultados por disco, CSV de historial SMART, progreso/gráficos de superficie, informes, registros de reparación y bloqueos de ejecución |
+| `HDD_LOG_DIR` | Por defecto `/var/log/disk-health`; los registros de ejecución pueden contener identificadores de dispositivo e información del host |
+| `web-*.json` y `web-job-history/` dentro del directorio de estado | Configuración programada, lista de acceso, preferencias de suspensión, recibos de tareas y archivos |
+| Almacenamiento del navegador | `hdd-lang`, `hdd-theme`, `hdd-mode` guardan selecciones de interfaz; el registro de acceso por IP se limpia tras rechazo o cierre de sesión |
 
-`HDD_LOG_DIR` tiene como valor predeterminado `/var/log/disk-health`; `-l/--log` selecciona un registro individual. Los registros son texto sin formato, pueden incluir identificadores de dispositivos, datos del equipo anfitrión y el kernel e información de salud, y deben protegerse. Se crea un directorio temporal de trabajo en `/run` o, si no es posible, en otro directorio temporal. No suponga que el registro es la única salida persistente ni que se puede volver a una versión anterior con un directorio de estado de una versión posterior sin su copia de seguridad correspondiente.
+El menú CLI guarda los siguientes campos mediante `settings.conf`:
+
+| Campo | Valor por defecto | Significado |
+| --- | --- | --- |
+| `VALID_DAYS` | `7` | Días de validez de los resultados |
+| `RESCAN_POLICY` | `ask` | `ask`, `rescan`, `reuse` controlan el tratamiento de resultados antiguos |
+| `PARALLEL` | `1` | Si el escaneo de superficie multi-disco es paralelo |
+| `CHUNK_MB` | `64` | Tamaño de bloque de superficie, MiB |
+| `SAMPLE_POINTS` | `24` | Puntos de muestreo de velocidad |
+| `SAMPLE_MB` | `128` | Cantidad de lectura por punto, MiB |
+| `INCLUDE_SSD` | `0` | Si el menú incluye SSD/NVMe |
+| `AUTO_RECHECK` | `ask` | `ask`, `always`, `never` controlan la revisión de zonas anómalas |
+
+El estado de tareas Web usa reemplazo atómico mediante archivo temporal único. El archivo de contraseña se guarda con permisos restringidos; la modificación dentro de la ventana requiere nueva contraseña y confirmación, tras lo cual todas las sesiones se invalidan. Los estados y registros en ejecución no se eliminan con actualizaciones del código fuente, el retroceso requiere respaldos de datos coincidentes.
 
 ## Interfaces externas
 
-| Interfaz | Responsabilidad y efectos |
+| Interfaz | Responsabilidad y límites |
 | --- | --- |
-| `lsblk`, `blockdev`, `/proc/mounts`, kernel log | Enumeración de dispositivos, geometría, estado de montaje y errores de E/S; la visibilidad depende de los permisos del equipo anfitrión. |
-| `smartctl` | Lee diagnósticos SMART; puede activar SMART o iniciar pruebas internas. La detección automática de opciones de acceso directo es heurística. |
-| `dd`, `badblocks` | Lecturas directas del dispositivo para muestreo, carga de interfaz, exploración de latencia o pruebas de bloques defectuosos de solo lectura. Las lecturas pueden someter a esfuerzo al hardware deteriorado. |
-| `apt-get` | Ofrece instalar paquetes ausentes; `-y` puede aceptar automáticamente. Esto modifica los paquetes del equipo anfitrión y puede requerir acceso a la red. |
-| `systemd-run` | Unidad transitoria opcional para tareas desacopladas; `--stop` solicita detener el proceso registrado del script, no una autoprueba del hardware. |
+| `smartctl` | Consultas SMART, puede habilitar SMART o iniciar autopruebas internas |
+| `lsblk`, `blockdev`, sysfs de Linux y registros del kernel | Enumeración, capacidad, enlace, montaje y evidencia de errores |
+| `dd`, `badblocks` | Lectura de solo lectura de dispositivo en crudo; no se usa modo de prueba de escritura |
+| `apt-get` | Instala herramientas del sistema faltantes tras confirmación por CLI o aprobación del instalador Debian |
+| `systemd-run` | Comprobación en segundo plano independiente; detener el servicio Web no detiene las tareas de comprobación |
+| API JSON HTTP | Autenticación, presentación de datos, programación y control de comprobaciones fijas; ver [Guía Web](WEB.md#api) |
 
+## Extensión
 
-Las comprobaciones no utilizan por sí mismas ninguna API de red. El servicio Web local opcional añade una API HTTP en bucle local en modo manual; el instalador permite acceso desde la LAN con autenticación, mientras que `--json` proporciona una instantánea estructurada de solo lectura que usa la misma función de puntuación compuesta que el informe de terminal. `--no-install` desactiva la instalación de paquetes durante las llamadas desatendidas. La arquitectura Web, la programación y los límites de seguridad se describen en [WEB](WEB.md). Los scripts pueden usar los códigos de salida `0` (correcto), `1` (requiere atención), `2` (peligro) y `3` (fallo de ejecución); consulte [Guía de uso](README.md). El código Web está en `src/web/` y su salida generada en `dist/web/`; el instalador los copia a la disposición existente del host. El acceso Web crea una cookie de sesión HttpOnly breve. La verificación de seguridad rota la cookie y concede un permiso de cinco minutos; las peticiones que cambian estado incluyen una cabecera del mismo origen contra CSRF. La lista de direcciones privadas, cuando está activada, puede omitir el acceso por contraseña en operaciones ordinarias. Security Settings protege la lista, su interruptor y el cambio de contraseña mediante un permiso de cinco minutos que el servidor concede tras verificar la contraseña administrativa. Una sesión admitida solo por IP no puede leer ni modificar esos ajustes. Durante ese plazo basta con la contraseña nueva y su confirmación, sin repetir la anterior. El cambio termina todas las sesiones. Los detalles SMART se leen al abrir un disco; el veredicto bruto no sustituye la puntuación compuesta. Las respuestas predeterminadas de instantánea y SMART solo envían números de serie ocultos; una solicitud autenticada separada obtiene el número completo únicamente tras una acción expresa del usuario. Se borra al ocultarlo o cerrar el detalle.
-
-La capacidad del disco usa un selector compartido de unidades decimales o binarias y un enlace de detalle separado; el resto de la tarjeta no es interactivo. La instantánea incluye capacidad física y uso de sistemas de archivos montados obtenido de lsblk, deduplicados por UUID, además de asignación de conjuntos ZFS relacionados con discos enumerados. Sus alcances difieren si hay RAID o volúmenes sin montar. El detalle SSD calcula lecturas y escrituras del anfitrión a partir de NVMe Data Units o ATA Device Statistics con tamaño explícito de sector lógico; los contadores propios del fabricante quedan como desconocidos. El extremo Web de evaluación filtra la enumeración actual del servidor por transporte SATA, rotación, rotación SSD, identidad NVMe o todos los discos. Ofrece la unión de módulos compatibles con los discos elegidos e inicia un único lote desacoplado `<module> --rescan` para sus nombres, con `--include-ssd` cuando procede. Para esta operación nunca se aceptan nombres de dispositivo enviados por el navegador. Los datos de enlace proceden de la versión y velocidad SATA actual de smartctl y del enlace SATA o NVMe PCIe más cercano disponible en Linux sysfs; los campos ausentes siguen desconocidos. El Dashboard clasifica medio y transporte por separado y obtiene la temperatura mediante consultas SMART de fondo acotadas que por defecto no despiertan discos SATA en reposo. Una preferencia Web privada puede optar por despertar en serie los discos rotatorios dormidos una vez por visita a la página; el reposo se identifica y muestra expresamente en vez de figurar como temperatura ausente. El detalle SMART muestra el formato informado por el dispositivo cuando existe; el transporte por sí solo no prueba que sea M.2. SSD/NVMe pueden ejecutar comprobaciones SMART rápida, corta y larga, una exploración completa de solo lectura y una evaluación completa. Los módulos exclusivos de HDD, incluidos muestreo de velocidad, badblocks y repetición de interfaz, omiten los SSD seleccionados y siguen disponibles si hay HDD aptos en la selección. Un lote completo de SSD omite el muestreo de velocidad; al completarse produce una puntuación heurística actual, de 100 si ninguna comprobación exigida encuentra problemas. No es una probabilidad de fallo calibrada. Un HDD dormido puede despertarse individualmente desde su detalle SMART.
-
-El lanzador desacoplado escribe primero un registro de aceptación de tarea Web y luego pide a systemd iniciar una unidad transitoria. El proceso de trabajo lo actualiza a en ejecución y registra terminado, detenido o fallido al salir. El extremo de estado Web combina el registro activo con el estado del proceso y un fragmento acotado del final del log. Elimina registros terminales y los aceptados sin proceso activo durante más de 15 segundos; se conservan los resultados por disco y los logs del anfitrión. Un resultado de salud distinto de cero (`1` o `2`) sigue siendo una comprobación terminada, no un fallo de inicio. La interfaz usa el mismo conjunto de avisos para el recuento de Atención, su lista filtrada y las causas en el detalle. Cada deducción guardada incluye una causa; los registros antiguos sin ella se muestran como prueba incompleta en vez de «sin anomalías».
-
-## Evaluación y controles actuales de SSD
-
-La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, autopruebas corta y larga y una lectura completa del disco. Omite el muestreo de velocidad; las lecturas lentas por sí solas no restan puntos de salud. Un lote completo sin anomalías obtiene 100 puntos; los hallazgos SMART o errores reales de lectura pueden reducir esta puntuación heurística. Si la selección incluye SSD, la interfaz solo ofrece comprobación rápida, autopruebas corta y larga, lectura completa y evaluación completa. Al pulsar la capacidad o los datos escritos se alternan unidades decimales y binarias. En los detalles SMART de un HDD en reposo hay un botón para activar solo ese disco.
+No existe un mecanismo de plugins predefinido. Añadir módulos de detección requiere ajustar simultáneamente la programación CLI, campos de resultados, determinación de cobertura de puntuación, lista blanca del servidor, recursos de idiomas de interfaz y pruebas sintéticas.

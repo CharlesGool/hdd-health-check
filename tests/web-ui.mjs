@@ -428,6 +428,29 @@ try {
       `${code}: underline geometry`,
     );
   }
+  for (const language of [
+    "zh-CN",
+    "en",
+    "es",
+    "zh-TW",
+    "zh-HK",
+    "hi",
+    "ar",
+    "fr",
+  ]) {
+    await page.addInitScript(
+      (language) => localStorage.setItem("hdd-lang", language),
+      language,
+    );
+    await page.goto(`${base}/changelog`);
+    await page.locator(".markdown-body").first().waitFor();
+    assert(
+      (await page.locator(".markdown-body").allTextContents())
+        .join("")
+        .includes("v4.1.0"),
+      `${language}: changelog fallback`,
+    );
+  }
   assert.deepEqual(errors, []);
   console.log(
     `web-ui: ${scenarios} page/mode/viewport scenarios; keyboard, privacy, palettes and reduced motion passed`,

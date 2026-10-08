@@ -78,6 +78,8 @@ with tempfile.TemporaryDirectory() as directory:
             status, _, changes = request('GET', '/api/changelog?lang=' + language, cookie=cookie)
             assert status == 200 and 'v4.1.0' in changes['text'], language
             assert 'web-password' not in changes['text']
+            if language not in ('zh-CN', 'en', 'es'):
+                assert '## Changelog' in changes['text']
 
         assert request('GET', '/api/schedule', cookie=cookie)[0] == 200
         assert request('GET', '/api/build', cookie=cookie)[2] == json.loads((app.ASSETS / 'version.json').read_text())

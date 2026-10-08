@@ -4,7 +4,7 @@
 
 [简体中文](../../README.md) | [English](../en/README.md) | **Español**
 
-Evalúa la salud de discos en Debian/Ubuntu mediante SMART y pruebas de solo lectura, con CLI y controlador Web local.
+Evaluación centralizada de la salud de discos mediante SMART y verificaciones de solo lectura, con controlador de línea de comandos y controlador web local.
 
 [![License](https://img.shields.io/badge/License-MIT-orange)](../../LICENSE) [![Release](https://img.shields.io/badge/Release-v4.1.0-blue?logo=github)](https://github.com/CharlesGool/hdd-health-check/releases/tag/v4.1.0)
 
@@ -23,95 +23,154 @@ Evalúa la salud de discos en Debian/Ubuntu mediante SMART y pruebas de solo lec
 
 ## Introducción
 
+hdd-health-check ofrece un controlador de línea de comandos y un controlador web local que centraliza la información SMART, los resultados de autoverificación, las anomalías de lectura y los cambios históricos.
 
-Esta herramienta Bash ejecutada como root evalúa la salud de los HDD en Debian/Ubuntu mediante datos SMART y comprobaciones de solo lectura. La versión `v4.1.0` incluye el comprobador y la interfaz Web local opcional, con código fuente y un archivo Web Debian precompilado en GitHub. El servicio Web se comprobó en un NAS Debian con inventario real de discos y ajustes de seguridad autenticados, pero siguen sin verificarse una evaluación completa en HDD reales y la recuperación tras reiniciar el equipo.
+- Verificación rápida de SMART, temperatura, estado de montaje y registros de E/S del kernel; comparación de contadores de errores históricos.
+- Ejecución de prueba corta, prueba larga, muestreo de velocidad, escaneo completo de solo lectura reanudable, reverificación con badblocks y verificación de interfaz tras reparación.
+- En la interfaz web, seleccionar discos, ver explicaciones de atributos SMART, seguir tareas en segundo plano, programar verificaciones rápidas y gestionar permisos de acceso.
+- La evaluación completa de un HDD incluye verificación rápida, prueba corta, prueba larga, muestreo de velocidad y escaneo de superficie; los SSD/NVMe no se someten a muestreo de velocidad. Solo cuando se completan todas las verificaciones obligatorias del mismo lote válido se muestra la puntuación compuesta actual. La puntuación es una métrica heurística, no una probabilidad de fallo.
 
-Las horas de encendido son información de uso y por sí solas no restan puntos de salud. Un atributo ATA cercano al umbral solo genera aviso con un contador bruto de errores no nulo. Los resultados antiguos sin esa prueba quedan pendientes de revisión sin deducción. Las tarjetas de atención muestran la causa registrada.
+**Solo lectura se refiere a los datos del disco de destino.** El programa sigue escribiendo en los registros y el estado del host, puede habilitar SMART o iniciar la autoverificación interna del disco; la lectura prolongada aumenta la carga del dispositivo. Realice una copia de seguridad antes de verificar un disco sospechoso. La herramienta no ejecuta pruebas de bloques defectuosos en modo escritura, borrado ni reparación del sistema de archivos.
 
-El menú interactivo o la CLI por lotes seleccionan unidades, realizan una evaluación rápida de SMART, montajes y registros del kernel, y presentan una puntuación heurística de 0 a 100 y un nivel de riesgo. Otros módulos ofrecen autopruebas SMART cortas y largas, medición de velocidad de lectura por muestreo, exploración reanudable de la latencia de lectura de todo el disco con una nueva comprobación dirigida y opcional mediante `badblocks`, ejecución de `badblocks` de solo lectura en todo el disco y pruebas de lectura de la interfaz tras una reparación. En HDD, la evaluación completa ejecuta las comprobaciones rápida, corta, larga, de velocidad y de superficie; en SSD ejecuta las comprobaciones rápida, corta, larga y una exploración integral de solo lectura sin muestreo de velocidad; no incluye el módulo independiente de `badblocks` para todo el disco ni el de interfaz. Los resultados pueden reutilizarse, compararse con el historial de contadores SMART y reunirse en un informe. Véanse los [problemas conocidos](LOG.md) y los [objetivos](DESIGN.md).
+### Presentación de la interfaz
 
-**«Solo lectura» se refiere a los datos del disco de destino, no al equipo anfitrión.** El programa escribe registros, ajustes, progreso e historial en el equipo anfitrión; puede activar SMART, iniciar autopruebas internas de la unidad, leer dispositivos enteros bajo carga sostenida, instalar paquetes previa confirmación e iniciar unidades transitorias de systemd. No sustituye a las copias de seguridad. No se implementa ninguna exploración de superficie con escritura destructiva, borrado ni escritura en el sistema de archivos.
+Las siguientes capturas provienen de una compilación Chromium del código fuente actual, utilizan datos de demostración sintéticos y no representan mediciones reales de discos ni paquetes de versión oficiales. Las capturas solo sirven para mostrar la interfaz; los [problemas conocidos y límites de verificación](LOG.md#errores) se registran por separado.
 
-La evaluación completa repite SMART/ATA/CRC tras las lecturas prolongadas. Solo muestra una puntuación global de 0 a 100 si las pruebas rápida, corta, larga y de superficie terminada, además del muestreo de velocidad para HDD, son del mismo lote, están completas y vigentes. Los resultados reutilizados, interrumpidos, caducados o antiguos siguen visibles como históricos, con clasificación parcial/desconocida; consultar informes no actualiza la base de comparación. Tras reparar la interfaz, verifíquela por separado y repita la evaluación completa para obtener una puntuación nueva; resolverla no borra errores anteriores. Un primer total de errores ATA tiene causa desconocida y conserva un descuento de 5 puntos por riesgo no resuelto en revisiones sucesivas, incluso después de la evaluación completa. Un aumento resta 20 puntos; un contador estable no es un error nuevo ni prueba que el riesgo se haya resuelto. La verificación de interfaz por sí sola no atribuye los errores ATA antiguos a una reparación. Las lecturas lentas aisladas aconsejan repetir la prueba de rendimiento, no prueban sectores defectuosos; los errores confirmados de superficie siguen restando 40 puntos. Haga copias de seguridad antes de probar un disco sospechoso.
+#### Panel de control
 
-La evaluación completa de SSD/NVMe ejecuta una comprobación SMART rápida, autopruebas corta y larga y una lectura completa del disco. Omite el muestreo de velocidad; las lecturas lentas por sí solas no restan puntos de salud. Un lote completo sin anomalías obtiene 100 puntos; los hallazgos SMART o errores reales de lectura pueden reducir esta puntuación heurística. Los controles por lotes muestran la unión de las comprobaciones admitidas por los discos seleccionados; los módulos exclusivos de HDD omiten los SSD seleccionados. Al pulsar la capacidad o los datos escritos se alternan unidades decimales y binarias. En los detalles SMART de un HDD en reposo hay un botón para activar solo ese disco.
+Vista general de discos, capacidad, registros que requieren atención y acceso a verificaciones por lotes.
+
+![Panel de control, datos de demostración sintéticos](../resources/es/dashboard.png)
+
+#### Detalle SMART
+
+Atributos del dispositivo con explicaciones, visualización opcional del número de serie y cambio entre resultados de detección dentro del detalle.
+
+![Detalle SMART, datos de demostración sintéticos](../resources/es/smart-detail.png)
+
+#### Configuración
+
+Idioma, modo claro/oscuro, ocho colores de tema y política de suspensión se agrupan en la configuración general; la configuración de seguridad utiliza verificación de administrador independiente.
+
+![Página de configuración, datos de demostración sintéticos](../resources/es/settings.png)
+
+#### Vista móvil
+
+Los detalles del disco y la barra superior se reorganizan según el viewport. Esta captura usa un ancho de 375 px y un entorno táctil simulado.
+
+![Vista móvil, datos de demostración sintéticos](../resources/es/mobile.png)
 
 ## Requisitos
 
-- Mínimos: root, Bash 4.3+, utilidades de dispositivos de bloques de Linux (`lsblk`, `blockdev`), `smartctl` (`smartmontools`), `dd` (`coreutils`) y `flock`; la plataforma prevista es Debian/Ubuntu. En otras distribuciones se muestra una advertencia; la instalación automática de dependencias utiliza `apt-get`.
-- Recomendados: `badblocks` (`e2fsprogs`) para comprobaciones de superficie; systemd con `systemd-run` para tareas desacopladas. Si faltan paquetes, puede ofrecerse su instalación interactiva mediante `apt-get update`/instalación (o confirmarse automáticamente con `-y`). Compruebe las dependencias antes de una ejecución desatendida. El comprobador utiliza herramientas del sistema proporcionadas por el host; las dependencias npm de la interfaz Web se fijan en `src/web/package-lock.json`.
-- Para evaluar la salud real se necesitan un HDD físico y acceso SMART. Se pueden incluir SSD/NVMe explícitamente. Una evaluación SSD completa y limpia obtiene 100 puntos, pero la puntuación no es una probabilidad calibrada de fallo.
+| Componente | Requisito mínimo | Recomendado o complementario |
+| --- | --- | --- |
+| Detector | Debian/Ubuntu, root, Bash 4.3+, smartmontools, util-linux, coreutils | e2fsprogs proporciona badblocks; systemd permite tareas en segundo plano |
+| Servicio web | Python 3.10+, herramientas del sistema necesarias para el detector | El instalador de Debian requiere systemd, TCP 8765 en LAN por defecto |
+| Compilación del frontend | Node.js 22.12+ o 24+, npm 10+ | Las dependencias de npm usan archivo de bloqueo; la UI de producción no depende de CDN externos |
+
+El diagnóstico real requiere acceso al dispositivo y a SMART. Existen limitaciones en la cobertura de reenvío USB/RAID, datos SAS/SCSI y atributos del fabricante. El texto de terminal en Bash del proyecto está principalmente en chino simplificado; la interfaz web ofrece ocho idiomas; la documentación principal está disponible en chino simplificado, inglés y español.
 
 ## Instalación
 
 ### Instalación rápida
 
-Desde una copia de trabajo de confianza, ejecute `sudo bash ./hdd-health-check.sh --help` para consultar las opciones sin iniciar una exploración. No envíe un script remoto sin revisar mediante una tubería a un intérprete de comandos con privilegios de root.
-
-### Instalación normal
-
-
-La siguiente copia utiliza la etiqueta de versión `v4.1.0`. El comando de la raíz del repositorio es un punto de entrada ligero; su implementación está en `src/checker/`.
+Obtenga y revise el código fuente de confianza, verifique la ayuda. Este comando no inicia ningún escaneo:
 
 ```bash
-git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
-cd hdd-health-check
 bash -n hdd-health-check.sh src/checker/hdd-health-check.sh
 sudo bash ./hdd-health-check.sh --help
 ```
 
-Revise e instale usted mismo los paquetes necesarios del sistema operativo antes de explorar para evitar la solicitud de instalación del script. Para actualizar una copia de trabajo existente, haga primero una copia de seguridad de los registros del equipo anfitrión que quiera conservar y de `${HDD_STATE_DIR:-/var/lib/hdd-health}`; sustituya el script por el de una copia de trabajo revisada, conserve ese directorio de estado para el historial y la reanudación, y después consulte `--help` y ejecute las comprobaciones elegidas. El análisis del estado de v2.2 solo acepta campos de datos conocidos; un estado anterior de v2.2 que no se ajuste a ellos puede rechazarse. Para volver a una versión anterior hay que restaurar el script anterior **y la copia de seguridad correspondiente de su estado**; no dé por hecho que el estado más reciente sea compatible hacia atrás. No se garantiza la migración del estado ni el comportamiento de la CLI de v1.
-
-### Interfaz Web desde la etiqueta v4.1.0
-
-La etiqueta de código fuente no incluye los archivos generados de `dist/web` en el control de versiones. En un equipo Debian con systemd, instale Node.js 22.12+ o 24+ y npm 10+, compile la interfaz y ejecute el instalador. GitHub Release también ofrece un archivo Web precompilado para instalarla sin Node.js en el NAS:
+### Instalación estándar
 
 ```bash
-git clone --branch v4.1.0 --depth 1 https://github.com/CharlesGool/hdd-health-check.git
-cd hdd-health-check/src/web
+git clone https://github.com/CharlesGool/hdd-health-check.git
+cd hdd-health-check
+sudo apt-get update
+sudo apt-get install --no-install-recommends smartmontools util-linux coreutils e2fsprogs
+sudo bash ./hdd-health-check.sh --help
+```
+
+La rama `main` contiene el código fuente actual. Para usar una versión publicada, seleccione la etiqueta o el paquete precompilado correspondiente desde [GitHub Release](https://github.com/CharlesGool/hdd-health-check/releases/latest); los activos publicados pueden diferir del código fuente actual. No canalice scripts remotos sin revisar directamente a una shell root.
+
+Instalación web opcional:
+
+```bash
+cd src/web
 npm ci
 npm run check
 cd ../..
 sudo bash deploy/install.sh
 ```
 
-El instalador comprueba e instala los paquetes de ejecución ausentes de Debian, inicia el servicio protegido con contraseña en el puerto LAN 8765 y no inicia ninguna exploración de disco. Lea la contraseña generada con `sudo cat /root/apps/hdd-health-check/web-password`. Node.js solo es necesario para compilar la interfaz. Consulte [WEB](WEB.md) para conocer las actualizaciones, los límites de seguridad y la reversión.
+El instalador solo admite Debian, instala las dependencias de ejecución faltantes, despliega en `/root/apps/hdd-health-check`, habilita un servicio protegido con contraseña accesible en LAN. La instalación no inicia un escaneo manual; la configuración programada ya habilitada sigue activa. La contraseña de inicio de sesión puede leerse en el host con `sudo cat /root/apps/hdd-health-check/web-password`. Para acceso, reversión y descripción de la API, consulte la [Guía web](WEB.md).
 
-## Orientaciones
-
-Desde la raíz del repositorio ejecute `python3 scripts/check-project.py` y `bash scripts/check.sh`; desde `src/web/` ejecute `npm ci`, `npm run check`, `npm run test:ui` y `npm audit`. Las pruebas de navegador solo usan datos sintéticos, no ejecutan comprobaciones de disco. La primera ejecución requiere `npx playwright install chromium`.
-
-Ejecute la herramienta únicamente sobre unidades que tenga autorización para examinar; una exploración de lectura sostenida puede generar una carga considerable. Los comandos siguientes son **ejemplos, no instrucciones para validar este entorno**:
+## Uso
 
 ```bash
-sudo bash ./hdd-health-check.sh                 # terminal menu
-sudo bash ./hdd-health-check.sh -a              # all rotational disks, default quick scan
+sudo bash ./hdd-health-check.sh
 sudo bash ./hdd-health-check.sh -d sdb -r quick,short
-sudo bash ./hdd-health-check.sh -d sdb -r full -y
-sudo bash ./hdd-health-check.sh -d sdb -r iface --duration 30 --detach
+sudo bash ./hdd-health-check.sh -d sdb -r full --detach
 sudo bash ./hdd-health-check.sh --status
 sudo bash ./hdd-health-check.sh --stop
 ```
 
-`-d/--disk` acepta nombres de dispositivos separados por comas; `-a/--all` selecciona discos mecánicos y `--include-ssd` amplía la selección. `-r/--run` acepta `quick,short,long,speed,surface,badblocks,iface,full`; el valor predeterminado es `quick` y el modo por lotes siempre añade un informe. `--duration` fija los minutos de la prueba de interfaz (15 por defecto). `--rescan` reinicia en vez de reutilizar o reanudar resultados anteriores; de forma predeterminada, la comprobación rápida se repite en modo por lotes, los demás resultados se reutilizan mientras sean válidos y las exploraciones de superficie interrumpidas se reanudan. `-q/--quiet` suprime la salida del terminal, **no la escritura de registros**; `-y/--yes` confirma automáticamente las solicitudes, incluidas las instalaciones de paquetes. `--detach` requiere el modo por lotes y que `systemd-run` esté disponible; la desconexión del terminal durante tareas interactivas largas aptas también puede transferirlas a systemd. `--stop` solicita una parada segura y conserva el progreso de la exploración de superficie, pero **no** cancela las autopruebas SMART internas de la unidad. `-l/--log FILE` cambia la ruta del registro; `HDD_LOG_DIR` y `HDD_STATE_DIR` sustituyen los directorios predeterminados. `NO_COLOR` desactiva el color; `HDD_NO_BG` desactiva la transferencia automática de tareas interactivas a segundo plano. Los ajustes del menú se guardan en el directorio de estado.
+Los nombres de dispositivo son ejemplos. Confirme el dispositivo de destino y la carga antes de ejecutar escaneos. `--stop` conserva el progreso del escaneo de superficie y no cancela la autoverificación SMART interna del disco.
 
-El analizador también asigna `-t short|long` a la autoprueba correspondiente, `-s` a la prueba de velocidad y `-b` a badblocks; **`-w/--wait` se ignora** y no espera a que finalice una prueba. Estos alias no reproducen el comportamiento de v1. Consulte `--help` para ver las opciones del script instalado.
+| Opción | Significado |
+| --- | --- |
+| `-d/--disk`, `-a/--all`, `--include-ssd` | Especificar dispositivos separados por comas, seleccionar discos mecánicos o incluir SSD/NVMe |
+| `-r/--run` | `quick,short,long,speed,surface,badblocks,iface,full`; por defecto `quick`, genera un informe al final del lote |
+| `--rescan` | Rehacer resultados y escaneo de superficie; por defecto rehace la verificación rápida, reutiliza otros resultados válidos, reanuda escaneos de superficie incompletos |
+| `--detach`, `--duration` | Delegar a systemd en segundo plano; minutos de prueba de presión de interfaz, por defecto 15 |
+| `--no-install`, `-y/--yes`, `-q/--quiet` | Prohibir instalación automática, confirmar prompts automáticamente o escribir solo en el registro; `-y` también aprueba la instalación de dependencias |
+| `-l/--log` | Cambiar la ubicación del archivo de registro |
 
-Códigos de salida: `0`, todo correcto; `1`, aviso/advertencia; `2`, peligro; `3`, error de ejecución. Los registros se guardan por defecto en `/var/log/disk-health/hdd-health-<timestamp>.log`; el estado, en `/var/lib/hdd-health`. Las escrituras en el equipo anfitrión y los límites operativos se detallan en [DESIGN](DESIGN.md).
+Los códigos de salida son `0` bueno, `1` advertencia o precaución, `2` peligro, `3` error de ejecución. Los parámetros de compatibilidad `-t`, `-s`, `-b` corresponden a módulos existentes; `-w/--wait` se ignora, no espera a que finalice la autoverificación.
+
+| Variable de entorno | Valor por defecto o comportamiento | Componente |
+| --- | --- | --- |
+| `HDD_STATE_DIR` | `/var/lib/hdd-health`, almacena configuración, resultados, historial y progreso | Detector y servicio web |
+| `HDD_LOG_DIR` | `/var/log/disk-health`, almacena registros de ejecución | Detector y servicio web |
+| `NO_COLOR` | Desactiva el color en terminal si no está vacío | Detector |
+| `HDD_NO_BG` | Desactiva la entrega interactiva en segundo plano si no está vacío | Detector |
+
+Las variables de entorno son opcionales, las rutas deben ser absolutas y de confianza; consulte `.env.example`. Los parámetros guardados desde el menú en `settings.conf` se describen en [Diseño de datos](DESIGN.md#diseño-de-datos).
+
+Verificación de desarrollo:
+
+```bash
+bash scripts/check.sh
+cd src/web
+npm ci
+npm run check
+node node_modules/playwright/cli.js install chromium
+npm run test:ui
+npm audit
+```
+
+Estas pruebas usan datos sintéticos y un servicio HTTP aislado, no escanean discos reales. La verificación de enlaces de documentación está incluida en `scripts/check.sh`.
+
+Después de compilar, ejecute `node scripts/capture-doc-screenshots.mjs` desde la raíz para regenerar las capturas de introducción en los tres idiomas, utilizando dispositivos sintéticos y estado aislado.
 
 ## Actualización
 
-Para el diseño actual del código fuente, actualice la copia, compile la interfaz en `src/web` y ejecute `sudo bash deploy/install.sh` desde la raíz del repositorio. El instalador copia `src/checker/hdd-health-check.sh`, `src/web/server.py` y `dist/web` al diseño de servicio existente, conserva la contraseña Web y guarda copias con fecha de la aplicación y de la unidad. Revise los cambios antes de ejecutarlo como root. La etiqueta histórica `v3.0.0` conserva su antiguo diseño de código fuente `web/` y sus propias instrucciones de instalación.
+1. Detenga o espere a que finalicen las verificaciones en curso, haga copia de seguridad del directorio de estado y los registros que desee conservar. Las actualizaciones web conservan por separado la aplicación, la unidad de servicio y el archivo de contraseña.
+2. Revise y actualice el código fuente; los usuarios de web reconstruyan `src/web/` y luego ejecuten `deploy/install.sh`. El instalador conserva la contraseña y el estado existentes, y guarda copias de la aplicación antigua y de la unidad.
+3. Verifique `--help`, el inicio de sesión web y la versión de compilación, el inventario de dispositivos y el historial. La puntuación actual requiere una nueva evaluación completa y válida.
+
+La versión histórica `v3.0.0` usaba la estructura `web/`, la actual usa `src/web/` y `dist/web/`. El estado antiguo de v2.2 que no cumple el formato actual puede ser rechazado; no se garantiza la migración de CLI o estado desde v1. Para revertir, restaure simultáneamente el programa antiguo y la copia de estado coincidente; consulte la [Guía web](WEB.md#actualización-y-reversión).
 
 ## Desinstalación
 
-- Elimine la copia de trabajo o el script instalado para retirar la CLI sin borrar registros ni historial. La CLI no instala ningún servicio permanente de systemd; si instaló el servicio Web opcional, deténgalo y desactívelo primero según [WEB](WEB.md). Compruebe si hay tareas transitorias activas antes de retirar el script.
-- Para eliminarlo todo, detenga primero cualquier tarea y haga una copia de seguridad de los registros que quiera conservar; después elimine manualmente el directorio `HDD_STATE_DIR` configurado (por defecto `/var/lib/hdd-health`) y `HDD_LOG_DIR` (por defecto `/var/log/disk-health`), una vez comprobadas sus rutas y su contenido. Esto borra informes, progreso, historial, notas de reparación y registros; nunca elimine a ciegas un directorio compartido o cuya ruta se haya sobrescrito. Los paquetes instalados mediante `apt-get` no se eliminan automáticamente.
+La desinstalación rápida conserva los datos: los usuarios de web ejecuten primero `sudo systemctl disable --now hdd-health-web.service`, confirmen que no hay verificaciones en segundo plano independientes y luego eliminen el programa instalado o el directorio de código fuente. Eliminar el código fuente no equivale a eliminar el directorio de instalación web.
+
+Desinstalación completa: tras la copia de seguridad, verifique y elimine el directorio de aplicación de este proyecto, la unidad systemd, el directorio de estado y el directorio de registros, luego ejecute `sudo systemctl daemon-reload`. No elimine directorios compartidos o redirigidos por variables de entorno. Estas operaciones eliminan los registros de verificación; los paquetes del sistema no se desinstalan automáticamente.
 
 ## Agradecimientos
 
-Los créditos del código y las fuentes de terceros figuran en [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md).
+Las versiones, fuentes upstream y licencias completas de componentes como Vue, Lucide, Markdown-It, Reka UI y Tailwind CSS se encuentran en [Declaraciones de terceros](THIRD_PARTY_NOTICES.md).
 
 ## Licencia
 
-MIT (SPDX: MIT); consulte [LICENSE](../../LICENSE).
+MIT, SPDX: `MIT`. Texto completo en [LICENSE](../../LICENSE).

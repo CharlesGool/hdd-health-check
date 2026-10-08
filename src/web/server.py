@@ -967,7 +967,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, access_settings())
             if path == "/api/changelog":
                 requested = parse_qs(urlparse(self.path).query).get("lang", ["en"])[0]
-                lang = {"en": "en", "zh-CN": "", "zh-TW": "zh-TW", "zh-HK": "zh-HK", "hi": "hi", "es": "es", "ar": "ar", "fr": "fr"}.get(requested, "en")
+                lang = {"en": "en", "zh-CN": "", "es": "es"}.get(requested, "en")
                 file = ROOT / "doc" / lang / "CHANGELOG.md"
                 return self.send_json(200, {"text": file.read_text()[:40000]})
             if path == "/api/status":

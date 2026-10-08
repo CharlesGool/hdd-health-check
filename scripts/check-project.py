@@ -52,7 +52,8 @@ for path in paths:
                 fail(path, 'metadata.version must be quoted semver')
     # Inline links in code examples are not document links.
     prose = re.sub(r'```[\s\S]*?```', '', text)
-    for target in re.findall(r'!?\[[^\]]*\]\(([^)]+)\)', prose):
+    html_sources = re.findall(r'<(?:img|source)\b[^>]*?src=[\"\']([^\"\']+)', prose)
+    for target in [*re.findall(r'!?\[[^\]]*\]\(([^)]+)\)', prose), *html_sources]:
         target = target.split(' "', 1)[0].strip('<>')
         if re.match(r'[a-z]+:', target):
             continue
@@ -70,6 +71,19 @@ for lang in ('zh-CN', 'en', 'es'):
         path = ROOT / 'README.md' if name == 'README' and lang == 'zh-CN' else folder / (name + '.md')
         if not path.is_file():
             fail(path, 'missing core document')
+
+# Core navigation and localized README gallery follow the current templates.
+for language, path in [('zh-CN', ROOT / 'README.md'), ('en', ROOT / 'doc/en/README.md'), ('es', ROOT / 'doc/es/README.md')]:
+    text = path.read_text()
+    for image in ('dashboard', 'smart-detail', 'settings', 'mobile'):
+        image_path = ROOT / 'doc/resources' / language / (image + '.png')
+        if not image_path.is_file() or image_path.read_bytes()[:8] != b'\x89PNG\r\n\x1a\n':
+            fail(path, f'missing or invalid screenshot: {language}/{image}.png')
+        if f'resources/{language}/{image}.png' not in text:
+            fail(path, f'localized gallery link absent: {image}')
+for folder in (ROOT / 'doc').iterdir():
+    if folder.is_dir() and folder.name not in ('en', 'es', 'resources'):
+        fail(folder, 'documentation language is outside the current standard')
 
 catalogs = {p.stem: json.loads(p.read_text()) for p in (ROOT / 'lang/web').glob('*.json')}
 source_keys = set(catalogs['en'])
@@ -90,7 +104,8 @@ for field in ('version', 'dependencies', 'devDependencies', 'engines'):
     if lock['packages'][''].get(field) != package.get(field):
         fail(ROOT / 'src/web/package-lock.json', f'{field} differs from package.json')
 for language in catalogs:
-    path = ROOT / 'doc' / ('' if language == 'zh-CN' else language) / 'CHANGELOG.md'
+    doc_language = {'zh-CN': '', 'en': 'en', 'es': 'es'}.get(language, 'en')
+    path = ROOT / 'doc' / doc_language / 'CHANGELOG.md'
     if not path.exists():
         fail(path, 'UI language has no changelog')
     elif not re.search(r'^### v4\.1\.0\b', path.read_text(), re.M):

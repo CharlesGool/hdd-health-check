@@ -1,16 +1,14 @@
 ---
 name: project-third-party-notices-es
-description: Third-party software and asset notices
+description: Declaraciones de atribución y cumplimiento de terceros
 metadata:
-  version: "0.1.0"
+  version: "1.0.0"
   lang: "es"
 ---
 
-# Avisos de terceros
+# Declaraciones de terceros
 
-Este inventario registra el material de terceros utilizado por la interfaz Web opcional.
-
-## Idiomas
+## Multilingüe
 
 [简体中文](../THIRD_PARTY_NOTICES.md) | [English](../en/THIRD_PARTY_NOTICES.md) | **Español**
 
@@ -26,13 +24,14 @@ Este inventario registra el material de terceros utilizado por la interfaz Web o
 
 - Avisos de terceros: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
+
 ## Avisos de terceros
 
 ### Inventario de componentes
 
-La tabla enumera las dependencias npm de producción y sus dependencias transitivas, incluidos módulos que el proceso de compilación puede eliminar. Vue, el renderizado Markdown, los iconos Lucide, los controles Reka UI y las utilidades de combinación de clases sirven al frontend; Tailwind CSS genera estilos al compilar. La interfaz actual utiliza fuentes del sistema y no distribuye archivos de fuentes.
+Esta tabla enumera las dependencias de producción npm del lockfile y sus dependencias transitivas, incluidos los módulos que pueden eliminarse durante la compilación. Tailwind CSS se utiliza para construir los estilos. La interfaz actual usa fuentes del sistema; las licencias de fuentes de versiones anteriores se conservan, pero los archivos de fuentes no se incluyen en el artefacto actual.
 
-| Componente | Versión o hash | Origen | Licencia | Uso | Copyright | Obligaciones de distribución | Fecha de verificación |
+| Nombre del componente | Versión o hash | Dirección upstream | Tipo de licencia | Modo de uso | Titular de derechos de autor | Obligaciones de cumplimiento de publicación | Fecha de verificación |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | @babel/helper-string-parser | 7.29.7 | [Origen](https://github.com/babel/babel) | MIT | Dependencia npm del frontend | Copyright (c) 2014-present Sebastian McKenzie and other contributors; The above copyright notice and this permission notice shall be | Conservar licencia completa y avisos | 2026-10-08 |
 | @babel/helper-validator-identifier | 7.29.7 | [Origen](https://github.com/babel/babel) | MIT | Dependencia npm del frontend | Copyright (c) 2014-present Sebastian McKenzie and other contributors; The above copyright notice and this permission notice shall be | Conservar licencia completa y avisos | 2026-10-08 |
@@ -89,17 +88,18 @@ La tabla enumera las dependencias npm de producción y sus dependencias transiti
 | vue | 3.5.43 | [Origen](https://github.com/vuejs/core) | MIT | Dependencia npm del frontend | Copyright (c) 2018-present, Yuxi (Evan) You; The above copyright notice and this permission notice shall be included in | Conservar licencia completa y avisos | 2026-10-08 |
 | Tailwind CSS | 4.3.3 | [Origen](https://github.com/tailwindlabs/tailwindcss) | MIT | Compilación de estilos | Tailwind Labs, Inc. | Conservar licencia | 2026-10-08 |
 
+### Texto de licencias
 
-### Textos de las licencias
+- [Licencias y NOTICE completos de dependencias](../../src/web/public/licenses/Dependencies.txt) provienen del texto original de los paquetes npm correspondientes y se distribuyen con la UI en `/licenses/Dependencies.txt`.
+- [Texto original de Tailwind CSS](../../src/web/public/licenses/Tailwind-CSS-MIT.txt).
+- [Texto original de Lucide](../../src/web/public/licenses/Lucide-ISC.txt) también aplica al logotipo del documento generado a partir de los iconos del proyecto; las imágenes de presentación son capturas de pantalla de la interfaz de este proyecto.
 
-- [Licencias y avisos completos](../../src/web/public/licenses/Dependencies.txt), recopilados de los paquetes npm instalados y distribuidos en `/licenses/Dependencies.txt` en la interfaz de producción.
-- [Licencia de Tailwind CSS](../../src/web/public/licenses/Tailwind-CSS-MIT.txt).
-- `src/web/public/licenses/` conserva textos de versiones anteriores. Los archivos de fuentes anteriores no forman parte de la compilación actual.
+Los textos legales y las declaraciones de derechos de autor se conservan en el idioma original y no se consideran objetos de traducción ni de limpieza de documentación.
 
-### Disponibilidad del código fuente
+### Provisión de código fuente
 
-Las versiones exactas y los hashes de integridad figuran en `src/web/package-lock.json`; las direcciones de origen aparecen en la tabla. Las licencias actuales de producción no obligan a proporcionar el código del proyecto. Las herramientas `smartctl`, `lsblk`, `dd`, `badblocks` y systemd instaladas por el host no se distribuyen con este repositorio ni con el paquete frontend.
+Las versiones exactas y los hashes de integridad se encuentran en `src/web/package-lock.json`; las direcciones upstream están en la tabla. El manifiesto de producción actual no incluye dependencias que exijan la provisión del código fuente de este proyecto. smartctl, util-linux, coreutils, e2fsprogs y systemd, instalados por separado en el host, no se distribuyen con el paquete de instalación de este proyecto.
 
 ### Revisión de cumplimiento
 
-El inventario de producción utiliza licencias MIT, ISC, BSD y Apache, sin dependencias Copyleft distribuidas. Los textos originales de copyright y NOTICE se conservan junto a sus licencias. La [licencia MIT](../../LICENSE) del proyecto es independiente de las licencias de terceros.
+Las dependencias de producción npm actuales emplean licencias MIT, ISC, BSD y Apache, entre otras, sin componentes copyleft distribuidos con los paquetes. Los derechos de autor y los NOTICE están incluidos en el texto completo de las licencias. La [licencia MIT](../../LICENSE) de este proyecto es independiente de estas licencias de terceros.

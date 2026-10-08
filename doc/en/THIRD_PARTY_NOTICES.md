@@ -1,14 +1,12 @@
 ---
 name: project-third-party-notices-en
-description: Third-party software and asset notices
+description: Third-party attribution and compliance statements
 metadata:
-  version: "0.1.0"
+  version: "1.0.0"
   lang: "en"
 ---
 
-# Third-party notices
-
-This inventory records third-party material used by the optional Web UI.
+# Third-Party Notices
 
 ## Multi-language
 
@@ -26,13 +24,14 @@ This inventory records third-party material used by the optional Web UI.
 
 - Third-party notices: [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md)
 
-## Third-party notices
 
-### Component inventory
+## Third-Party Notices
 
-The table lists production npm dependencies and their transitive dependencies, including modules that may be removed during the build. Vue, Markdown rendering, Lucide icons, Reka UI controls and class-merging utilities support the browser frontend; Tailwind CSS generates styles at build time. The current UI uses system fonts and distributes no font files.
+### Component Inventory
 
-| Component | Version or hash | Upstream | License | Usage | Copyright | Distribution obligations | Checked on |
+This table lists the npm production dependencies from the lock file and their transitive dependencies, including modules that may be eliminated at build time. Tailwind CSS is used to build styles. The current interface uses system fonts; font licenses from older versions are retained, but font files are not included in the current artifacts.
+
+| Component Name | Version or Hash | Upstream URL | License Type | Usage | Copyright Holder | Distribution Compliance Obligations | Verification Date |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | @babel/helper-string-parser | 7.29.7 | [Upstream](https://github.com/babel/babel) | MIT | npm frontend dependency | Copyright (c) 2014-present Sebastian McKenzie and other contributors; The above copyright notice and this permission notice shall be | Preserve full license and notices | 2026-10-08 |
 | @babel/helper-validator-identifier | 7.29.7 | [Upstream](https://github.com/babel/babel) | MIT | npm frontend dependency | Copyright (c) 2014-present Sebastian McKenzie and other contributors; The above copyright notice and this permission notice shall be | Preserve full license and notices | 2026-10-08 |
@@ -89,17 +88,18 @@ The table lists production npm dependencies and their transitive dependencies, i
 | vue | 3.5.43 | [Upstream](https://github.com/vuejs/core) | MIT | npm frontend dependency | Copyright (c) 2018-present, Yuxi (Evan) You; The above copyright notice and this permission notice shall be included in | Preserve full license and notices | 2026-10-08 |
 | Tailwind CSS | 4.3.3 | [Upstream](https://github.com/tailwindlabs/tailwindcss) | MIT | Build styles | Tailwind Labs, Inc. | Preserve license | 2026-10-08 |
 
+### License Texts
 
-### License texts
+- [Full dependency licenses and NOTICE](../../src/web/public/licenses/Dependencies.txt) are sourced from the original texts of the corresponding npm packages and are distributed with the UI at `/licenses/Dependencies.txt`.
+- [Tailwind CSS original](../../src/web/public/licenses/Tailwind-CSS-MIT.txt).
+- [Lucide original](../../src/web/public/licenses/Lucide-ISC.txt) also applies to the documentation logo generated from project icons; the introductory images are screenshots of this project's interface.
 
-- [Complete dependency licenses and notices](../../src/web/public/licenses/Dependencies.txt), collected from the installed npm packages and distributed at `/licenses/Dependencies.txt` in the production UI.
-- [Tailwind CSS license](../../src/web/public/licenses/Tailwind-CSS-MIT.txt).
-- `src/web/public/licenses/` retains license texts from earlier versions. Old font files are absent from the current build.
+Legal texts and copyright notices are kept in the original language and are not subject to translation or documentation cleanup.
 
-### Source provision
+### Source Code Availability
 
-Exact dependency versions and integrity hashes reside in `src/web/package-lock.json`; upstream addresses appear above. The current production licenses impose no obligation to supply the project's source. Host-installed `smartctl`, `lsblk`, `dd`, `badblocks` and systemd are not distributed with this repository or frontend package.
+Exact versions and integrity hashes are in `src/web/package-lock.json`; upstream URLs are listed in the table. The current production manifest has no dependencies that require providing this project's source code. smartctl, util-linux, coreutils, e2fsprogs, and systemd installed separately on the host are not distributed with this project's installation package.
 
-### Compliance review
+### Compliance Review
 
-The production inventory uses MIT, ISC, BSD and Apache licenses and includes no distributed Copyleft dependency. Original copyright and NOTICE texts are preserved alongside their licenses. The project's [MIT license](../../LICENSE) is separate from third-party licensing.
+The current npm production dependencies use MIT, ISC, BSD, and Apache licenses; no Copyleft components are distributed with the packages. Copyright and NOTICE texts are included in the full license texts. This project's [MIT License](../../LICENSE) is independent of these third-party licenses.

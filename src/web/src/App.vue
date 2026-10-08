@@ -143,12 +143,7 @@ import ar from '../../../lang/web/ar.json'
 import fr from '../../../lang/web/fr.json'
 import logEn from '../../../doc/en/CHANGELOG.md?raw'
 import logZhCN from '../../../doc/CHANGELOG.md?raw'
-import logZhTW from '../../../doc/zh-TW/CHANGELOG.md?raw'
-import logZhHK from '../../../doc/zh-HK/CHANGELOG.md?raw'
-import logHi from '../../../doc/hi/CHANGELOG.md?raw'
 import logEs from '../../../doc/es/CHANGELOG.md?raw'
-import logAr from '../../../doc/ar/CHANGELOG.md?raw'
-import logFr from '../../../doc/fr/CHANGELOG.md?raw'
 const strings = {
   'zh-CN': zhCN,
   'zh-TW': zhTW,
@@ -161,23 +156,23 @@ const strings = {
 }
 const logs: Record<Lang, string> = {
   'zh-CN': logZhCN,
-  'zh-TW': logZhTW,
-  'zh-HK': logZhHK,
+  'zh-TW': logEn,
+  'zh-HK': logEn,
   en: logEn,
-  hi: logHi,
+  hi: logEn,
   es: logEs,
-  ar: logAr,
-  fr: logFr,
+  ar: logEn,
+  fr: logEn,
 }
 const changelogHeadings: Record<Lang, string> = {
   'zh-CN': '变更日志',
-  'zh-TW': '變更紀錄',
-  'zh-HK': '變更記錄',
+  'zh-TW': 'Changelog',
+  'zh-HK': 'Changelog',
   en: 'Changelog',
-  hi: 'परिवर्तन सूची',
+  hi: 'Changelog',
   es: 'Historial de cambios',
-  ar: 'سجل التغييرات',
-  fr: 'Historique des modifications',
+  ar: 'Changelog',
+  fr: 'Changelog',
 }
 type Key = keyof typeof strings.en
 const languages: { code: Lang; label: string }[] = [

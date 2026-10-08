@@ -116,7 +116,7 @@ else
     chmod 0600 "$stage/web-password"
 fi
 install -m 0644 "$source_dir/doc/CHANGELOG.md" "$stage/doc/CHANGELOG.md"
-for language in ar en es fr hi zh-HK zh-TW; do
+for language in en es; do
     [[ -f $source_dir/doc/$language/CHANGELOG.md && ! -L $source_dir/doc/$language/CHANGELOG.md ]] ||
         die "Missing or linked update record: doc/$language/CHANGELOG.md"
     install -d -m 0755 "$stage/doc/$language"
